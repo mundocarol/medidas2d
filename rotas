@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Rotas - Mundo Carol</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Tela de Login */
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        .login-container h1 {
+            color: #d63384;
+            margin-bottom: 20px;
+        }
+        
+        .login-container input {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        
+        .login-container button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #d63384, #c22574);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        /* Painel Principal */
+        .painel-container {
+            display: none;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .header h1 {
+            color: #d63384;
+            font-size: 24px;
+        }
+        
+        .header-info {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .btn-sair {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .btn-salvar {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .calendario-navegacao {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .mes-nav {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .mes-nav button {
+            background: #d63384;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .mes-atual {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .calendario-grid {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        
+        .calendario {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            min-width: 700px;
+        }
+        
+        .dia-header {
+            text-align: center;
+            font-weight: bold;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            color: #d63384;
+        }
+        
+        .dia-cell {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 100px;
+            position: relative;
+        }
+        
+        .dia-cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .dia-numero {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .dia-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        .status-normal {
+            background: #28a745;
+            color: white;
+        }
+        
+        ..status-bloqueado {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .status-especial {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        .status-feriado {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .rotas-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .rotas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .rotas-header h2 {
+            color: #d63384;
+        }
+        
+        .btn-nova-rota {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .rota-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        .rota-card.bloqueada {
+            background: #fff5f5;
+            border-color: #dc3545;
+        }
+        
+        .rota-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .rota-horario {
+            font-size: 18px;
+            font-weight: bold;
+            color: #d63384;
+        }
+        
+        .rota-capacidade {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .rota-capacidade input {
+            width: 80px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .rota-taxa {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .rota-taxa input {
+            width: 100px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+        }
+        
+        .rota-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-bloquear {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .btn-desbloquear {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .btn-excluir {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .btn-editar {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-content h3 {
+            color: #d63384;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        .btn-modal-salvar {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .btn-modal-cancelar {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #6c757d;
+        }
+        
+        .tab.active {
+            color: #d63384;
+            border-bottom: 3px solid #d63384;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .feriado-item, .especial-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            display: none;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .rota-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .rota-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Tela de Login -->
+        <div id="loginContainer" class="login-container">
+            <i class="fas fa-truck" style="font-size: 60px; color: #d63384; margin-bottom: 20px;"></i>
+            <h1>Gerenciador de Rotas</h1>
+            <p>Mundo Carol</p>
+            <input type="password" id="senhaInput" placeholder="Digite a senha" autocomplete="off">
+            <button onclick="fazerLogin()">Entrar</button>
+        </div>
+        
+        <!-- Painel Principal -->
+        <div id="painelContainer" class="painel-container">
+            <div class="header">
+                <h1><i class="fas fa-truck"></i> Gerenciador de Rotas - Mundo Carol</h1>
+                <div class="header-info">
+                    <span id="ultimaAtualizacao"></span>
+                    <button class="btn-salvar" onclick="salvarConfiguracoes()"><i class="fas fa-save"></i> Salvar</button>
+                    <button class="btn-sair" onclick="fazerLogout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+                </div>
+            </div>
+            
+            <div class="tab-container">
+                <button class="tab active" data-tab="rotas" onclick="abrirTab('rotas')"><i class="fas fa-calendar"></i> Rotas</button>
+                <button class="tab" data-tab="feriados" onclick="abrirTab('feriados')"><i class="fas fa-ban"></i> Feriados</button>
+                <button class="tab" data-tab="especiais" onclick="abrirTab('especiais')"><i class="fas fa-star"></i> Dias Especiais</button>
+                <button class="tab" data-tab="config" onclick="abrirTab('config')"><i class="fas fa-cog"></i> Configurações</button>
+            </div>
+            
+            <!-- Aba Rotas -->
+            <div id="tabRotas" class="tab-content active">
+                <div class="calendario-navegacao">
+                    <div class="mes-nav">
+                        <button onclick="mudarMes(-1)"><i class="fas fa-chevron-left"></i></button>
+                        <span class="mes-atual" id="mesAtual"></span>
+                        <button onclick="mudarMes(1)"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <button class="btn-salvar" onclick="hoje()"><i class="fas fa-calendar-day"></i> Hoje</button>
+                </div>
+                
+                <div class="calendario-grid">
+                    <div class="calendario" id="calendario"></div>
+                </div>
+                
+                <div class="rotas-container" id="rotasContainer">
+                    <div class="rotas-header">
+                        <h2 id="rotasTitulo">Rotas do dia</h2>
+                        <button class="btn-nova-rota" onclick="abrirModalNovaRota()"><i class="fas fa-plus"></i> Nova Rota</button>
+                    </div>
+                    <div id="listaRotas"></div>
+                </div>
+            </div>
+            
+            <!-- Aba Feriados -->
+            <div id="tabFeriados" class="tab-content">
+                <div class="rotas-container">
+                    <div class="rotas-header">
+                        <h2><i class="fas fa-ban"></i> Feriados (dias sem entregas)</h2>
+                        <button class="btn-nova-rota" onclick="abrirModalNovoFeriado()"><i class="fas fa-plus"></i> Adicionar Feriado</button>
+                    </div>
+                    <div id="listaFeriados"></div>
+                </div>
+            </div>
+            
+            <!-- Aba Dias Especiais -->
+            <div id="tabEspeciais" class="tab-content">
+                <div class="rotas-container">
+                    <div class="rotas-header">
+                        <h2><i class="fas fa-star"></i> Dias Especiais (horários diferentes)</h2>
+                        <button class="btn-nova-rota" onclick="abrirModalNovoEspecial()"><i class="fas fa-plus"></i> Adicionar Dia Especial</button>
+                    </div>
+                    <div id="listaEspeciais"></div>
+                </div>
+            </div>
+            
+            <!-- Aba Configurações -->
+            <div id="tabConfig" class="tab-content">
+                <div class="rotas-container">
+                    <h2><i class="fas fa-cog"></i> Configurações Globais</h2>
+                    
+                    <div class="form-group">
+                        <label>Prazo mínimo para agendar (dias):</label>
+                        <input type="number" id="configPrazoMinimo" min="0" value="1">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Horário de fechamento diário:</label>
+                        <input type="time" id="configHorarioFechamento" value="17:00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Horário de abertura diário:</label>
+                        <input type="time" id="configHorarioAbertura" value="08:00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Minutos antes de fechar a rota:</label>
+                        <input type="number" id="configMinutosAntes" min="0" value="40">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Hora de virada do dia:</label>
+                        <input type="number" id="configHoraVirada" min="0" max="23" value="3">
+                    </div>
+                    
+                    <hr style="margin: 20px 0;">
+                    
+                    <h3>Regras Automáticas por Dia da Semana</h3>
+                    
+                    <div class="form-group">
+                        <label><input type="checkbox" id="regraDomingoAtiva"> Domingo - Bloquear rotas do próprio domingo</label>
+                        <label><input type="checkbox" id="regraDomingoBloqSegunda"> Domingo - Bloquear primeira rota da segunda</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><input type="checkbox" id="regraSabadoAtiva"> Sábado - Ativar bloqueio</label>
+                        <label>Horário de início: <input type="time" id="regraSabadoHorario" value="16:00"></label>
+                        <label><input type="checkbox" id="regraSabadoBloqDomingo"> Bloquear primeira rota do domingo</label>
+                        <label><input type="checkbox" id="regraSabadoBloqSegunda"> Bloquear primeira rota da segunda</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><input type="checkbox" id="regraDiasUteisAtiva"> Dias úteis (Segunda a Quinta) - Bloquear primeira rota do próximo dia útil</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><input type="checkbox" id="regraSextaAtiva"> Sexta-feira - Bloquear primeira rota do sábado</label>
+                    </div>
+                    
+                    <button class="btn-salvar" onclick="salvarConfiguracoes()" style="margin-top: 20px;"><i class="fas fa-save"></i> Salvar Configurações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Nova Rota -->
+    <div id="modalNovaRota" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-plus"></i> Nova Rota</h3>
+            <div class="form-group">
+                <label>Data:</label>
+                <input type="date" id="novaRotaData">
+            </div>
+            <div class="form-group">
+                <label>Horário:</label>
+                <input type="time" id="novaRotaInicio"> até <input type="time" id="novaRotaFim">
+            </div>
+            <div class="form-group">
+                <label>Capacidade máxima:</label>
+                <input type="number" id="novaRotaCapacidade" value="30">
+            </div>
+            <div class="form-group">
+                <label>Taxa adicional (R$):</label>
+                <input type="number" id="novaRotaTaxa" step="0.01" value="0">
+            </div>
+            <div class="form-group">
+                <label>Aplicar esta rota:</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="aplicarRota" value="apenasHoje" checked> Apenas nesta data</label>
+                    <label><input type="radio" name="aplicarRota" value="todasSegundas"> Todas as segundas-feiras</label>
+                    <label><input type="radio" name="aplicarRota" value="diasSemana"> Todos os dias da semana (Segunda a Sexta)</label>
+                    <label><input type="radio" name="aplicarRota" value="todosSabados"> Todos os sábados</label>
+                    <label><input type="radio" name="aplicarRota" value="todosDomingos"> Todos os domingos</label>
+                    <label><input type="radio" name="aplicarRota" value="todosDias"> Todos os dias da semana</label>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal-cancelar" onclick="fecharModal('modalNovaRota')">Cancelar</button>
+                <button class="btn-modal-salvar" onclick="salvarNovaRota()">Criar Rota</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Novo Feriado -->
+    <div id="modalNovoFeriado" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-ban"></i> Adicionar Feriado</h3>
+            <div class="form-group">
+                <label>Data:</label>
+                <input type="date" id="novoFeriadoData">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal-cancelar" onclick="fecharModal('modalNovoFeriado')">Cancelar</button>
+                <button class="btn-modal-salvar" onclick="salvarNovoFeriado()">Adicionar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Novo Dia Especial -->
+    <div id="modalNovoEspecial" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-star"></i> Adicionar Dia Especial</h3>
+            <div class="form-group">
+                <label>Data:</label>
+                <input type="date" id="novoEspecialData">
+            </div>
+            <div class="form-group">
+                <label>Nome:</label>
+                <input type="text" id="novoEspecialNome" placeholder="Ex: Véspera de Natal">
+            </div>
+            <div class="form-group">
+                <label>Horários (separados por vírgula):</label>
+                <input type="text" id="novoEspecialHorarios" placeholder="Ex: 07:30-11:30, 13:30-17:30">
+            </div>
+            <div class="form-group">
+                <label>Capacidade máxima:</label>
+                <input type="number" id="novoEspecialCapacidade" value="20">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal-cancelar" onclick="fecharModal('modalNovoEspecial')">Cancelar</button>
+                <button class="btn-modal-salvar" onclick="salvarNovoEspecial()">Adicionar</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+    
+    <script>
+        // Variáveis Globais
+        let config = null;
+        let dataSelecionada = new Date();
+        let mesAtual = new Date().getMonth();
+        let anoAtual = new Date().getFullYear();
+        
+        // Nomes dos dias e meses
+        const diasSemana = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+        const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        
+        // Função para mostrar toast
+        function mostrarToast(mensagem, tipo = 'sucesso') {
+            const toast = document.getElementById('toast');
+            toast.textContent = mensagem;
+            toast.style.backgroundColor = tipo === 'sucesso' ? '#28a745' : '#dc3545';
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Função para carregar configurações
+        async function carregarConfiguracoes() {
+            try {
+                const response = await fetch('config-rotas.json?' + Date.now());
+                config = await response.json();
+                
+                document.getElementById('ultimaAtualizacao').innerHTML = `<i class="fas fa-clock"></i> Atualizado: ${config.ultimaAtualizacao}`;
+                
+                // Carregar configurações na aba
+                document.getElementById('configPrazoMinimo').value = config.configuracoesGlobais.prazoMinimoDias;
+                document.getElementById('configHorarioFechamento').value = `${String(config.configuracoesGlobais.horarioFechamentoDiario).padStart(2,'0')}:00`;
+                document.getElementById('configHorarioAbertura').value = `${String(config.configuracoesGlobais.horarioAberturaDiario).padStart(2,'0')}:00`;
+                document.getElementById('configMinutosAntes').value = config.configuracoesGlobais.minutosAntesFecharRota;
+                document.getElementById('configHoraVirada').value = config.configuracoesGlobais.horaViradaDia;
+                
+                document.getElementById('regraDomingoAtiva').checked = config.regrasAutomaticas.domingo.ativa;
+                document.getElementById('regraDomingoBloqSegunda').checked = config.regrasAutomaticas.domingo.bloquearPrimeiraRotaSegunda;
+                
+                document.getElementById('regraSabadoAtiva').checked = config.regrasAutomaticas.sabado.ativa;
+                document.getElementById('regraSabadoHorario').value = `${String(config.regrasAutomaticas.sabado.horarioInicioBloqueio).padStart(2,'0')}:00`;
+                document.getElementById('regraSabadoBloqDomingo').checked = config.regrasAutomaticas.sabado.bloquearPrimeiraRotaDomingo;
+                document.getElementById('regraSabadoBloqSegunda').checked = config.regrasAutomaticas.sabado.bloquearPrimeiraRotaSegunda;
+                
+                document.getElementById('regraDiasUteisAtiva').checked = config.regrasAutomaticas.diasUteis.ativa;
+                document.getElementById('regraSextaAtiva').checked = config.regrasAutomaticas.sexta.ativa;
+                
+                renderizarCalendario();
+                carregarFeriados();
+                carregarDiasEspeciais();
+                
+                mostrarToast('Configurações carregadas com sucesso!');
+            } catch (error) {
+                console.error('Erro ao carregar configurações:', error);
+                mostrarToast('Erro ao carregar configurações. Verifique se o arquivo config-rotas.json existe.', 'erro');
+            }
+        }
+        
+        // Função para salvar configurações
+        async function salvarConfiguracoes() {
+            // Atualizar configurações globais
+            config.configuracoesGlobais.prazoMinimoDias = parseInt(document.getElementById('configPrazoMinimo').value);
+            config.configuracoesGlobais.horarioFechamentoDiario = parseInt(document.getElementById('configHorarioFechamento').value.split(':')[0]);
+            config.configuracoesGlobais.horarioAberturaDiario = parseInt(document.getElementById('configHorarioAbertura').value.split(':')[0]);
+            config.configuracoesGlobais.minutosAntesFecharRota = parseInt(document.getElementById('configMinutosAntes').value);
+            config.configuracoesGlobais.horaViradaDia = parseInt(document.getElementById('configHoraVirada').value);
+            
+            // Atualizar regras automáticas
+            config.regrasAutomaticas.domingo.ativa = document.getElementById('regraDomingoAtiva').checked;
+            config.regrasAutomaticas.domingo.bloquearPrimeiraRotaSegunda = document.getElementById('regraDomingoBloqSegunda').checked;
+            
+            config.regrasAutomaticas.sabado.ativa = document.getElementById('regraSabadoAtiva').checked;
+            config.regrasAutomaticas.sabado.horarioInicioBloqueio = parseInt(document.getElementById('regraSabadoHorario').value.split(':')[0]);
+            config.regrasAutomaticas.sabado.bloquearPrimeiraRotaDomingo = document.getElementById('regraSabadoBloqDomingo').checked;
+            config.regrasAutomaticas.sabado.bloquearPrimeiraRotaSegunda = document.getElementById('regraSabadoBloqSegunda').checked;
+            
+            config.regrasAutomaticas.diasUteis.ativa = document.getElementById('regraDiasUteisAtiva').checked;
+            config.regrasAutomaticas.sexta.ativa = document.getElementById('regraSextaAtiva').checked;
+            
+            config.ultimaAtualizacao = new Date().toLocaleString('pt-BR');
+            
+            // Salvar no arquivo (simulado - na prática precisa de backend)
+            localStorage.setItem('configRotas', JSON.stringify(config));
+            mostrarToast('Configurações salvas! Para aplicar no site, exporte o arquivo config-rotas.json', 'sucesso');
+        }
+        
+        // Função para renderizar calendário
+        function renderizarCalendario() {
+            const primeiroDia = new Date(anoAtual, mesAtual, 1);
+            const ultimoDia = new Date(anoAtual, mesAtual + 1, 0);
+            const diaInicioSemana = primeiroDia.getDay();
+            
+            document.getElementById('mesAtual').textContent = `${meses[mesAtual]} ${anoAtual}`;
+            
+            let html = '';
+            
+            // Cabeçalho dos dias
+            for (let i = 0; i < 7; i++) {
+                html += `<div class="dia-header">${diasSemana[i].substring(0,3)}</div>`;
+            }
+            
+            // Dias vazios no início
+            for (let i = 0; i < diaInicioSemana; i++) {
+                html += `<div class="dia-cell" style="background: #f0f0f0;"></div>`;
+            }
+            
+            // Dias do mês
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+                const dataAtual = new Date(anoAtual, mesAtual, dia);
+                const dataStr = `${anoAtual}-${String(mesAtual+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+                
+                let status = 'normal';
+                let statusText = '';
+                
+                // Verificar se é feriado
+                if (config.feriados.includes(dataStr)) {
+                    status = 'feriado';
+                    statusText = 'Feriado';
+                }
+                // Verificar se é dia fechado
+                else if (config.diasFechados.includes(dataStr)) {
+                    status = 'fechado';
+                    statusText = 'Fechado';
+                }
+                // Verificar se tem bloqueio pontual
+                else if (config.bloqueiosPontuais.some(b => b.data === dataStr)) {
+                    const bloqueios = config.bloqueiosPontuais.filter(b => b.data === dataStr);
+                    if (bloqueios.length === config.rotasPadrao[getDiaSemana(dataAtual)]?.horarios?.length) {
+                        status = 'bloqueado';
+                        statusText = 'Dia bloqueado';
+                    } else {
+                        status = 'parcial';
+                        statusText = `${bloqueios.length} rota(s) bloqueada(s)`;
+                    }
+                }
+                // Verificar se é dia especial
+                else if (config.diasEspeciais.some(e => e.data === dataStr)) {
+                    status = 'especial';
+                    statusText = 'Horário especial';
+                }
+                
+                const classeStatus = status === 'normal' ? 'status-normal' : 
+                                     status === 'feriado' ? 'status-feriado' :
+                                     status === 'fechado' ? 'status-feriado' :
+                                     status === 'bloqueado' ? 'status-bloqueado' : 'status-especial';
+                
+                const textoStatus = statusText || (status === 'especial' ? 'Especial' : '');
+                
+                html += `
+                    <div class="dia-cell" onclick="selecionarDia(${dia})">
+                        <div class="dia-numero">${dia}</div>
+                        ${textoStatus ? `<div class="dia-status ${classeStatus}">${textoStatus}</div>` : ''}
+                    </div>
+                `;
+            }
+            
+            document.getElementById('calendario').innerHTML = html;
+        }
+        
+        // Função para obter o dia da semana em português
+        function getDiaSemana(data) {
+            const dias = ['domingo', 'segunda', 'terca', 'quarta', 'quinta', 'sexta', 'sabado'];
+            return dias[data.getDay()];
+        }
+        
+        // Função para selecionar um dia
+        function selecionarDia(dia) {
+            dataSelecionada = new Date(anoAtual, mesAtual, dia);
+            carregarRotasDoDia();
+        }
+        
+        // Função para carregar rotas do dia selecionado
+        function carregarRotasDoDia() {
+            const dataStr = `${dataSelecionada.getFullYear()}-${String(dataSelecionada.getMonth()+1).padStart(2,'0')}-${String(dataSelecionada.getDate()).padStart(2,'0')}`;
+            const diaSemana = getDiaSemana(dataSelecionada);
+            
+            document.getElementById('rotasTitulo').innerHTML = `<i class="fas fa-calendar-day"></i> Rotas - ${dataSelecionada.toLocaleDateString('pt-BR')} (${diasSemana[dataSelecionada.getDay()]})`;
+            
+            // Verificar se é feriado ou dia fechado
+            if (config.feriados.includes(dataStr) || config.diasFechados.includes(dataStr)) {
+                document.getElementById('listaRotas').innerHTML = `
+                    <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 12px;">
+                        <i class="fas fa-ban" style="font-size: 48px; color: #dc3545;"></i>
+                        <h3>Dia sem entregas</h3>
+                        <p>Este dia está marcado como ${config.feriados.includes(dataStr) ? 'feriado' : 'fechado'}.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Buscar rotas para este dia
+            let rotas = [];
+            
+            // Verificar se tem dia especial
+            const diaEspecial = config.diasEspeciais.find(e => e.data === dataStr);
+            if (diaEspecial) {
+                rotas = diaEspecial.horarios.map(h => ({
+                    inicio: h.inicio,
+                    fim: h.fim,
+                    capacidade: h.capacidade,
+                    taxaAdicional: h.taxaAdicional,
+                    bloqueada: config.bloqueiosPontuais.some(b => b.data === dataStr && b.horario === `${h.inicio}-${h.fim}`)
+                }));
+            } else {
+                // Usar rotas padrão do dia
+                const rotasPadrao = config.rotasPadrao[diaSemana];
+                if (rotasPadrao && rotasPadrao.horarios) {
+                    rotas = rotasPadrao.horarios.map(h => ({
+                        inicio: h.inicio,
+                        fim: h.fim,
+                        capacidade: h.capacidade,
+                        taxaAdicional: h.taxaAdicional,
+                        bloqueada: config.bloqueiosPontuais.some(b => b.data === dataStr && b.horario === `${h.inicio}-${h.fim}`)
+                    }));
+                }
+            }
+            
+            // Renderizar rotas
+            if (rotas.length === 0) {
+                document.getElementById('listaRotas').innerHTML = `
+                    <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 12px;">
+                        <i class="fas fa-info-circle" style="font-size: 48px; color: #d63384;"></i>
+                        <h3>Nenhuma rota configurada</h3>
+                        <p>Clique em "Nova Rota" para adicionar uma rota para este dia.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            rotas.forEach((rota, index) => {
+                const bloqueada = rota.bloqueada;
+                html += `
+                    <div class="rota-card ${bloqueada ? 'bloqueada' : ''}">
+                        <div class="rota-info">
+                            <div class="rota-horario">
+                                <i class="fas fa-clock"></i> ${rota.inicio} às ${rota.fim}
+                            </div>
+                            <div class="rota-capacidade">
+                                <label>Capacidade:</label>
+                                <input type="number" id="cap_${index}" value="${rota.capacidade}" ${bloqueada ? 'disabled' : ''}>
+                            </div>
+                            <div class="rota-taxa">
+                                <label>Taxa (R$):</label>
+                                <input type="number" id="taxa_${index}" step="0.01" value="${rota.taxaAdicional}" ${bloqueada ? 'disabled' : ''}>
+                            </div>
+                            <div class="rota-actions">
+                                ${bloqueada ? 
+                                    `<button class="btn-desbloquear" onclick="desbloquearRota('${dataStr}', '${rota.inicio}-${rota.fim}')"><i class="fas fa-unlock"></i> Desbloquear</button>` :
+                                    `<button class="btn-bloquear" onclick="bloquearRota('${dataStr}', '${rota.inicio}-${rota.fim}')"><i class="fas fa-lock"></i> Bloquear</button>`
+                                }
+                                <button class="btn-excluir" onclick="excluirRota('${dataStr}', '${rota.inicio}-${rota.fim}')"><i class="fas fa-trash"></i> Excluir</button>
+                            </div>
+                        </div>
+                        ${bloqueada ? `<div style="margin-top: 10px; color: #dc3545; font-size: 12px;"><i class="fas fa-exclamation-triangle"></i> Motivo: ${config.bloqueiosPontuais.find(b => b.data === dataStr && b.horario === `${rota.inicio}-${rota.fim}`)?.motivo || 'Rota lotada'}</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('listaRotas').innerHTML = html;
+        }
+        
+        // Função para bloquear rota
+        function bloquearRota(data, horario) {
+            const motivo = prompt('Motivo do bloqueio:', 'Rota lotada');
+            if (motivo) {
+                config.bloqueiosPontuais.push({
+                    data: data,
+                    horario: horario,
+                    motivo: motivo,
+                    bloqueadoEm: new Date().toLocaleString('pt-BR')
+                });
+                mostrarToast(`Rota ${horario} bloqueada com sucesso!`, 'sucesso');
+                carregarRotasDoDia();
+                renderizarCalendario();
+            }
+        }
+        
+        // Função para desbloquear rota
+        function desbloquearRota(data, horario) {
+            if (confirm('Tem certeza que deseja desbloquear esta rota?')) {
+                config.bloqueiosPontuais = config.bloqueiosPontuais.filter(b => !(b.data === data && b.horario === horario));
+                mostrarToast(`Rota ${horario} desbloqueada!`, 'sucesso');
+                carregarRotasDoDia();
+                renderizarCalendario();
+            }
+        }
+        
+        // Função para excluir rota
+        function excluirRota(data, horario) {
+            if (confirm('Tem certeza que deseja excluir esta rota permanentemente?')) {
+                // Remover de bloqueios pontuais se existir
+                config.bloqueiosPontuais = config.bloqueiosPontuais.filter(b => !(b.data === data && b.horario === horario));
+                
+                // Adicionar como bloqueio pontual para não aparecer mais
+                config.bloqueiosPontuais.push({
+                    data: data,
+                    horario: horario,
+                    motivo: 'Rota excluída manualmente',
+                    bloqueadoEm: new Date().toLocaleString('pt-BR')
+                });
+                
+                mostrarToast(`Rota ${horario} excluída!`, 'sucesso');
+                carregarRotasDoDia();
+                renderizarCalendario();
+            }
+        }
+        
+        // Função para carregar feriados
+        function carregarFeriados() {
+            let html = '';
+            config.feriados.forEach(feriado => {
+                const data = new Date(feriado);
+                html += `
+                    <div class="feriado-item">
+                        <span><i class="fas fa-calendar-alt"></i> ${data.toLocaleDateString('pt-BR')}</span>
+                        <button class="btn-excluir" onclick="removerFeriado('${feriado}')"><i class="fas fa-trash"></i> Remover</button>
+                    </div>
+                `;
+            });
+            
+            if (config.feriados.length === 0) {
+                html = '<div style="text-align: center; padding: 20px;">Nenhum feriado cadastrado</div>';
+            }
+            
+            document.getElementById('listaFeriados').innerHTML = html;
+        }
+        
+        // Função para remover feriado
+        function removerFeriado(data) {
+            if (confirm(`Remover feriado de ${new Date(data).toLocaleDateString('pt-BR')}?`)) {
+                config.feriados = config.feriados.filter(f => f !== data);
+                mostrarToast('Feriado removido!', 'sucesso');
+                carregarFeriados();
+                renderizarCalendario();
+            }
+        }
+        
+        // Função para carregar dias especiais
+        function carregarDiasEspeciais() {
+            let html = '';
+            config.diasEspeciais.forEach(especial => {
+                const data = new Date(especial.data);
+                const horariosStr = especial.horarios.map(h => `${h.inicio}-${h.fim}`).join(', ');
+                html += `
+                    <div class="feriado-item">
+                        <div>
+                            <strong><i class="fas fa-star"></i> ${data.toLocaleDateString('pt-BR')}</strong><br>
+                            <small>${especial.nome}</small><br>
+                            <small>Horários: ${horariosStr} | Capacidade: ${especial.horarios[0].capacidade}</small>
+                        </div>
+                        <button class="btn-excluir" onclick="removerEspecial('${especial.data}')"><i class="fas fa-trash"></i> Remover</button>
+                    </div>
+                `;
+            });
+            
+            if (config.diasEspeciais.length === 0) {
+                html = '<div style="text-align: center; padding: 20px;">Nenhum dia especial cadastrado</div>';
+            }
+            
+            document.getElementById('listaEspeciais').innerHTML = html;
+        }
+        
+        // Função para remover dia especial
+        function removerEspecial(data) {
+            if (confirm(`Remover dia especial de ${new Date(data).toLocaleDateString('pt-BR')}?`)) {
+                config.diasEspeciais = config.diasEspeciais.filter(e => e.data !== data);
+                mostrarToast('Dia especial removido!', 'sucesso');
+                carregarDiasEspeciais();
+                renderizarCalendario();
+            }
+        }
+        
+        // Função para abrir modal
+        function abrirModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+        
+        function fecharModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function abrirModalNovaRota() {
+            const hoje = new Date();
+            document.getElementById('novaRotaData').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
+            document.getElementById('novaRotaInicio').value = '08:00';
+            document.getElementById('novaRotaFim').value = '10:00';
+            document.getElementById('novaRotaCapacidade').value = '30';
+            document.getElementById('novaRotaTaxa').value = '0';
+            abrirModal('modalNovaRota');
+        }
+        
+        function abrirModalNovoFeriado() {
+            const hoje = new Date();
+            document.getElementById('novoFeriadoData').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
+            abrirModal('modalNovoFeriado');
+        }
+        
+        function abrirModalNovoEspecial() {
+            const hoje = new Date();
+            document.getElementById('novoEspecialData').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
+            document.getElementById('novoEspecialNome').value = '';
+            document.getElementById('novoEspecialHorarios').value = '08:00-12:00, 13:00-17:00';
+            document.getElementById('novoEspecialCapacidade').value = '20';
+            abrirModal('modalNovoEspecial');
+        }
+        
+        function salvarNovaRota() {
+            const data = document.getElementById('novaRotaData').value;
+            const inicio = document.getElementById('novaRotaInicio').value;
+            const fim = document.getElementById('novaRotaFim').value;
+            const capacidade = parseInt(document.getElementById('novaRotaCapacidade').value);
+            const taxa = parseFloat(document.getElementById('novaRotaTaxa').value);
+            const aplicar = document.querySelector('input[name="aplicarRota"]:checked').value;
+            
+            const horario = `${inicio}-${fim}`;
+            
+            if (aplicar === 'apenasHoje') {
+                // Adicionar como bloqueio pontual? Não, é uma nova rota
+                // Para simplificar, vamos adicionar como dia especial
+                const diaEspecial = config.diasEspeciais.find(e => e.data === data);
+                if (diaEspecial) {
+                    diaEspecial.horarios.push({ inicio, fim, capacidade, taxaAdicional: taxa });
+                } else {
+                    config.diasEspeciais.push({
+                        data: data,
+                        nome: `Rota especial ${horario}`,
+                        horarios: [{ inicio, fim, capacidade, taxaAdicional: taxa }]
+                    });
+                }
+                mostrarToast(`Rota adicionada para ${new Date(data).toLocaleDateString('pt-BR')}!`, 'sucesso');
+            } else {
+                // Aplicar para vários dias
+                mostrarToast('Função em desenvolvimento - Salve manualmente no config-rotas.json', 'erro');
+            }
+            
+            fecharModal('modalNovaRota');
+            carregarRotasDoDia();
+            renderizarCalendario();
+            carregarDiasEspeciais();
+        }
+        
+        function salvarNovoFeriado() {
+            const data = document.getElementById('novoFeriadoData').value;
+            if (!config.feriados.includes(data)) {
+                config.feriados.push(data);
+                mostrarToast(`Feriado adicionado para ${new Date(data).toLocaleDateString('pt-BR')}!`, 'sucesso');
+            } else {
+                mostrarToast('Este feriado já existe!', 'erro');
+            }
+            fecharModal('modalNovoFeriado');
+            carregarFeriados();
+            renderizarCalendario();
+        }
+        
+        function salvarNovoEspecial() {
+            const data = document.getElementById('novoEspecialData').value;
+            const nome = document.getElementById('novoEspecialNome').value;
+            const horariosStr = document.getElementById('novoEspecialHorarios').value;
+            const capacidade = parseInt(document.getElementById('novoEspecialCapacidade').value);
+            
+            const horarios = horariosStr.split(',').map(h => {
+                const [inicio, fim] = h.trim().split('-');
+                return { inicio, fim, capacidade, taxaAdicional: 0 };
+            });
+            
+            config.diasEspeciais.push({
+                data: data,
+                nome: nome,
+                horarios: horarios
+            });
+            
+            mostrarToast(`Dia especial adicionado para ${new Date(data).toLocaleDateString('pt-BR')}!`, 'sucesso');
+            fecharModal('modalNovoEspecial');
+            carregarDiasEspeciais();
+            renderizarCalendario();
+        }
+        
+        function mudarMes(delta) {
+            mesAtual += delta;
+            if (mesAtual < 0) {
+                mesAtual = 11;
+                anoAtual--;
+            } else if (mesAtual > 11) {
+                mesAtual = 0;
+                anoAtual++;
+            }
+            renderizarCalendario();
+        }
+        
+        function hoje() {
+            const hoje = new Date();
+            mesAtual = hoje.getMonth();
+            anoAtual = hoje.getFullYear();
+            renderizarCalendario();
+            selecionarDia(hoje.getDate());
+        }
+        
+        function abrirTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+            document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+        }
+        
+        function fazerLogin() {
+            const senha = document.getElementById('senhaInput').value;
+            if (senha === 'mundocarol2026') {
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('painelContainer').style.display = 'block';
+                carregarConfiguracoes();
+            } else {
+                alert('Senha incorreta!');
+            }
+        }
+        
+        function fazerLogout() {
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('painelContainer').style.display = 'none';
+            document.getElementById('senhaInput').value = '';
+        }
+        
+        // Inicializar
+        hoje();
+    </script>
+</body>
+</html>
