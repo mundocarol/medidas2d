@@ -82,6 +82,11 @@
             transition: 0.2s;
         }
 
+        .camera-btn:hover {
+            background: rgba(0,0,0,0.85);
+            transform: scale(1.02);
+        }
+
         .camera-btn:active {
             transform: scale(0.97);
         }
@@ -109,6 +114,7 @@
             width: 100%;
             height: 100%;
             object-fit: contain;
+            pointer-events: none;
         }
 
         #canvasMedicao {
@@ -118,7 +124,7 @@
             width: 100%;
             height: 100%;
             z-index: 15;
-            touch-action: none;
+            cursor: crosshair;
         }
 
         /* Botão olho */
@@ -141,18 +147,23 @@
             transition: 0.2s;
         }
 
+        .eye-btn:hover {
+            background: rgba(0,0,0,0.8);
+            transform: scale(1.05);
+        }
+
         .eye-btn:active {
             transform: scale(0.95);
         }
 
-        /* Botão salvar (disquete) - aparece no passo 3 */
+        /* Botão salvar (disquete moderno) - aparece no passo 3 */
         .save-medicao-btn {
             position: absolute;
             bottom: 20px;
             right: 20px;
             width: 65px;
             height: 65px;
-            background: rgba(255,255,255,0.9);
+            background: linear-gradient(135deg, #4caf50, #45a049);
             backdrop-filter: blur(10px);
             border-radius: 50%;
             display: flex;
@@ -160,19 +171,25 @@
             justify-content: center;
             z-index: 30;
             cursor: pointer;
-            border: 3px solid #fff;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            border: none;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
             transition: 0.2s;
             display: none;
+        }
+
+        .save-medicao-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.6);
+        }
+
+        .save-medicao-btn:active {
+            transform: scale(0.95);
         }
 
         .save-medicao-btn svg {
             width: 32px;
             height: 32px;
-        }
-
-        .save-medicao-btn:active {
-            transform: scale(0.95);
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
         }
 
         /* Botão salvar referência (aparece no passo 2 após aplicar) */
@@ -189,8 +206,14 @@
             font-size: 16px;
             cursor: pointer;
             z-index: 30;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
             display: none;
+            transition: 0.2s;
+        }
+
+        .save-ref-btn:hover {
+            transform: scale(1.02);
+            background: #45a049;
         }
 
         .save-ref-btn:active {
@@ -284,6 +307,11 @@
             border-radius: 20px;
             font-size: 13px;
             cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .orientacao-btn:hover {
+            background: #555;
         }
 
         .orientacao-btn.ativo {
@@ -316,11 +344,21 @@
             text-align: center;
         }
 
+        .input-group input:focus {
+            outline: none;
+            border-color: #ff9800;
+        }
+
         .input-group button {
             background: #4caf50;
             padding: 10px 16px;
             width: auto;
             margin: 0;
+            transition: 0.2s;
+        }
+
+        .input-group button:hover {
+            background: #45a049;
         }
 
         /* Botão recomeçar estilizado */
@@ -347,9 +385,13 @@
             transition: 0.2s;
         }
 
+        .recomecar-btn:hover {
+            background: rgba(255,68,68,0.2);
+            border-color: #ff8888;
+        }
+
         .recomecar-btn:active {
             transform: scale(0.97);
-            background: rgba(255,68,68,0.2);
         }
 
         /* Popup de confirmação */
@@ -401,6 +443,11 @@
             font-weight: bold;
             font-size: 14px;
             cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .confirm-buttons button:hover {
+            transform: scale(1.02);
         }
 
         .btn-confirm-sim {
@@ -516,6 +563,11 @@
             cursor: pointer;
             width: 100%;
             margin-top: 10px;
+            transition: 0.2s;
+        }
+
+        .info-btn:hover {
+            background: #1976d2;
         }
 
         .info-btn:active {
@@ -571,6 +623,11 @@
             font-weight: bold;
             font-size: 16px;
             cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .share-buttons button:hover {
+            transform: scale(1.02);
         }
 
         .btn-share {
@@ -591,6 +648,11 @@
         /* Input file escondido */
         #fileInput {
             display: none;
+        }
+
+        /* Estilos para PC - cursor */
+        .dragging {
+            cursor: grabbing !important;
         }
 
         @media (max-width: 600px) {
@@ -653,11 +715,11 @@
 
         <div class="eye-btn" id="eyeBtn">🚫</div>
         <div class="save-medicao-btn" id="saveMedicaoBtn">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#333" stroke-width="1.5">
-                <path d="M5 3H19C20.1 3 21 3.9 21 5V19C21 20.1 20.1 21 19 21H5C3.9 21 3 20.1 3 19V5C3 3.9 3.9 3 5 3Z" stroke="currentColor" fill="none"/>
-                <path d="M8 3V8H16V3" stroke="currentColor" fill="none"/>
-                <path d="M12 16C13.6569 16 15 14.6569 15 13C15 11.3431 13.6569 10 12 10C10.3431 10 9 11.3431 9 13C9 14.6569 10.3431 16 12 16Z" stroke="currentColor" fill="none"/>
-                <path d="M17 21V15H7V21" stroke="currentColor" fill="none"/>
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="white" stroke="none">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4z" fill="white"/>
+                <path d="M15 9H9V5h6v4z" fill="#333" opacity="0.8"/>
+                <path d="M12 18c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z" fill="#333" opacity="0.8"/>
+                <path d="M17 21v-4H7v4H5V7l4-4h10v18h-2z" fill="#333" opacity="0.3"/>
             </svg>
         </div>
         <div class="save-ref-btn" id="saveRefBtn">✅ SALVAR REFERÊNCIA</div>
@@ -813,10 +875,7 @@
     
     // Função para recomeçar (voltar para a tela inicial)
     function recomecar() {
-        // Parar a câmera se estiver ativa
         pararCamera();
-        
-        // Resetar todos os estados
         imagemCapturada = false;
         fotoBase64 = null;
         referenciaConfigurada = false;
@@ -824,43 +883,28 @@
         orientacaoRef = null;
         referenciaTamanhoReal = null;
         pixelsPorMetro = null;
-        
-        // Resetar retângulos
         resetarEstado();
-        
-        // Resetar UI
         orientVerticalBtn.classList.remove('ativo');
         orientHorizontalBtn.classList.remove('ativo');
         refTamanho.value = '';
-        
-        // Esconder tela de medição e mostrar câmera
         medicaoScreen.style.display = 'none';
         cameraScreen.style.display = 'flex';
-        
-        // Reiniciar a câmera
         iniciarCamera();
-        
-        // Resetar variáveis de UI
         saveRefBtn.style.display = 'none';
         saveMedicaoBtn.style.display = 'none';
         painel.classList.remove('oculto');
         eyeBtn.innerHTML = '🚫';
         painelVisivel = true;
-        
         fecharConfirmacao();
     }
     
-    // Eventos do popup de confirmação
     recomecarBtn.addEventListener('click', mostrarConfirmacao);
     confirmSimBtn.addEventListener('click', recomecar);
     confirmNaoBtn.addEventListener('click', fecharConfirmacao);
-    
-    // Fechar popup informativo
     closeInfoBtn.addEventListener('click', () => {
         infoPopup.classList.add('oculto');
     });
     
-    // Iniciar câmera
     async function iniciarCamera() {
         try {
             if (streamAtual) {
@@ -910,7 +954,6 @@
             imagemCapturada = true;
             pararCamera();
             
-            // Configurar para etapa de referência
             etapa = 'referencia';
             referenciaConfigurada = false;
             valoresAplicados = false;
@@ -918,12 +961,10 @@
             referenciaTamanhoReal = null;
             pixelsPorMetro = null;
             
-            // Resetar UI da referência
             orientVerticalBtn.classList.remove('ativo');
             orientHorizontalBtn.classList.remove('ativo');
             refTamanho.value = '';
             
-            // Mostrar painel e botões corretos
             painel.classList.remove('oculto');
             eyeBtn.innerHTML = '🚫';
             painelVisivel = true;
@@ -1054,7 +1095,6 @@
         ctx.strokeRect(refPx.x + 2, refPx.y + 2, refPx.w - 4, refPx.h - 4);
         ctx.setLineDash([]);
         
-        // Alças do retângulo de referência
         if (!referenciaConfigurada) {
             const tamanhoAlca = 16;
             const cantos = [
@@ -1087,7 +1127,6 @@
             ctx.fill();
         }
         
-        // Mostrar orientação selecionada
         if (orientacaoRef === 'vertical') {
             ctx.font = "bold 10px sans-serif";
             ctx.fillStyle = '#ff8888';
@@ -1098,7 +1137,6 @@
             ctx.fillText("📐 Horizontal - Largura", refPx.x + refPx.w/2 - 40, refPx.y + refPx.h/2 - 5);
         }
         
-        // Mostrar valor da referência se já aplicado
         if (valoresAplicados && referenciaTamanhoReal) {
             ctx.font = "bold 12px sans-serif";
             ctx.fillStyle = '#ff99aa';
@@ -1107,7 +1145,6 @@
             ctx.shadowBlur = 0;
         }
         
-        // Desenhar RETÂNGULO DE MEDIÇÃO (verde)
         if (referenciaConfigurada) {
             const retPx = {
                 x: imgRect.x + retangulo.x * imgRect.w,
@@ -1129,7 +1166,6 @@
             ctx.strokeRect(retPx.x + 2, retPx.y + 2, retPx.w - 4, retPx.h - 4);
             ctx.setLineDash([]);
             
-            // Alças do retângulo de medição
             const tamanhoAlca = 16;
             const cantos = [
                 { x: retPx.x, y: retPx.y },
@@ -1160,7 +1196,6 @@
             ctx.arc(centroX, centroY, 6, 0, 2*Math.PI);
             ctx.fill();
             
-            // Mostrar medidas
             const dimensoes = getMetros();
             if (dimensoes.altura && dimensoes.largura) {
                 ctx.font = "bold 14px sans-serif";
@@ -1244,42 +1279,52 @@
         return null;
     }
     
-    function handleTouchStart(e) {
+    // Eventos unificados para toque e mouse
+    function getCanvasCoords(e) {
+        const rect = canvasMedicao.getBoundingClientRect();
+        const scaleX = canvasMedicao.width / rect.width;
+        const scaleY = canvasMedicao.height / rect.height;
+        
+        let clientX, clientY;
+        
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        
+        let canvasX = (clientX - rect.left) * scaleX;
+        let canvasY = (clientY - rect.top) * scaleY;
+        canvasX = Math.min(Math.max(0, canvasX), canvasW);
+        canvasY = Math.min(Math.max(0, canvasY), canvasH);
+        
+        return { x: canvasX, y: canvasY };
+    }
+    
+    function handleStart(e) {
         if (!imagemCapturada) return;
         e.preventDefault();
         
-        const rect = canvasMedicao.getBoundingClientRect();
-        const scaleX = canvasMedicao.width / rect.width;
-        const scaleY = canvasMedicao.height / rect.height;
-        const touch = e.touches[0];
-        let canvasX = (touch.clientX - rect.left) * scaleX;
-        let canvasY = (touch.clientY - rect.top) * scaleY;
-        canvasX = Math.min(Math.max(0, canvasX), canvasW);
-        canvasY = Math.min(Math.max(0, canvasY), canvasH);
+        const coords = getCanvasCoords(e);
+        const item = verificarToque(coords.x, coords.y);
         
-        const item = verificarToque(canvasX, canvasY);
         if (item) {
             arrastando = true;
             itemArrastando = item;
-            ultimoToque = { x: canvasX, y: canvasY };
+            ultimoToque = coords;
+            canvasMedicao.style.cursor = 'grabbing';
         }
     }
     
-    function handleTouchMove(e) {
+    function handleMove(e) {
         if (!arrastando || !ultimoToque) return;
         e.preventDefault();
         
-        const rect = canvasMedicao.getBoundingClientRect();
-        const scaleX = canvasMedicao.width / rect.width;
-        const scaleY = canvasMedicao.height / rect.height;
-        const touch = e.touches[0];
-        let canvasX = (touch.clientX - rect.left) * scaleX;
-        let canvasY = (touch.clientY - rect.top) * scaleY;
-        canvasX = Math.min(Math.max(0, canvasX), canvasW);
-        canvasY = Math.min(Math.max(0, canvasY), canvasH);
-        
-        const deltaX = (canvasX - ultimoToque.x) / imgRect.w;
-        const deltaY = (canvasY - ultimoToque.y) / imgRect.h;
+        const coords = getCanvasCoords(e);
+        const deltaX = (coords.x - ultimoToque.x) / imgRect.w;
+        const deltaY = (coords.y - ultimoToque.y) / imgRect.h;
         
         if (itemArrastando === 'cantoTL') {
             retangulo.width -= deltaX;
@@ -1331,13 +1376,14 @@
         retangulo.width = Math.min(1 - retangulo.x, Math.max(0.02, retangulo.width));
         retangulo.height = Math.min(1 - retangulo.y, Math.max(0.02, retangulo.height));
         
-        ultimoToque = { x: canvasX, y: canvasY };
+        ultimoToque = coords;
         desenhar();
     }
     
-    function handleTouchEnd() {
+    function handleEnd(e) {
         arrastando = false;
         itemArrastando = null;
+        canvasMedicao.style.cursor = 'crosshair';
         desenhar();
     }
     
@@ -1359,12 +1405,9 @@
         valoresAplicados = true;
         atualizarEscala();
         
-        // Esconder o painel
         painel.classList.add('oculto');
         painelVisivel = false;
         eyeBtn.innerHTML = '👁️';
-        
-        // Mostrar botão de salvar referência
         saveRefBtn.style.display = 'block';
         
         desenhar();
@@ -1381,13 +1424,9 @@
         referenciaConfigurada = true;
         etapa = 'medicao';
         
-        // Esconder botão de salvar referência
         saveRefBtn.style.display = 'none';
-        
-        // Mostrar botão de salvar medição (disquete)
         saveMedicaoBtn.style.display = 'flex';
         
-        // Garantir que o painel continua oculto
         painel.classList.add('oculto');
         painelVisivel = false;
         eyeBtn.innerHTML = '👁️';
@@ -1520,7 +1559,7 @@
     }
     
     function togglePainel() {
-        if (referenciaConfigurada) return; // Não permite abrir painel na etapa de medição
+        if (referenciaConfigurada) return;
         
         painelVisivel = !painelVisivel;
         if (painelVisivel) {
@@ -1541,7 +1580,7 @@
         if (imagemCapturada) desenhar();
     }
     
-    // Event listeners
+    // Event listeners - suporte para touch e mouse
     capturePhotoBtn.addEventListener('click', capturarFoto);
     galleryBtn.addEventListener('click', abrirGaleria);
     fileInput.addEventListener('change', carregarFotoArquivo);
@@ -1566,9 +1605,16 @@
     aplicarRef.addEventListener('click', aplicarReferencia);
     window.addEventListener('resize', redimensionar);
     
-    canvasMedicao.addEventListener('touchstart', handleTouchStart, { passive: false });
-    canvasMedicao.addEventListener('touchmove', handleTouchMove, { passive: false });
-    canvasMedicao.addEventListener('touchend', handleTouchEnd);
+    // Eventos para touch e mouse
+    canvasMedicao.addEventListener('touchstart', handleStart, { passive: false });
+    canvasMedicao.addEventListener('touchmove', handleMove, { passive: false });
+    canvasMedicao.addEventListener('touchend', handleEnd);
+    
+    canvasMedicao.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', (e) => {
+        if (arrastando) handleMove(e);
+    });
+    window.addEventListener('mouseup', handleEnd);
     
     redimensionar();
     iniciarCamera();
