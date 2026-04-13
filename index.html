@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Medidor de Outdoor - Com Câmera</title>
+    <title>Medidor de Outdoor - Câmera Sem Zoom</title>
     <style>
         * {
             margin: 0;
@@ -22,7 +22,7 @@
             height: 100%;
         }
 
-        /* Container da câmera */
+        /* Container da câmera - agora sem zoom forçado */
         .camera-container {
             position: absolute;
             top: 0;
@@ -31,18 +31,20 @@
             height: 100%;
             overflow: hidden;
             background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #video {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scaleX(-1);
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-            object-fit: cover;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;  /* Muda de cover para contain - remove o zoom */
+            /* Remove o espelhamento */
+            transform: scaleX(1);
         }
 
         #canvas {
@@ -166,7 +168,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
+            background: rgba(0,0,0,0.95);
             padding: 20px;
             border-radius: 20px;
             text-align: center;
@@ -174,8 +176,25 @@
             width: 80%;
         }
 
+        /* Aviso de calibração */
+        .calib-hint {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 16px;
+            padding: 8px 12px;
+            font-size: 11px;
+            z-index: 15;
+            pointer-events: none;
+            text-align: center;
+            backdrop-filter: blur(8px);
+        }
+
         @media (max-width: 600px) {
             .altura-valor { font-size: 32px; }
+            .calib-hint { font-size: 10px; top: 10px; }
         }
     </style>
 </head>
@@ -183,6 +202,10 @@
 <div class="camera-container">
     <video id="video" autoplay playsinline muted></video>
     <canvas id="canvas"></canvas>
+</div>
+
+<div class="calib-hint" id="calibHint">
+    📏 Para calibrar: use uma régua de 1 METRO apoiada VERTICALMENTE na base do poste
 </div>
 
 <div class="controls">
@@ -232,10 +255,13 @@
             larguraDir: []     // 1 ponto
         };
         
-        let passoAtual = 'referencia'; // referencia, basePlaca, topoPlaca, largura
+        let passoAtual = 'referencia';
         let pixelsPorMetro = null;
         let alturaPlaca = null;
         let larguraPlaca = null;
+        
+        // Coordenadas de mapeamento (para sincronizar video e canvas)
+        let videoRect = { x: 0, y: 0, width: 0, height: 0 };
         
         // UI Elements
         const alturaDisplay = document.getElementById('alturaDisplay');
@@ -249,28 +275,79 @@
         let streamAtual = null;
         let cameraAtiva = false;
         
+        // Calcular a posição real do vídeo dentro do canvas (para mapear toques corretamente)
+        function calcularVideoRect() {
+            if (!video.videoWidth || !video.videoHeight) return;
+            
+            const videoAspect = video.videoWidth / video.videoHeight;
+            const canvasAspect = canvasWidth / canvasHeight;
+            
+            let drawWidth, drawHeight, offsetX, offsetY;
+            
+            if (videoAspect > canvasAspect) {
+                // Vídeo mais largo que o canvas
+                drawWidth = canvasWidth;
+                drawHeight = canvasWidth / videoAspect;
+                offsetX = 0;
+                offsetY = (canvasHeight - drawHeight) / 2;
+            } else {
+                // Vídeo mais alto que o canvas
+                drawHeight = canvasHeight;
+                drawWidth = canvasHeight * videoAspect;
+                offsetX = (canvasWidth - drawWidth) / 2;
+                offsetY = 0;
+            }
+            
+            videoRect = { x: offsetX, y: offsetY, width: drawWidth, height: drawHeight };
+        }
+        
+        // Converter ponto da tela para coordenada do vídeo
+        function telaParaVideo(pontoTela) {
+            if (videoRect.width === 0) calcularVideoRect();
+            
+            // Verificar se o toque está dentro da área do vídeo
+            if (pontoTela.x < videoRect.x || pontoTela.x > videoRect.x + videoRect.width ||
+                pontoTela.y < videoRect.y || pontoTela.y > videoRect.y + videoRect.height) {
+                return null;
+            }
+            
+            // Mapear proporcionalmente
+            const videoX = (pontoTela.x - videoRect.x) / videoRect.width;
+            const videoY = (pontoTela.y - videoRect.y) / videoRect.height;
+            
+            return { x: videoX, y: videoY };
+        }
+        
+        // Converter coordenada do vídeo para pixel no canvas (para desenho)
+        function videoParaCanvas(videoCoord) {
+            if (videoRect.width === 0) calcularVideoRect();
+            return {
+                x: videoRect.x + videoCoord.x * videoRect.width,
+                y: videoRect.y + videoCoord.y * videoRect.height
+            };
+        }
+        
         // Inicializar câmera
         async function iniciarCamera(frontal = false) {
             try {
-                // Parar stream anterior se existir
                 if (streamAtual) {
                     streamAtual.getTracks().forEach(track => track.stop());
                 }
                 
+                // Solicitar resolução mais baixa para evitar zoom excessivo
                 const constraints = {
                     video: {
                         facingMode: frontal ? 'user' : 'environment',
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
                     }
                 };
                 
-                console.log('Tentando acessar câmera...', frontal ? 'frontal' : 'traseira');
+                console.log('Acessando câmera...');
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 streamAtual = stream;
                 video.srcObject = stream;
                 
-                // Aguardar o vídeo carregar
                 await new Promise((resolve) => {
                     video.onloadedmetadata = () => {
                         video.play();
@@ -297,6 +374,7 @@
             canvasHeight = window.innerHeight;
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
+            calcularVideoRect();
             desenharOverlay();
         }
         
@@ -308,37 +386,53 @@
             if (!ctx) return;
             ctx.clearRect(0, 0, canvasWidth, canvasHeight);
             
-            // Desenhar todos os pontos
-            desenharPontos(pontos.referencia, '#ff3366', 'Ref');
-            desenharPontos(pontos.basePlaca, '#00ffcc', 'Base');
-            desenharPontos(pontos.topoPlaca, '#ffaa44', 'Topo');
-            desenharPontos(pontos.larguraEsq, '#aa88ff', '←');
-            desenharPontos(pontos.larguraDir, '#88aaff', '→');
+            // Desenhar borda do vídeo (opcional, para referência)
+            if (videoRect.width > 0) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(videoRect.x, videoRect.y, videoRect.width, videoRect.height);
+            }
+            
+            // Converter coordenadas de vídeo (0-1) para canvas e desenhar
+            const pontosCanvas = {
+                referencia: pontos.referencia.map(p => videoParaCanvas(p)),
+                basePlaca: pontos.basePlaca.map(p => videoParaCanvas(p)),
+                topoPlaca: pontos.topoPlaca.map(p => videoParaCanvas(p)),
+                larguraEsq: pontos.larguraEsq.map(p => videoParaCanvas(p)),
+                larguraDir: pontos.larguraDir.map(p => videoParaCanvas(p))
+            };
+            
+            // Desenhar pontos
+            desenharPontos(pontosCanvas.referencia, '#ff3366', 'Ref');
+            desenharPontos(pontosCanvas.basePlaca, '#00ffcc', 'Base');
+            desenharPontos(pontosCanvas.topoPlaca, '#ffaa44', 'Topo');
+            desenharPontos(pontosCanvas.larguraEsq, '#aa88ff', '←');
+            desenharPontos(pontosCanvas.larguraDir, '#88aaff', '→');
             
             // Linha da referência
-            if (pontos.referencia.length === 2) {
-                desenharLinha(pontos.referencia[0], pontos.referencia[1], '#ff3366');
-                let distPx = getDistancia(pontos.referencia[0], pontos.referencia[1]);
-                escreverTexto(pontos.referencia[0], pontos.referencia[1], `${distPx.toFixed(0)}px = 1.00m`, '#ff99aa');
+            if (pontosCanvas.referencia.length === 2) {
+                desenharLinha(pontosCanvas.referencia[0], pontosCanvas.referencia[1], '#ff3366');
+                let distPx = getDistancia(pontosCanvas.referencia[0], pontosCanvas.referencia[1]);
+                escreverTexto(pontosCanvas.referencia[0], pontosCanvas.referencia[1], `${distPx.toFixed(0)}px = 1.00m`, '#ff99aa');
                 if (distPx > 0) {
                     pixelsPorMetro = distPx / 1.0;
                 }
             }
             
             // Linha da altura
-            if (pontos.basePlaca.length === 1 && pontos.topoPlaca.length === 1 && pixelsPorMetro) {
-                desenharLinha(pontos.basePlaca[0], pontos.topoPlaca[0], '#ffff00');
-                let alturaPx = getDistancia(pontos.basePlaca[0], pontos.topoPlaca[0]);
+            if (pontosCanvas.basePlaca.length === 1 && pontosCanvas.topoPlaca.length === 1 && pixelsPorMetro) {
+                desenharLinha(pontosCanvas.basePlaca[0], pontosCanvas.topoPlaca[0], '#ffff00');
+                let alturaPx = getDistancia(pontosCanvas.basePlaca[0], pontosCanvas.topoPlaca[0]);
                 alturaPlaca = alturaPx / pixelsPorMetro;
-                escreverTexto(pontos.basePlaca[0], pontos.topoPlaca[0], `${alturaPlaca.toFixed(2)}m`, '#ffff00');
+                escreverTexto(pontosCanvas.basePlaca[0], pontosCanvas.topoPlaca[0], `${alturaPlaca.toFixed(2)}m`, '#ffff00');
             }
             
             // Linha da largura
-            if (pontos.larguraEsq.length === 1 && pontos.larguraDir.length === 1 && pixelsPorMetro) {
-                desenharLinha(pontos.larguraEsq[0], pontos.larguraDir[0], '#88aaff');
-                let larguraPx = getDistancia(pontos.larguraEsq[0], pontos.larguraDir[0]);
+            if (pontosCanvas.larguraEsq.length === 1 && pontosCanvas.larguraDir.length === 1 && pixelsPorMetro) {
+                desenharLinha(pontosCanvas.larguraEsq[0], pontosCanvas.larguraDir[0], '#88aaff');
+                let larguraPx = getDistancia(pontosCanvas.larguraEsq[0], pontosCanvas.larguraDir[0]);
                 larguraPlaca = larguraPx / pixelsPorMetro;
-                escreverTexto(pontos.larguraEsq[0], pontos.larguraDir[0], `${larguraPlaca.toFixed(2)}m`, '#88aaff');
+                escreverTexto(pontosCanvas.larguraEsq[0], pontosCanvas.larguraDir[0], `${larguraPlaca.toFixed(2)}m`, '#88aaff');
             }
             
             atualizarDisplay();
@@ -346,6 +440,7 @@
         
         function desenharPontos(pontosArray, cor, label) {
             pontosArray.forEach((p, idx) => {
+                if (!p) return;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 12, 0, 2 * Math.PI);
                 ctx.fillStyle = cor;
@@ -363,6 +458,7 @@
         }
         
         function desenharLinha(p1, p2, cor) {
+            if (!p1 || !p2) return;
             ctx.beginPath();
             ctx.moveTo(p1.x, p1.y);
             ctx.lineTo(p2.x, p2.y);
@@ -374,6 +470,7 @@
         }
         
         function escreverTexto(p1, p2, texto, cor) {
+            if (!p1 || !p2) return;
             let mx = (p1.x + p2.x) / 2;
             let my = (p1.y + p2.y) / 2;
             ctx.font = "14px 'Segoe UI'";
@@ -480,11 +577,17 @@
             canvasX = Math.min(Math.max(0, canvasX), canvasWidth);
             canvasY = Math.min(Math.max(0, canvasY), canvasHeight);
             
-            const ponto = { x: canvasX, y: canvasY };
+            const pontoTela = { x: canvasX, y: canvasY };
+            const pontoVideo = telaParaVideo(pontoTela);
+            
+            if (!pontoVideo) {
+                statusMsg.innerText = "⚠️ Toque dentro da área da imagem (evite bordas pretas)";
+                return;
+            }
             
             // Adicionar ponto conforme passo
             if (passoAtual === 'referencia' && pontos.referencia.length < 2) {
-                pontos.referencia.push(ponto);
+                pontos.referencia.push(pontoVideo);
                 if (pontos.referencia.length === 1) {
                     statusMsg.innerText = "📏 Base da régua marcada! Agora toque no TOPO da régua (1 metro acima)";
                 } else {
@@ -493,21 +596,21 @@
                 avancarPasso();
             }
             else if (passoAtual === 'basePlaca' && pontos.basePlaca.length < 1) {
-                pontos.basePlaca.push(ponto);
+                pontos.basePlaca.push(pontoVideo);
                 statusMsg.innerText = "✅ Base da placa marcada! Agora toque no TOPO";
                 avancarPasso();
             }
             else if (passoAtual === 'topoPlaca' && pontos.topoPlaca.length < 1) {
-                pontos.topoPlaca.push(ponto);
+                pontos.topoPlaca.push(pontoVideo);
                 statusMsg.innerText = "✅ Altura medida! Agora toque na LARGURA (esquerda → direita)";
                 avancarPasso();
             }
             else if (passoAtual === 'largura') {
                 if (pontos.larguraEsq.length < 1) {
-                    pontos.larguraEsq.push(ponto);
+                    pontos.larguraEsq.push(pontoVideo);
                     statusMsg.innerText = "✅ Ponto esquerdo marcado! Agora toque na DIREITA da placa";
                 } else if (pontos.larguraDir.length < 1) {
-                    pontos.larguraDir.push(ponto);
+                    pontos.larguraDir.push(pontoVideo);
                     statusMsg.innerText = "🎉 Medição completa! Área calculada!";
                     avancarPasso();
                 }
@@ -535,7 +638,7 @@
         function pularLargura() {
             if (passoAtual === 'largura' && pontos.basePlaca.length === 1 && pontos.topoPlaca.length === 1) {
                 passoAtual = 'largura';
-                statusMsg.innerText = "✅ Altura medida! Largura ignorada. Área não calculada.";
+                statusMsg.innerText = "✅ Altura medida! Largura ignorada.";
                 desenharOverlay();
             } else if (alturaPlaca) {
                 statusMsg.innerText = "ℹ️ Altura já está medida. Use NOVA MEDIÇÃO para outra placa.";
