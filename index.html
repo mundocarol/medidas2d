@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Medidor de Outdoor - Com Câmera</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Container da câmera */
+        .camera-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scaleX(-1);
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: cover;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            touch-action: none;
+        }
+
+        /* Interface */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(15px);
+            border-radius: 24px;
+            margin: 16px;
+            padding: 16px;
+            z-index: 20;
+            border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .resultado-box {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .altura-valor {
+            font-size: 42px;
+            font-weight: bold;
+            color: #ffaa44;
+            line-height: 1;
+        }
+
+        .largura-valor, .area-valor {
+            font-size: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 8px;
+        }
+
+        .label-pequeno {
+            font-size: 12px;
+            color: #aaa;
+            letter-spacing: 1px;
+        }
+
+        .passos {
+            display: flex;
+            justify-content: space-between;
+            margin: 12px 0;
+            gap: 6px;
+        }
+
+        .passo {
+            flex: 1;
+            text-align: center;
+            font-size: 10px;
+            padding: 6px;
+            border-radius: 20px;
+            background: #222;
+            color: #888;
+        }
+
+        .passo.ativo {
+            background: #2196f3;
+            color: white;
+        }
+
+        .passo.concluido {
+            background: #4caf50;
+            color: white;
+        }
+
+        button {
+            background: #2196f3;
+            border: none;
+            color: white;
+            padding: 14px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        .btn-reset {
+            background: #f44336;
+            margin-top: 4px;
+        }
+
+        .btn-secondary {
+            background: #555;
+        }
+
+        .status {
+            font-size: 12px;
+            text-align: center;
+            padding: 8px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 20px;
+            margin-top: 8px;
+        }
+
+        .erro-camera {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 30;
+            width: 80%;
+        }
+
+        @media (max-width: 600px) {
+            .altura-valor { font-size: 32px; }
+        }
+    </style>
+</head>
+<body>
+<div class="camera-container">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+</div>
+
+<div class="controls">
+    <div class="resultado-box">
+        <div class="label-pequeno">📏 ALTURA DA PLACA</div>
+        <div class="altura-valor" id="alturaDisplay">--- <span style="font-size:20px;">m</span></div>
+        <div style="margin-top: 8px;">
+            <span class="label-pequeno">📐 Largura:</span>
+            <span class="largura-valor" id="larguraDisplay">--- m</span>
+            <span class="label-pequeno">📐 Área:</span>
+            <span class="area-valor" id="areaDisplay">--- m²</span>
+        </div>
+    </div>
+
+    <div class="passos">
+        <div class="passo" id="passo1">1️⃣ Referência<br><span style="font-size:8px;">Régua 1m</span></div>
+        <div class="passo" id="passo2">2️⃣ Base<br><span style="font-size:8px;">Placa</span></div>
+        <div class="passo" id="passo3">3️⃣ Topo<br><span style="font-size:8px;">Placa</span></div>
+        <div class="passo" id="passo4">4️⃣ Largura<br><span style="font-size:8px;">Esq→Dir</span></div>
+    </div>
+
+    <div class="status" id="statusMsg">📌 PASSO 1: Toque na BASE da régua de 1 metro</div>
+
+    <button id="resetBtn" class="btn-reset">🔄 NOVA MEDIÇÃO</button>
+    <button id="skipWidthBtn" class="btn-secondary">⏭️ PULAR LARGURA (só altura)</button>
+</div>
+
+<div id="erroCamera" class="erro-camera" style="display: none;">
+    ⚠️ Não foi possível acessar a câmera<br><br>
+    <button id="tentarNovamenteBtn" style="background:#4caf50; margin-top:10px;">📸 TENTAR NOVAMENTE</button>
+    <button id="usarCameraFrontalBtn" style="background:#ff9800; margin-top:8px;">🔄 USAR CÂMERA FRONTAL</button>
+</div>
+
+<script>
+    (function() {
+        // Elementos
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Dados da medição
+        let pontos = {
+            referencia: [],    // 2 pontos (base e topo da régua de 1m)
+            basePlaca: [],     // 1 ponto
+            topoPlaca: [],     // 1 ponto
+            larguraEsq: [],    // 1 ponto
+            larguraDir: []     // 1 ponto
+        };
+        
+        let passoAtual = 'referencia'; // referencia, basePlaca, topoPlaca, largura
+        let pixelsPorMetro = null;
+        let alturaPlaca = null;
+        let larguraPlaca = null;
+        
+        // UI Elements
+        const alturaDisplay = document.getElementById('alturaDisplay');
+        const larguraDisplay = document.getElementById('larguraDisplay');
+        const areaDisplay = document.getElementById('areaDisplay');
+        const statusMsg = document.getElementById('statusMsg');
+        const resetBtn = document.getElementById('resetBtn');
+        const skipWidthBtn = document.getElementById('skipWidthBtn');
+        
+        let canvasWidth, canvasHeight;
+        let streamAtual = null;
+        let cameraAtiva = false;
+        
+        // Inicializar câmera
+        async function iniciarCamera(frontal = false) {
+            try {
+                // Parar stream anterior se existir
+                if (streamAtual) {
+                    streamAtual.getTracks().forEach(track => track.stop());
+                }
+                
+                const constraints = {
+                    video: {
+                        facingMode: frontal ? 'user' : 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                };
+                
+                console.log('Tentando acessar câmera...', frontal ? 'frontal' : 'traseira');
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                streamAtual = stream;
+                video.srcObject = stream;
+                
+                // Aguardar o vídeo carregar
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        resolve();
+                    };
+                });
+                
+                cameraAtiva = true;
+                document.getElementById('erroCamera').style.display = 'none';
+                redimensionarCanvas();
+                iniciarDesenho();
+                statusMsg.innerText = "✅ Câmera ativa! PASSO 1: Toque na BASE da régua de 1 metro";
+                
+            } catch (err) {
+                console.error('Erro na câmera:', err);
+                document.getElementById('erroCamera').style.display = 'block';
+                cameraAtiva = false;
+                statusMsg.innerText = "❌ Erro na câmera. Verifique permissões.";
+            }
+        }
+        
+        function redimensionarCanvas() {
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight;
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            desenharOverlay();
+        }
+        
+        function getDistancia(p1, p2) {
+            return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+        }
+        
+        function desenharOverlay() {
+            if (!ctx) return;
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            
+            // Desenhar todos os pontos
+            desenharPontos(pontos.referencia, '#ff3366', 'Ref');
+            desenharPontos(pontos.basePlaca, '#00ffcc', 'Base');
+            desenharPontos(pontos.topoPlaca, '#ffaa44', 'Topo');
+            desenharPontos(pontos.larguraEsq, '#aa88ff', '←');
+            desenharPontos(pontos.larguraDir, '#88aaff', '→');
+            
+            // Linha da referência
+            if (pontos.referencia.length === 2) {
+                desenharLinha(pontos.referencia[0], pontos.referencia[1], '#ff3366');
+                let distPx = getDistancia(pontos.referencia[0], pontos.referencia[1]);
+                escreverTexto(pontos.referencia[0], pontos.referencia[1], `${distPx.toFixed(0)}px = 1.00m`, '#ff99aa');
+                if (distPx > 0) {
+                    pixelsPorMetro = distPx / 1.0;
+                }
+            }
+            
+            // Linha da altura
+            if (pontos.basePlaca.length === 1 && pontos.topoPlaca.length === 1 && pixelsPorMetro) {
+                desenharLinha(pontos.basePlaca[0], pontos.topoPlaca[0], '#ffff00');
+                let alturaPx = getDistancia(pontos.basePlaca[0], pontos.topoPlaca[0]);
+                alturaPlaca = alturaPx / pixelsPorMetro;
+                escreverTexto(pontos.basePlaca[0], pontos.topoPlaca[0], `${alturaPlaca.toFixed(2)}m`, '#ffff00');
+            }
+            
+            // Linha da largura
+            if (pontos.larguraEsq.length === 1 && pontos.larguraDir.length === 1 && pixelsPorMetro) {
+                desenharLinha(pontos.larguraEsq[0], pontos.larguraDir[0], '#88aaff');
+                let larguraPx = getDistancia(pontos.larguraEsq[0], pontos.larguraDir[0]);
+                larguraPlaca = larguraPx / pixelsPorMetro;
+                escreverTexto(pontos.larguraEsq[0], pontos.larguraDir[0], `${larguraPlaca.toFixed(2)}m`, '#88aaff');
+            }
+            
+            atualizarDisplay();
+        }
+        
+        function desenharPontos(pontosArray, cor, label) {
+            pontosArray.forEach((p, idx) => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 12, 0, 2 * Math.PI);
+                ctx.fillStyle = cor;
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.font = "bold 16px 'Segoe UI'";
+                ctx.shadowBlur = 2;
+                ctx.fillText(`${label}${idx + 1}`, p.x - 10, p.y - 12);
+                ctx.fillStyle = 'black';
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, 2 * Math.PI);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+        }
+        
+        function desenharLinha(p1, p2, cor) {
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = cor;
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 8]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        function escreverTexto(p1, p2, texto, cor) {
+            let mx = (p1.x + p2.x) / 2;
+            let my = (p1.y + p2.y) / 2;
+            ctx.font = "14px 'Segoe UI'";
+            ctx.fillStyle = cor;
+            ctx.shadowBlur = 2;
+            ctx.fillText(texto, mx - 30, my - 12);
+            ctx.fillStyle = 'white';
+            ctx.shadowBlur = 0;
+        }
+        
+        function atualizarDisplay() {
+            if (alturaPlaca && alturaPlaca > 0) {
+                alturaDisplay.innerHTML = alturaPlaca.toFixed(2) + ' <span style="font-size:20px;">m</span>';
+            } else {
+                alturaDisplay.innerHTML = '--- <span style="font-size:20px;">m</span>';
+            }
+            
+            if (larguraPlaca && larguraPlaca > 0) {
+                larguraDisplay.innerHTML = larguraPlaca.toFixed(2) + ' m';
+            } else {
+                larguraDisplay.innerHTML = '--- m';
+            }
+            
+            if (alturaPlaca && larguraPlaca) {
+                let area = alturaPlaca * larguraPlaca;
+                areaDisplay.innerHTML = area.toFixed(2) + ' m²';
+            } else if (alturaPlaca) {
+                areaDisplay.innerHTML = 'aguardando largura';
+            } else {
+                areaDisplay.innerHTML = '--- m²';
+            }
+            
+            // Atualizar passos visuais
+            document.getElementById('passo1').classList.remove('ativo', 'concluido');
+            document.getElementById('passo2').classList.remove('ativo', 'concluido');
+            document.getElementById('passo3').classList.remove('ativo', 'concluido');
+            document.getElementById('passo4').classList.remove('ativo', 'concluido');
+            
+            if (pontos.referencia.length === 2) document.getElementById('passo1').classList.add('concluido');
+            else if (passoAtual === 'referencia') document.getElementById('passo1').classList.add('ativo');
+            
+            if (pontos.basePlaca.length === 1) document.getElementById('passo2').classList.add('concluido');
+            else if (passoAtual === 'basePlaca') document.getElementById('passo2').classList.add('ativo');
+            
+            if (pontos.topoPlaca.length === 1) document.getElementById('passo3').classList.add('concluido');
+            else if (passoAtual === 'topoPlaca') document.getElementById('passo3').classList.add('ativo');
+            
+            if (pontos.larguraEsq.length === 1 && pontos.larguraDir.length === 1) document.getElementById('passo4').classList.add('concluido');
+            else if (passoAtual === 'largura') document.getElementById('passo4').classList.add('ativo');
+        }
+        
+        function avancarPasso() {
+            switch (passoAtual) {
+                case 'referencia':
+                    if (pontos.referencia.length === 2) {
+                        passoAtual = 'basePlaca';
+                        statusMsg.innerText = "✅ Régua calibrada! PASSO 2: Toque na BASE da placa (ponto mais baixo)";
+                    }
+                    break;
+                case 'basePlaca':
+                    if (pontos.basePlaca.length === 1) {
+                        passoAtual = 'topoPlaca';
+                        statusMsg.innerText = "✅ Base marcada! PASSO 3: Toque no TOPO da placa";
+                    }
+                    break;
+                case 'topoPlaca':
+                    if (pontos.topoPlaca.length === 1) {
+                        passoAtual = 'largura';
+                        statusMsg.innerText = "✅ Altura medida! PASSO 4: Toque na LARGURA (ESQUERDA → DIREITA)";
+                    }
+                    break;
+                case 'largura':
+                    if (pontos.larguraEsq.length === 1 && pontos.larguraDir.length === 1) {
+                        statusMsg.innerText = "🎉 MEDIÇÃO COMPLETA! Área calculada com sucesso!";
+                    }
+                    break;
+            }
+            desenharOverlay();
+        }
+        
+        function handleTap(e) {
+            if (!cameraAtiva) {
+                statusMsg.innerText = "⚠️ Aguardando câmera. Toque em 'TENTAR NOVAMENTE'";
+                return;
+            }
+            
+            e.preventDefault();
+            
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            let canvasX = (clientX - rect.left) * scaleX;
+            let canvasY = (clientY - rect.top) * scaleY;
+            canvasX = Math.min(Math.max(0, canvasX), canvasWidth);
+            canvasY = Math.min(Math.max(0, canvasY), canvasHeight);
+            
+            const ponto = { x: canvasX, y: canvasY };
+            
+            // Adicionar ponto conforme passo
+            if (passoAtual === 'referencia' && pontos.referencia.length < 2) {
+                pontos.referencia.push(ponto);
+                if (pontos.referencia.length === 1) {
+                    statusMsg.innerText = "📏 Base da régua marcada! Agora toque no TOPO da régua (1 metro acima)";
+                } else {
+                    statusMsg.innerText = "✅ Calibração concluída!";
+                }
+                avancarPasso();
+            }
+            else if (passoAtual === 'basePlaca' && pontos.basePlaca.length < 1) {
+                pontos.basePlaca.push(ponto);
+                statusMsg.innerText = "✅ Base da placa marcada! Agora toque no TOPO";
+                avancarPasso();
+            }
+            else if (passoAtual === 'topoPlaca' && pontos.topoPlaca.length < 1) {
+                pontos.topoPlaca.push(ponto);
+                statusMsg.innerText = "✅ Altura medida! Agora toque na LARGURA (esquerda → direita)";
+                avancarPasso();
+            }
+            else if (passoAtual === 'largura') {
+                if (pontos.larguraEsq.length < 1) {
+                    pontos.larguraEsq.push(ponto);
+                    statusMsg.innerText = "✅ Ponto esquerdo marcado! Agora toque na DIREITA da placa";
+                } else if (pontos.larguraDir.length < 1) {
+                    pontos.larguraDir.push(ponto);
+                    statusMsg.innerText = "🎉 Medição completa! Área calculada!";
+                    avancarPasso();
+                }
+            }
+            
+            desenharOverlay();
+        }
+        
+        function resetMedicao() {
+            pontos = {
+                referencia: [],
+                basePlaca: [],
+                topoPlaca: [],
+                larguraEsq: [],
+                larguraDir: []
+            };
+            passoAtual = 'referencia';
+            pixelsPorMetro = null;
+            alturaPlaca = null;
+            larguraPlaca = null;
+            statusMsg.innerText = "🔄 Reiniciado! PASSO 1: Toque na BASE da régua de 1 metro";
+            desenharOverlay();
+        }
+        
+        function pularLargura() {
+            if (passoAtual === 'largura' && pontos.basePlaca.length === 1 && pontos.topoPlaca.length === 1) {
+                passoAtual = 'largura';
+                statusMsg.innerText = "✅ Altura medida! Largura ignorada. Área não calculada.";
+                desenharOverlay();
+            } else if (alturaPlaca) {
+                statusMsg.innerText = "ℹ️ Altura já está medida. Use NOVA MEDIÇÃO para outra placa.";
+            } else {
+                statusMsg.innerText = "⚠️ Complete a altura primeiro (base + topo)";
+            }
+        }
+        
+        function iniciarDesenho() {
+            function loop() {
+                if (cameraAtiva && video.readyState >= 2) {
+                    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+                        redimensionarCanvas();
+                    }
+                    desenharOverlay();
+                }
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+        
+        // Eventos
+        canvas.addEventListener('touchstart', handleTap, { passive: false });
+        canvas.addEventListener('mousedown', handleTap);
+        resetBtn.addEventListener('click', resetMedicao);
+        skipWidthBtn.addEventListener('click', pularLargura);
+        window.addEventListener('resize', () => { redimensionarCanvas(); desenharOverlay(); });
+        
+        document.getElementById('tentarNovamenteBtn').addEventListener('click', () => iniciarCamera(false));
+        document.getElementById('usarCameraFrontalBtn').addEventListener('click', () => iniciarCamera(true));
+        
+        // Iniciar com câmera traseira
+        iniciarCamera(false);
+    })();
+</script>
+</body>
+</html>
