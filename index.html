@@ -323,10 +323,94 @@
             margin: 0;
         }
 
-        .btn-recomecar {
-            background: #ff9800;
+        /* Botão recomeçar estilizado */
+        .recomecar-wrapper {
             margin-top: 12px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .recomecar-btn {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #ff8888;
+            padding: 12px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
             width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .recomecar-btn:active {
+            transform: scale(0.97);
+            background: rgba(255,68,68,0.2);
+        }
+
+        /* Popup de confirmação */
+        .confirm-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .confirm-popup.oculto {
+            display: none;
+        }
+
+        .confirm-content {
+            background: #1e1e2e;
+            border-radius: 28px;
+            padding: 24px;
+            margin: 20px;
+            max-width: 320px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .confirm-content p {
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .confirm-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .btn-confirm-sim {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-confirm-nao {
+            background: #555;
+            color: white;
         }
 
         /* Popup informativo inicial */
@@ -610,8 +694,22 @@
                 <div class="dica" style="font-size: 11px; color: #ffaa44; margin-top: 8px; text-align: center;">
                     ⚠️ Ajuste o retângulo VERMELHO sobre um objeto de tamanho conhecido
                 </div>
-                <button id="recomecarBtn" class="btn-recomecar">🔄 Começar de novo</button>
+                <div class="recomecar-wrapper">
+                    <button id="recomecarBtn" class="recomecar-btn">🔄 Começar de novo</button>
+                </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Popup de confirmação para recomeçar -->
+<div id="confirmPopup" class="confirm-popup oculto">
+    <div class="confirm-content">
+        <p>🔄 Tem certeza que deseja recomeçar?</p>
+        <p style="font-size: 13px; color: #aaa;">Todo o progresso será perdido.</p>
+        <div class="confirm-buttons">
+            <button id="confirmSimBtn" class="btn-confirm-sim">Sim</button>
+            <button id="confirmNaoBtn" class="btn-confirm-nao">Não</button>
         </div>
     </div>
 </div>
@@ -691,6 +789,9 @@
     const refTamanho = document.getElementById('refTamanho');
     const aplicarRef = document.getElementById('aplicarRef');
     const recomecarBtn = document.getElementById('recomecarBtn');
+    const confirmPopup = document.getElementById('confirmPopup');
+    const confirmSimBtn = document.getElementById('confirmSimBtn');
+    const confirmNaoBtn = document.getElementById('confirmNaoBtn');
     
     const sharePopup = document.getElementById('sharePopup');
     const shareBtn = document.getElementById('shareBtn');
@@ -700,6 +801,15 @@
     let canvasW, canvasH;
     let cameraAtiva = false;
     let streamAtual = null;
+    
+    // Função para mostrar popup de confirmação
+    function mostrarConfirmacao() {
+        confirmPopup.classList.remove('oculto');
+    }
+    
+    function fecharConfirmacao() {
+        confirmPopup.classList.add('oculto');
+    }
     
     // Função para recomeçar (voltar para a tela inicial)
     function recomecar() {
@@ -736,7 +846,14 @@
         painel.classList.remove('oculto');
         eyeBtn.innerHTML = '🚫';
         painelVisivel = true;
+        
+        fecharConfirmacao();
     }
+    
+    // Eventos do popup de confirmação
+    recomecarBtn.addEventListener('click', mostrarConfirmacao);
+    confirmSimBtn.addEventListener('click', recomecar);
+    confirmNaoBtn.addEventListener('click', fecharConfirmacao);
     
     // Fechar popup informativo
     closeInfoBtn.addEventListener('click', () => {
@@ -1431,7 +1548,6 @@
     eyeBtn.addEventListener('click', togglePainel);
     saveMedicaoBtn.addEventListener('click', finalizarMedicao);
     saveRefBtn.addEventListener('click', salvarReferencia);
-    recomecarBtn.addEventListener('click', recomecar);
     shareBtn.addEventListener('click', compartilhar);
     saveLocalBtn.addEventListener('click', salvarLocal);
     cancelPopupBtn.addEventListener('click', fecharPopup);
