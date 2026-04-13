@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Medidor de Outdoor</title>
+    <title>Medidor Profissional - Outdoor</title>
     <style>
         * {
             margin: 0;
@@ -21,7 +21,6 @@
             height: 100%;
         }
 
-        /* Câmera */
         #video {
             position: absolute;
             top: 0;
@@ -31,7 +30,6 @@
             object-fit: cover;
         }
 
-        /* Canvas para desenho */
         #canvas {
             position: absolute;
             top: 0;
@@ -42,7 +40,6 @@
             touch-action: none;
         }
 
-        /* Botão olho */
         .eye-btn {
             position: absolute;
             top: 20px;
@@ -66,7 +63,6 @@
             transform: scale(0.95);
         }
 
-        /* Painel de controle */
         .painel {
             position: absolute;
             bottom: 20px;
@@ -86,7 +82,6 @@
             visibility: hidden;
         }
 
-        /* Resultados */
         .resultados {
             background: linear-gradient(135deg, #1a1a2e, #16213e);
             border-radius: 16px;
@@ -125,7 +120,6 @@
             color: #ffaa44;
         }
 
-        /* Botões de modo */
         .modos {
             display: flex;
             gap: 10px;
@@ -148,7 +142,27 @@
             background: #2196f3;
         }
 
-        /* Input da referência */
+        .orientacao {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .orientacao-btn {
+            flex: 1;
+            background: #444;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .orientacao-btn.ativo {
+            background: #ff9800;
+        }
+
         .ref-input {
             background: #222;
             border-radius: 12px;
@@ -185,7 +199,6 @@
             margin: 0;
         }
 
-        /* Botões gerais */
         button {
             background: #2196f3;
             border: none;
@@ -205,21 +218,10 @@
 
         .btn-reset {
             background: #f44336;
-            margin-top: 6px;
         }
 
         .btn-salvar {
             background: #4caf50;
-        }
-
-        /* Dica */
-        .dica {
-            font-size: 11px;
-            text-align: center;
-            padding: 8px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 12px;
-            margin-top: 8px;
         }
 
         @media (max-width: 600px) {
@@ -254,21 +256,24 @@
             <button id="modoRetBtn" class="modo-btn">⬚ Ajustar Retângulo</button>
         </div>
 
-        <div id="refConfig" class="ref-input">
-            <label>🔧 Tamanho real da referência (metros):</label>
-            <div class="input-group">
-                <input type="number" id="refTamanho" step="0.01" value="1.00">
-                <button id="aplicarRef">Aplicar</button>
+        <div id="refConfig">
+            <div class="orientacao">
+                <button id="orientVerticalBtn" class="orientacao-btn ativo">📏 Vertical</button>
+                <button id="orientHorizontalBtn" class="orientacao-btn">📐 Horizontal</button>
+            </div>
+            <div class="ref-input">
+                <label>🔧 Tamanho real da referência (metros):</label>
+                <div class="input-group">
+                    <input type="number" id="refTamanho" step="0.01" value="1.00">
+                    <button id="aplicarRef">Aplicar</button>
+                </div>
             </div>
         </div>
 
         <div id="retConfig" style="display:none;">
-            <div class="dica" style="background:#00ffcc22;">
-                👆 Arraste as alças VERDES ou o centro para ajustar o retângulo na placa
-            </div>
         </div>
 
-        <button id="salvarBtn" class="btn-salvar">💾 Salvar Medição</button>
+        <button id="salvarBtn" class="btn-salvar">📸 Salvar Medição com Foto</button>
         <button id="resetBtn" class="btn-reset">🗑️ Limpar Tudo</button>
     </div>
 
@@ -281,14 +286,15 @@
         // Estado
         let modoAtual = 'referencia';
         let painelVisivel = true;
+        let orientacaoRef = 'vertical';
         
-        // Retângulo (coordenadas normalizadas 0-1)
+        // Retângulo
         let retangulo = {
             x: 0.3, y: 0.3,
             width: 0.4, height: 0.4
         };
         
-        // Referência (dois pontos)
+        // Referência
         let referencia = {
             p1: { x: 0.5, y: 0.7 },
             p2: { x: 0.5, y: 0.5 },
@@ -310,6 +316,8 @@
         const modoRetBtn = document.getElementById('modoRetBtn');
         const refConfig = document.getElementById('refConfig');
         const retConfig = document.getElementById('retConfig');
+        const orientVerticalBtn = document.getElementById('orientVerticalBtn');
+        const orientHorizontalBtn = document.getElementById('orientHorizontalBtn');
         const refTamanho = document.getElementById('refTamanho');
         const aplicarRef = document.getElementById('aplicarRef');
         const salvarBtn = document.getElementById('salvarBtn');
@@ -319,10 +327,8 @@
         let videoRect = { x: 0, y: 0, w: 0, h: 0 };
         let cameraAtiva = false;
         
-        // Calcular onde o vídeo está no canvas
         function calcularVideoRect() {
             if (!video.videoWidth || !video.videoHeight) return;
-            
             const videoAspect = video.videoWidth / video.videoHeight;
             const canvasAspect = canvasW / canvasH;
             
@@ -339,7 +345,6 @@
             }
         }
         
-        // Normalizado para pixel
         function normToPixel(p) {
             return {
                 x: videoRect.x + p.x * videoRect.w,
@@ -347,7 +352,6 @@
             };
         }
         
-        // Pixel para normalizado
         function pixelToNorm(px, py) {
             return {
                 x: (px - videoRect.x) / videoRect.w,
@@ -355,14 +359,12 @@
             };
         }
         
-        // Distância entre dois pontos normalizados em pixels
         function distanciaPixels(p1, p2) {
             const a = normToPixel(p1);
             const b = normToPixel(p2);
             return Math.hypot(a.x - b.x, a.y - b.y);
         }
         
-        // Atualizar escala
         function atualizarEscala() {
             const dist = distanciaPixels(referencia.p1, referencia.p2);
             if (dist > 0 && referencia.tamanhoReal > 0) {
@@ -370,7 +372,6 @@
             }
         }
         
-        // Obter dimensões em metros
         function getMetros() {
             if (!pixelsPorMetro) return { altura: null, largura: null, area: null };
             const altPx = retangulo.height * videoRect.h;
@@ -380,14 +381,43 @@
             return { altura: altM, largura: largM, area: altM * largM };
         }
         
-        // Desenhar tudo
+        function aplicarRestricaoReferencia() {
+            if (orientacaoRef === 'vertical') {
+                const xMedio = (referencia.p1.x + referencia.p2.x) / 2;
+                referencia.p1.x = xMedio;
+                referencia.p2.x = xMedio;
+            } else {
+                const yMedio = (referencia.p1.y + referencia.p2.y) / 2;
+                referencia.p1.y = yMedio;
+                referencia.p2.y = yMedio;
+            }
+            
+            referencia.p1.x = Math.min(0.98, Math.max(0.02, referencia.p1.x));
+            referencia.p1.y = Math.min(0.98, Math.max(0.02, referencia.p1.y));
+            referencia.p2.x = Math.min(0.98, Math.max(0.02, referencia.p2.x));
+            referencia.p2.y = Math.min(0.98, Math.max(0.02, referencia.p2.y));
+        }
+        
+        function mudarOrientacao(orient) {
+            orientacaoRef = orient;
+            if (orient === 'vertical') {
+                orientVerticalBtn.classList.add('ativo');
+                orientHorizontalBtn.classList.remove('ativo');
+            } else {
+                orientVerticalBtn.classList.remove('ativo');
+                orientHorizontalBtn.classList.add('ativo');
+            }
+            aplicarRestricaoReferencia();
+            desenhar();
+        }
+        
         function desenhar() {
             if (!ctx) return;
             ctx.clearRect(0, 0, canvasW, canvasH);
             
             if (videoRect.w === 0) calcularVideoRect();
             
-            // Desenhar REFERÊNCIA - apenas linha vermelha contínua sem pontas
+            // Desenhar REFERÊNCIA
             const refP1 = normToPixel(referencia.p1);
             const refP2 = normToPixel(referencia.p2);
             
@@ -396,17 +426,48 @@
             ctx.lineTo(refP2.x, refP2.y);
             ctx.strokeStyle = '#ff3366';
             ctx.lineWidth = 4;
-            ctx.setLineDash([]); // Linha contínua, sem pontilhado
+            ctx.setLineDash([]);
             ctx.stroke();
             
-            // Mostrar tamanho da referência (texto discreto)
-            const distPx = distanciaPixels(referencia.p1, referencia.p2);
+            // Bolinhas para redimensionar a referência (fora das pontas)
+            const distX = refP2.x - refP1.x;
+            const distY = refP2.y - refP1.y;
+            const leng = Math.hypot(distX, distY);
+            const dirX = distX / leng;
+            const dirY = distY / leng;
+            
+            // Bolinha na ponta 1 (estendida)
+            const btn1X = refP1.x - dirX * 35;
+            const btn1Y = refP1.y - dirY * 35;
+            // Bolinha na ponta 2 (estendida)
+            const btn2X = refP2.x + dirX * 35;
+            const btn2Y = refP2.y + dirY * 35;
+            
+            // Desenhar bolinhas de redimensionamento (apenas no modo referência)
+            if (modoAtual === 'referencia') {
+                ctx.beginPath();
+                ctx.arc(btn1X, btn1Y, 14, 0, 2*Math.PI);
+                ctx.fillStyle = '#ff8888';
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.font = "bold 12px sans-serif";
+                ctx.fillText("+", btn1X-4, btn1Y+5);
+                
+                ctx.beginPath();
+                ctx.arc(btn2X, btn2Y, 14, 0, 2*Math.PI);
+                ctx.fillStyle = '#ff8888';
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.fillText("+", btn2X-4, btn2Y+5);
+            }
+            
+            // Texto do tamanho da referência
             const mx = (refP1.x + refP2.x)/2;
             const my = (refP1.y + refP2.y)/2;
-            ctx.font = "bold 11px sans-serif";
+            ctx.font = "bold 12px sans-serif";
             ctx.fillStyle = '#ff99aa';
             ctx.shadowBlur = 2;
-            ctx.fillText(`${referencia.tamanhoReal.toFixed(2)}m`, mx-20, my-8);
+            ctx.fillText(`${referencia.tamanhoReal.toFixed(2)}m`, mx-20, my-10);
             ctx.shadowBlur = 0;
             
             // Desenhar RETÂNGULO
@@ -420,7 +481,6 @@
             const corRetangulo = modoAtual === 'retangulo' ? '#00ffcc' : '#88aaff';
             ctx.strokeStyle = corRetangulo;
             ctx.lineWidth = 4;
-            ctx.setLineDash([]);
             ctx.strokeRect(retPx.x, retPx.y, retPx.w, retPx.h);
             
             ctx.fillStyle = modoAtual === 'retangulo' ? 'rgba(0,255,200,0.15)' : 'rgba(136,170,255,0.1)';
@@ -428,7 +488,7 @@
             
             // Alças do retângulo (apenas no modo retângulo)
             if (modoAtual === 'retangulo') {
-                const tamanhoAlca = 20;
+                const tamanhoAlca = 18;
                 const cantos = [
                     { x: retPx.x, y: retPx.y },
                     { x: retPx.x + retPx.w, y: retPx.y },
@@ -447,23 +507,18 @@
                     ctx.fill();
                 });
                 
-                // Centro
                 const centroX = retPx.x + retPx.w/2;
                 const centroY = retPx.y + retPx.h/2;
                 ctx.fillStyle = 'rgba(255,255,255,0.4)';
                 ctx.beginPath();
-                ctx.arc(centroX, centroY, 15, 0, 2*Math.PI);
+                ctx.arc(centroX, centroY, 14, 0, 2*Math.PI);
                 ctx.fill();
                 ctx.fillStyle = '#00ffcc';
                 ctx.beginPath();
-                ctx.arc(centroX, centroY, 8, 0, 2*Math.PI);
+                ctx.arc(centroX, centroY, 7, 0, 2*Math.PI);
                 ctx.fill();
-                ctx.fillStyle = 'white';
-                ctx.font = "bold 10px sans-serif";
-                ctx.fillText("⤫", centroX-4, centroY+4);
             }
             
-            // Atualizar medidas em metros
             atualizarEscala();
             const dimensoes = getMetros();
             if (dimensoes.altura && dimensoes.largura) {
@@ -477,33 +532,28 @@
             }
         }
         
-        // Verificar qual elemento foi tocado
         function verificarToque(px, py) {
-            const retPx = {
-                x: videoRect.x + retangulo.x * videoRect.w,
-                y: videoRect.y + retangulo.y * videoRect.h,
-                w: retangulo.width * videoRect.w,
-                h: retangulo.height * videoRect.h
-            };
-            
-            const tamanhoAlca = 35;
-            
-            // Cantos do retângulo
-            if (Math.hypot(px - retPx.x, py - retPx.y) < tamanhoAlca) return 'cantoTL';
-            if (Math.hypot(px - (retPx.x + retPx.w), py - retPx.y) < tamanhoAlca) return 'cantoTR';
-            if (Math.hypot(px - retPx.x, py - (retPx.y + retPx.h)) < tamanhoAlca) return 'cantoBL';
-            if (Math.hypot(px - (retPx.x + retPx.w), py - (retPx.y + retPx.h)) < tamanhoAlca) return 'cantoBR';
-            
-            // Centro
-            const centroX = retPx.x + retPx.w/2;
-            const centroY = retPx.y + retPx.h/2;
-            if (Math.hypot(px - centroX, py - centroY) < 40) return 'mover';
-            
-            // Pontos da referência (para arrastar a linha)
             const refP1 = normToPixel(referencia.p1);
             const refP2 = normToPixel(referencia.p2);
             
-            // Verificar se tocou próximo à linha vermelha
+            const distX = refP2.x - refP1.x;
+            const distY = refP2.y - refP1.y;
+            const leng = Math.hypot(distX, distY);
+            const dirX = distX / leng;
+            const dirY = distY / leng;
+            
+            const btn1X = refP1.x - dirX * 35;
+            const btn1Y = refP1.y - dirY * 35;
+            const btn2X = refP2.x + dirX * 35;
+            const btn2Y = refP2.y + dirY * 35;
+            
+            // Botões de redimensionamento da referência
+            if (modoAtual === 'referencia') {
+                if (Math.hypot(px - btn1X, py - btn1Y) < 25) return 'refDiminuir';
+                if (Math.hypot(px - btn2X, py - btn2Y) < 25) return 'refAumentar';
+            }
+            
+            // Linha da referência (mover)
             function distanciaToLine(px, py, p1, p2) {
                 const A = px - p1.x;
                 const B = py - p1.y;
@@ -522,10 +572,27 @@
             const distToLine = distanciaToLine(px, py, refP1, refP2);
             if (distToLine < 25) return 'refLinha';
             
+            // Retângulo
+            const retPx = {
+                x: videoRect.x + retangulo.x * videoRect.w,
+                y: videoRect.y + retangulo.y * videoRect.h,
+                w: retangulo.width * videoRect.w,
+                h: retangulo.height * videoRect.h
+            };
+            
+            const tamanhoAlca = 35;
+            if (Math.hypot(px - retPx.x, py - retPx.y) < tamanhoAlca) return 'cantoTL';
+            if (Math.hypot(px - (retPx.x + retPx.w), py - retPx.y) < tamanhoAlca) return 'cantoTR';
+            if (Math.hypot(px - retPx.x, py - (retPx.y + retPx.h)) < tamanhoAlca) return 'cantoBL';
+            if (Math.hypot(px - (retPx.x + retPx.w), py - (retPx.y + retPx.h)) < tamanhoAlca) return 'cantoBR';
+            
+            const centroX = retPx.x + retPx.w/2;
+            const centroY = retPx.y + retPx.h/2;
+            if (Math.hypot(px - centroX, py - centroY) < 40) return 'mover';
+            
             return null;
         }
         
-        // Eventos de toque
         function handleTouchStart(e) {
             if (!cameraAtiva) return;
             e.preventDefault();
@@ -533,7 +600,6 @@
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-            
             const touch = e.touches[0];
             let canvasX = (touch.clientX - rect.left) * scaleX;
             let canvasY = (touch.clientY - rect.top) * scaleY;
@@ -541,7 +607,6 @@
             canvasY = Math.min(Math.max(0, canvasY), canvasH);
             
             const item = verificarToque(canvasX, canvasY);
-            
             if (item) {
                 arrastando = true;
                 itemArrastando = item;
@@ -556,7 +621,6 @@
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
-            
             const touch = e.touches[0];
             let canvasX = (touch.clientX - rect.left) * scaleX;
             let canvasY = (touch.clientY - rect.top) * scaleY;
@@ -586,20 +650,34 @@
                 retangulo.x += deltaX;
                 retangulo.y += deltaY;
             } else if (itemArrastando === 'refLinha') {
-                // Mover a linha inteira (arrastar os dois pontos juntos)
                 referencia.p1.x += deltaX;
                 referencia.p1.y += deltaY;
                 referencia.p2.x += deltaX;
                 referencia.p2.y += deltaY;
-                
-                // Limitar dentro da tela
-                referencia.p1.x = Math.min(0.98, Math.max(0.02, referencia.p1.x));
-                referencia.p1.y = Math.min(0.98, Math.max(0.02, referencia.p1.y));
-                referencia.p2.x = Math.min(0.98, Math.max(0.02, referencia.p2.x));
-                referencia.p2.y = Math.min(0.98, Math.max(0.02, referencia.p2.y));
+                aplicarRestricaoReferencia();
+            } else if (itemArrastando === 'refAumentar') {
+                // Aumentar o tamanho da linha
+                const dx = referencia.p2.x - referencia.p1.x;
+                const dy = referencia.p2.y - referencia.p1.y;
+                const fator = 1 + (deltaX + deltaY) * 0.5;
+                referencia.p1.x -= dx * (fator - 1) / 2;
+                referencia.p1.y -= dy * (fator - 1) / 2;
+                referencia.p2.x += dx * (fator - 1) / 2;
+                referencia.p2.y += dy * (fator - 1) / 2;
+                aplicarRestricaoReferencia();
+            } else if (itemArrastando === 'refDiminuir') {
+                const dx = referencia.p2.x - referencia.p1.x;
+                const dy = referencia.p2.y - referencia.p1.y;
+                const fator = 1 - (deltaX + deltaY) * 0.5;
+                if (fator > 0.2) {
+                    referencia.p1.x += dx * (1 - fator) / 2;
+                    referencia.p1.y += dy * (1 - fator) / 2;
+                    referencia.p2.x -= dx * (1 - fator) / 2;
+                    referencia.p2.y -= dy * (1 - fator) / 2;
+                    aplicarRestricaoReferencia();
+                }
             }
             
-            // Restringir retângulo
             retangulo.x = Math.min(0.98, Math.max(0, retangulo.x));
             retangulo.y = Math.min(0.98, Math.max(0, retangulo.y));
             retangulo.width = Math.min(1 - retangulo.x, Math.max(0.02, retangulo.width));
@@ -615,7 +693,6 @@
             desenhar();
         }
         
-        // Funções de controle
         function mudarModo(modo) {
             modoAtual = modo;
             if (modo === 'referencia') {
@@ -642,15 +719,100 @@
             desenhar();
         }
         
-        function salvarMedicao() {
+        async function salvarMedicao() {
             const dim = getMetros();
-            if (dim.altura && dim.largura) {
-                const msg = `📊 MEDIÇÃO SALVA:\n\nAltura: ${dim.altura.toFixed(3)} m\nLargura: ${dim.largura.toFixed(3)} m\nÁrea: ${dim.area.toFixed(3)} m²\n\nReferência: ${referencia.tamanhoReal.toFixed(2)} m`;
-                alert(msg);
-                navigator.clipboard?.writeText(`${dim.altura.toFixed(3)} x ${dim.largura.toFixed(3)} = ${dim.area.toFixed(3)} m²`);
-            } else {
-                alert("⚠️ Ajuste a referência primeiro! Toque na linha vermelha para mover e alinhar com um objeto de tamanho conhecido.");
+            if (!dim.altura || !dim.largura) {
+                alert("⚠️ Ajuste a referência e o retângulo primeiro!");
+                return;
             }
+            
+            // Criar um canvas temporário para o print
+            const printCanvas = document.createElement('canvas');
+            const printCtx = printCanvas.getContext('2d');
+            
+            // Capturar o frame do vídeo
+            const videoFrame = document.createElement('canvas');
+            const videoCtx = videoFrame.getContext('2d');
+            videoFrame.width = video.videoWidth;
+            videoFrame.height = video.videoHeight;
+            videoCtx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+            
+            // Configurar o canvas de impressão
+            printCanvas.width = canvasW;
+            printCanvas.height = canvasH;
+            
+            // Desenhar o frame do vídeo no canvas de impressão
+            printCtx.drawImage(videoFrame, 0, 0, video.videoWidth, video.videoHeight, videoRect.x, videoRect.y, videoRect.w, videoRect.h);
+            
+            // Desenhar as linhas e retângulos
+            const refP1 = normToPixel(referencia.p1);
+            const refP2 = normToPixel(referencia.p2);
+            
+            printCtx.beginPath();
+            printCtx.moveTo(refP1.x, refP1.y);
+            printCtx.lineTo(refP2.x, refP2.y);
+            printCtx.strokeStyle = '#ff3366';
+            printCtx.lineWidth = 4;
+            printCtx.stroke();
+            
+            const retPx = {
+                x: videoRect.x + retangulo.x * videoRect.w,
+                y: videoRect.y + retangulo.y * videoRect.h,
+                w: retangulo.width * videoRect.w,
+                h: retangulo.height * videoRect.h
+            };
+            
+            printCtx.strokeStyle = '#00ffcc';
+            printCtx.lineWidth = 4;
+            printCtx.strokeRect(retPx.x, retPx.y, retPx.w, retPx.h);
+            
+            // Adicionar informações da medição
+            printCtx.font = "bold 24px sans-serif";
+            printCtx.fillStyle = '#ffffff';
+            printCtx.shadowBlur = 4;
+            printCtx.shadowColor = 'black';
+            printCtx.fillText(`📐 ${dim.altura.toFixed(3)} m`, 20, 60);
+            printCtx.fillText(`📏 ${dim.largura.toFixed(3)} m`, 20, 100);
+            printCtx.font = "bold 32px sans-serif";
+            printCtx.fillStyle = '#ffaa44';
+            printCtx.fillText(`📐 ÁREA: ${dim.area.toFixed(3)} m²`, 20, 160);
+            printCtx.font = "16px sans-serif";
+            printCtx.fillStyle = '#cccccc';
+            printCtx.fillText(`Referência: ${referencia.tamanhoReal.toFixed(2)}m (${orientacaoRef})`, 20, 210);
+            printCtx.fillText(new Date().toLocaleString(), 20, 250);
+            printCtx.shadowBlur = 0;
+            
+            // Salvar a imagem
+            try {
+                printCanvas.toBlob(async (blob) => {
+                    const file = new File([blob], `medicao_${Date.now()}.png`, { type: 'image/png' });
+                    
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                title: 'Medição Outdoor',
+                                text: `Altura: ${dim.altura.toFixed(3)}m | Largura: ${dim.largura.toFixed(3)}m | Área: ${dim.area.toFixed(3)}m²`,
+                                files: [file]
+                            });
+                            alert("📸 Imagem gerada e compartilhada!");
+                        } catch(e) {
+                            downloadImage(printCanvas);
+                        }
+                    } else {
+                        downloadImage(printCanvas);
+                    }
+                }, 'image/png');
+            } catch(e) {
+                alert("✅ Medição salva! Área: " + dim.area.toFixed(3) + " m²");
+            }
+        }
+        
+        function downloadImage(canvas) {
+            const link = document.createElement('a');
+            link.download = `medicao_${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            alert("📸 Imagem salva na pasta de downloads!");
         }
         
         function resetCompleto() {
@@ -660,6 +822,7 @@
                 p2: { x: 0.5, y: 0.5 },
                 tamanhoReal: parseFloat(refTamanho.value)
             };
+            aplicarRestricaoReferencia();
             pixelsPorMetro = null;
             desenhar();
         }
@@ -675,34 +838,19 @@
             }
         }
         
-        // Inicializar câmera
         async function iniciarCamera() {
             try {
-                if (window.stream) {
-                    window.stream.getTracks().forEach(track => track.stop());
-                }
-                const constraints = {
-                    video: {
-                        facingMode: 'environment',
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    }
-                };
+                if (window.stream) window.stream.getTracks().forEach(track => track.stop());
+                const constraints = { video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } };
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 window.stream = stream;
                 video.srcObject = stream;
-                await new Promise((resolve) => {
-                    video.onloadedmetadata = () => {
-                        video.play();
-                        resolve();
-                    };
-                });
+                await new Promise((resolve) => { video.onloadedmetadata = () => { video.play(); resolve(); }; });
                 cameraAtiva = true;
                 redimensionar();
                 iniciarLoop();
             } catch(err) {
                 alert("Erro ao acessar câmera. Verifique as permissões.");
-                console.error(err);
             }
         }
         
@@ -718,9 +866,7 @@
         function iniciarLoop() {
             function loop() {
                 if (cameraAtiva && video.readyState >= 2) {
-                    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
-                        redimensionar();
-                    }
+                    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) redimensionar();
                     desenhar();
                 }
                 requestAnimationFrame(loop);
@@ -728,7 +874,6 @@
             loop();
         }
         
-        // Event listeners
         canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
         canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
         canvas.addEventListener('touchend', handleTouchEnd);
@@ -736,12 +881,13 @@
         eyeBtn.addEventListener('click', togglePainel);
         modoRefBtn.addEventListener('click', () => mudarModo('referencia'));
         modoRetBtn.addEventListener('click', () => mudarModo('retangulo'));
+        orientVerticalBtn.addEventListener('click', () => mudarOrientacao('vertical'));
+        orientHorizontalBtn.addEventListener('click', () => mudarOrientacao('horizontal'));
         aplicarRef.addEventListener('click', aplicarReferencia);
         salvarBtn.addEventListener('click', salvarMedicao);
         resetBtn.addEventListener('click', resetCompleto);
         window.addEventListener('resize', redimensionar);
         
-        // Iniciar
         iniciarCamera();
     </script>
 </body>
