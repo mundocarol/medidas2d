@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Medidor Profissional - Interface Limpa</title>
+    <title>Medidor Profissional - Outdoor</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none;
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #000;
             overflow: hidden;
             position: fixed;
@@ -23,24 +22,16 @@
         }
 
         /* Câmera fullscreen */
-        .camera-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-        }
-
         #video {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: contain;
+            object-fit: cover;
         }
 
+        /* Canvas para desenho */
         #canvas {
             position: absolute;
             top: 0;
@@ -51,13 +42,13 @@
             touch-action: none;
         }
 
-        /* Botão flutuante para mostrar/ocultar menu */
-        .toggle-menu {
+        /* Botão olho (mostrar/ocultar menu) */
+        .eye-btn {
             position: absolute;
             top: 20px;
             right: 20px;
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             background: rgba(0,0,0,0.7);
             backdrop-filter: blur(10px);
             border-radius: 50%;
@@ -66,66 +57,63 @@
             justify-content: center;
             z-index: 30;
             cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.3);
-            font-size: 24px;
-            transition: 0.3s;
+            border: 2px solid rgba(255,255,255,0.3);
+            font-size: 28px;
+            transition: 0.2s;
         }
 
-        .toggle-menu:active {
+        .eye-btn:active {
             transform: scale(0.95);
         }
 
-        /* Menu principal (ocultável) */
-        .menu {
+        /* Painel de controle */
+        .painel {
             position: absolute;
             bottom: 20px;
             left: 20px;
             right: 20px;
             background: rgba(0,0,0,0.9);
             backdrop-filter: blur(20px);
-            border-radius: 28px;
+            border-radius: 24px;
             padding: 16px;
             z-index: 25;
-            transition: transform 0.3s ease, opacity 0.3s;
+            transition: opacity 0.3s, visibility 0.3s;
             border: 1px solid rgba(255,255,255,0.15);
-            max-height: 70%;
+            max-height: 60%;
             overflow-y: auto;
         }
 
-        .menu.escondido {
-            transform: translateY(120%);
+        .painel.oculto {
             opacity: 0;
-            pointer-events: none;
+            visibility: hidden;
         }
 
         /* Resultados */
         .resultados {
             background: linear-gradient(135deg, #1a1a2e, #16213e);
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 12px;
             text-align: center;
             margin-bottom: 12px;
         }
 
-        .valor-grande {
-            font-size: 40px;
+        .area-grande {
+            font-size: 38px;
             font-weight: bold;
             color: #ffaa44;
-            line-height: 1;
         }
 
-        .medidas-grid {
+        .medidas-row {
             display: flex;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
-        .medida-item {
+        .medida-card {
             flex: 1;
             background: rgba(255,255,255,0.1);
-            border-radius: 14px;
+            border-radius: 12px;
             padding: 8px;
-            text-align: center;
         }
 
         .medida-label {
@@ -139,7 +127,7 @@
             color: #ffaa44;
         }
 
-        /* Modos */
+        /* Botões de modo */
         .modos {
             display: flex;
             gap: 10px;
@@ -153,7 +141,7 @@
             color: white;
             padding: 12px;
             border-radius: 30px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.2s;
@@ -163,22 +151,45 @@
             background: #2196f3;
         }
 
-        .modo-btn:active {
-            transform: scale(0.97);
+        /* Opções de orientação da referência */
+        .orientacao {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
         }
 
-        /* Painel de referência */
-        .painel {
-            background: rgba(255,255,255,0.08);
-            border-radius: 16px;
-            padding: 12px;
+        .orientacao-btn {
+            flex: 1;
+            background: #444;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .orientacao-btn.ativo {
+            background: #ff9800;
+        }
+
+        /* Input da referência */
+        .ref-input {
+            background: #222;
+            border-radius: 12px;
+            padding: 10px;
             margin-bottom: 12px;
+        }
+
+        .ref-input label {
+            font-size: 12px;
+            color: #aaa;
         }
 
         .input-group {
             display: flex;
             gap: 8px;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
         .input-group input {
@@ -187,18 +198,19 @@
             border: 1px solid #555;
             color: white;
             padding: 10px;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 14px;
             text-align: center;
         }
 
-        .btn-small {
+        .input-group button {
             background: #4caf50;
             padding: 10px 16px;
-            margin: 0;
             width: auto;
+            margin: 0;
         }
 
+        /* Botões gerais */
         button {
             background: #2196f3;
             border: none;
@@ -224,99 +236,75 @@
             background: #4caf50;
         }
 
-        .status {
+        .dica {
             font-size: 11px;
             text-align: center;
             padding: 8px;
             background: rgba(0,0,0,0.5);
-            border-radius: 16px;
+            border-radius: 12px;
             margin-top: 8px;
         }
 
-        /* Indicador de modo atual */
-        .modo-indicador {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(8px);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            z-index: 20;
-            pointer-events: none;
-            border-left: 3px solid #ffaa44;
-        }
-
         @media (max-width: 600px) {
-            .valor-grande { font-size: 32px; }
-            .medida-valor { font-size: 16px; }
-            .modo-btn { padding: 10px; font-size: 12px; }
+            .area-grande { font-size: 30px; }
+            .modo-btn { padding: 10px; font-size: 11px; }
         }
     </style>
 </head>
 <body>
-<div class="camera-container">
     <video id="video" autoplay playsinline muted></video>
     <canvas id="canvas"></canvas>
-</div>
 
-<div class="modo-indicador" id="modoIndicador">📏 MODO: REFERÊNCIA</div>
-<div class="toggle-menu" id="toggleMenuBtn">⚙️</div>
+    <div class="eye-btn" id="eyeBtn">👁️</div>
 
-<div class="menu" id="menu">
-    <div class="resultados">
-        <div class="valor-grande" id="areaDisplay">--- m²</div>
-        <div class="medidas-grid">
-            <div class="medida-item">
-                <div class="medida-label">📐 Altura</div>
-                <div class="medida-valor" id="alturaDisplay">--- m</div>
-            </div>
-            <div class="medida-item">
-                <div class="medida-label">📏 Largura</div>
-                <div class="medida-valor" id="larguraDisplay">--- m</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modos">
-        <button id="modoRefBtn" class="modo-btn ativo">📏 AJUSTAR REFERÊNCIA</button>
-        <button id="modoRetBtn" class="modo-btn">⬚ AJUSTAR RETÂNGULO</button>
-    </div>
-
-    <div id="refPanel" class="painel">
-        <div style="font-size:13px; margin-bottom:6px;">🔧 Tamanho real da referência:</div>
-        <div class="input-group">
-            <input type="number" id="refTamanho" step="0.01" value="1.00" placeholder="Metros">
-            <button id="aplicarRefBtn" class="btn-small">APLICAR</button>
-        </div>
-        <div class="status" style="margin-top:8px; background:#ff980033;">
-            👆 Arraste os pontos VERMELHOS na tela para alinhar com um objeto de tamanho conhecido
-        </div>
-    </div>
-
-    <div id="retPanel" class="painel" style="display:none;">
-        <div class="status" style="background:#00ffcc22;">
-            👆 Arraste as alças VERDES ou o centro para ajustar o retângulo na placa
-        </div>
-        <div class="medidas-grid" style="margin-top:8px;">
-            <div class="medida-item">
-                <div class="medida-label">📐 Altura (px)</div>
-                <div class="medida-valor" id="alturaPx">0 px</div>
-            </div>
-            <div class="medida-item">
-                <div class="medida-label">📏 Largura (px)</div>
-                <div class="medida-valor" id="larguraPx">0 px</div>
+    <div class="painel" id="painel">
+        <div class="resultados">
+            <div class="area-grande" id="areaDisplay">--- m²</div>
+            <div class="medidas-row">
+                <div class="medida-card">
+                    <div class="medida-label">📐 Altura</div>
+                    <div class="medida-valor" id="alturaDisplay">--- m</div>
+                </div>
+                <div class="medida-card">
+                    <div class="medida-label">📏 Largura</div>
+                    <div class="medida-valor" id="larguraDisplay">--- m</div>
+                </div>
             </div>
         </div>
+
+        <div class="modos">
+            <button id="modoRefBtn" class="modo-btn ativo">📏 Ajustar Referência</button>
+            <button id="modoRetBtn" class="modo-btn">⬚ Ajustar Retângulo</button>
+        </div>
+
+        <div id="refConfig">
+            <div class="orientacao">
+                <button id="orientVerticalBtn" class="orientacao-btn ativo">📏 Vertical</button>
+                <button id="orientHorizontalBtn" class="orientacao-btn">📐 Horizontal</button>
+            </div>
+            <div class="ref-input">
+                <label>🔧 Tamanho real da referência (metros):</label>
+                <div class="input-group">
+                    <input type="number" id="refTamanho" step="0.01" value="1.00">
+                    <button id="aplicarRef">Aplicar</button>
+                </div>
+                <div class="dica" id="dicaRef">
+                    👆 Arraste os pontos VERMELHOS na vertical para alinhar com um objeto de altura conhecida
+                </div>
+            </div>
+        </div>
+
+        <div id="retConfig" style="display:none;">
+            <div class="dica" style="background:#00ffcc22;">
+                👆 Arraste as alças VERDES ou o centro para ajustar o retângulo na placa
+            </div>
+        </div>
+
+        <button id="salvarBtn" class="btn-salvar">💾 Salvar Medição</button>
+        <button id="resetBtn" class="btn-reset">🗑️ Limpar Tudo</button>
     </div>
 
-    <button id="salvarBtn" class="btn-salvar">💾 SALVAR MEDIÇÃO</button>
-    <button id="resetBtn" class="btn-reset">🗑️ LIMPAR TUDO</button>
-</div>
-
-<script>
-    (function() {
+    <script>
         // Elementos
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
@@ -324,157 +312,208 @@
         
         // Estado
         let modoAtual = 'referencia'; // 'referencia' ou 'retangulo'
-        let menuVisivel = true;
+        let painelVisivel = true;
+        let orientacaoRef = 'vertical'; // 'vertical' ou 'horizontal'
         
-        // Retângulo da placa (coordenadas normalizadas 0-1)
+        // Retângulo (coordenadas normalizadas 0-1)
         let retangulo = {
             x: 0.3, y: 0.3,
             width: 0.4, height: 0.4
         };
         
-        // Referência: linha vertical
+        // Referência
         let referencia = {
-            ponto1: { x: 0.5, y: 0.75 },  // base
-            ponto2: { x: 0.5, y: 0.55 },  // topo
+            p1: { x: 0.5, y: 0.7 },  // ponto inferior
+            p2: { x: 0.5, y: 0.5 },  // ponto superior
             tamanhoReal: 1.0
         };
         
         let pixelsPorMetro = null;
         let arrastando = false;
-        let pontoArrastando = null;
+        let itemArrastando = null;
         let ultimoToque = null;
         
         // UI Elements
         const areaDisplay = document.getElementById('areaDisplay');
         const alturaDisplay = document.getElementById('alturaDisplay');
         const larguraDisplay = document.getElementById('larguraDisplay');
-        const alturaPxSpan = document.getElementById('alturaPx');
-        const larguraPxSpan = document.getElementById('larguraPx');
-        const modoIndicador = document.getElementById('modoIndicador');
-        const toggleMenuBtn = document.getElementById('toggleMenuBtn');
-        const menu = document.getElementById('menu');
+        const eyeBtn = document.getElementById('eyeBtn');
+        const painel = document.getElementById('painel');
         const modoRefBtn = document.getElementById('modoRefBtn');
         const modoRetBtn = document.getElementById('modoRetBtn');
-        const refPanel = document.getElementById('refPanel');
-        const retPanel = document.getElementById('retPanel');
-        const refTamanhoInput = document.getElementById('refTamanho');
-        const aplicarRefBtn = document.getElementById('aplicarRefBtn');
+        const refConfig = document.getElementById('refConfig');
+        const retConfig = document.getElementById('retConfig');
+        const orientVerticalBtn = document.getElementById('orientVerticalBtn');
+        const orientHorizontalBtn = document.getElementById('orientHorizontalBtn');
+        const refTamanho = document.getElementById('refTamanho');
+        const aplicarRef = document.getElementById('aplicarRef');
+        const dicaRef = document.getElementById('dicaRef');
         const salvarBtn = document.getElementById('salvarBtn');
         const resetBtn = document.getElementById('resetBtn');
         
-        let canvasWidth, canvasHeight;
-        let streamAtual = null;
+        let canvasW, canvasH;
+        let videoRect = { x: 0, y: 0, w: 0, h: 0 };
         let cameraAtiva = false;
-        let videoRect = { x: 0, y: 0, width: 0, height: 0 };
         
-        // Calcular área do vídeo no canvas
+        // Calcular onde o vídeo está no canvas
         function calcularVideoRect() {
             if (!video.videoWidth || !video.videoHeight) return;
+            
             const videoAspect = video.videoWidth / video.videoHeight;
-            const canvasAspect = canvasWidth / canvasHeight;
+            const canvasAspect = canvasW / canvasH;
             
             if (videoAspect > canvasAspect) {
-                videoRect.width = canvasWidth;
-                videoRect.height = canvasWidth / videoAspect;
+                videoRect.w = canvasW;
+                videoRect.h = canvasW / videoAspect;
                 videoRect.x = 0;
-                videoRect.y = (canvasHeight - videoRect.height) / 2;
+                videoRect.y = (canvasH - videoRect.h) / 2;
             } else {
-                videoRect.height = canvasHeight;
-                videoRect.width = canvasHeight * videoAspect;
-                videoRect.x = (canvasWidth - videoRect.width) / 2;
+                videoRect.h = canvasH;
+                videoRect.w = canvasH * videoAspect;
+                videoRect.x = (canvasW - videoRect.w) / 2;
                 videoRect.y = 0;
             }
         }
         
-        // Converter coordenada normalizada para pixel
-        function normParaPixel(p) {
+        // Normalizado para pixel
+        function normToPixel(p) {
             return {
-                x: videoRect.x + p.x * videoRect.width,
-                y: videoRect.y + p.y * videoRect.height
+                x: videoRect.x + p.x * videoRect.w,
+                y: videoRect.y + p.y * videoRect.h
             };
         }
         
-        // Converter pixel para normalizado
-        function pixelParaNorm(pixel) {
+        // Pixel para normalizado
+        function pixelToNorm(px, py) {
             return {
-                x: (pixel.x - videoRect.x) / videoRect.width,
-                y: (pixel.y - videoRect.y) / videoRect.height
+                x: (px - videoRect.x) / videoRect.w,
+                y: (py - videoRect.y) / videoRect.h
             };
         }
         
-        // Distância em pixels entre pontos normalizados
+        // Distância entre dois pontos normalizados em pixels
         function distanciaPixels(p1, p2) {
-            const p1px = normParaPixel(p1);
-            const p2px = normParaPixel(p2);
-            return Math.hypot(p1px.x - p2px.x, p1px.y - p2px.y);
+            const a = normToPixel(p1);
+            const b = normToPixel(p2);
+            return Math.hypot(a.x - b.x, a.y - b.y);
         }
         
         // Atualizar escala
         function atualizarEscala() {
-            const distPx = distanciaPixels(referencia.ponto1, referencia.ponto2);
-            if (distPx > 0 && referencia.tamanhoReal > 0) {
-                pixelsPorMetro = distPx / referencia.tamanhoReal;
+            const dist = distanciaPixels(referencia.p1, referencia.p2);
+            if (dist > 0 && referencia.tamanhoReal > 0) {
+                pixelsPorMetro = dist / referencia.tamanhoReal;
             }
         }
         
         // Obter dimensões em metros
-        function getDimensoesMetros() {
+        function getMetros() {
             if (!pixelsPorMetro) return { altura: null, largura: null, area: null };
-            const alturaPx = retangulo.height * videoRect.height;
-            const larguraPx = retangulo.width * videoRect.width;
-            const alturaM = alturaPx / pixelsPorMetro;
-            const larguraM = larguraPx / pixelsPorMetro;
-            return { altura: alturaM, largura: larguraM, area: alturaM * larguraM };
+            const altPx = retangulo.height * videoRect.h;
+            const largPx = retangulo.width * videoRect.w;
+            const altM = altPx / pixelsPorMetro;
+            const largM = largPx / pixelsPorMetro;
+            return { altura: altM, largura: largM, area: altM * largM };
         }
         
-        // Desenhar tudo na tela
+        // Aplicar restrições de orientação da referência
+        function aplicarRestricaoReferencia() {
+            if (orientacaoRef === 'vertical') {
+                // Mantém mesmo X, só permite mover Y
+                const xMedio = (referencia.p1.x + referencia.p2.x) / 2;
+                referencia.p1.x = xMedio;
+                referencia.p2.x = xMedio;
+            } else {
+                // Mantém mesmo Y, só permite mover X
+                const yMedio = (referencia.p1.y + referencia.p2.y) / 2;
+                referencia.p1.y = yMedio;
+                referencia.p2.y = yMedio;
+            }
+            
+            // Limitar dentro da tela
+            referencia.p1.x = Math.min(0.98, Math.max(0.02, referencia.p1.x));
+            referencia.p1.y = Math.min(0.98, Math.max(0.02, referencia.p1.y));
+            referencia.p2.x = Math.min(0.98, Math.max(0.02, referencia.p2.x));
+            referencia.p2.y = Math.min(0.98, Math.max(0.02, referencia.p2.y));
+        }
+        
+        // Mudar orientação
+        function mudarOrientacao(orient) {
+            orientacaoRef = orient;
+            if (orient === 'vertical') {
+                orientVerticalBtn.classList.add('ativo');
+                orientHorizontalBtn.classList.remove('ativo');
+                dicaRef.innerHTML = '👆 Arraste os pontos VERMELHOS na VERTICAL para alinhar com um objeto de altura conhecida';
+                
+                // Ajustar pontos para ficarem na mesma vertical
+                const xMedio = (referencia.p1.x + referencia.p2.x) / 2;
+                referencia.p1.x = xMedio;
+                referencia.p2.x = xMedio;
+            } else {
+                orientVerticalBtn.classList.remove('ativo');
+                orientHorizontalBtn.classList.add('ativo');
+                dicaRef.innerHTML = '👆 Arraste os pontos VERMELHOS na HORIZONTAL para alinhar com um objeto de largura conhecida';
+                
+                // Ajustar pontos para ficarem na mesma horizontal
+                const yMedio = (referencia.p1.y + referencia.p2.y) / 2;
+                referencia.p1.y = yMedio;
+                referencia.p2.y = yMedio;
+            }
+            desenhar();
+        }
+        
+        // Desenhar tudo
         function desenhar() {
             if (!ctx) return;
-            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+            ctx.clearRect(0, 0, canvasW, canvasH);
             
-            if (videoRect.width === 0) calcularVideoRect();
+            if (videoRect.w === 0) calcularVideoRect();
             
-            // Desenhar REFERÊNCIA (sempre visível)
-            const refP1 = normParaPixel(referencia.ponto1);
-            const refP2 = normParaPixel(referencia.ponto2);
+            // Desenhar REFERÊNCIA
+            const refP1 = normToPixel(referencia.p1);
+            const refP2 = normToPixel(referencia.p2);
             
             ctx.beginPath();
             ctx.moveTo(refP1.x, refP1.y);
             ctx.lineTo(refP2.x, refP2.y);
             ctx.strokeStyle = '#ff3366';
-            ctx.lineWidth = 4;
-            ctx.setLineDash([10, 8]);
+            ctx.lineWidth = 5;
+            ctx.setLineDash([12, 8]);
             ctx.stroke();
             ctx.setLineDash([]);
             
-            // Pontos da referência (destacados no modo referência)
-            if (modoAtual === 'referencia') {
-                desenharPonto(refP1, '#ff3366', '●', 16);
-                desenharPonto(refP2, '#ff3366', '●', 16);
-                
-                // Mostrar tamanho da referência
-                const distPx = distanciaPixels(referencia.ponto1, referencia.ponto2);
-                const mx = (refP1.x + refP2.x)/2;
-                const my = (refP1.y + refP2.y)/2;
-                ctx.font = "bold 14px 'Segoe UI'";
-                ctx.fillStyle = '#ff99aa';
-                ctx.shadowBlur = 2;
-                ctx.fillText(`${distPx.toFixed(0)}px = ${referencia.tamanhoReal.toFixed(2)}m`, mx-45, my-12);
-                ctx.fillStyle = 'white';
-                ctx.shadowBlur = 0;
-            } else {
-                // Texto menor da referência
-                ctx.font = "10px 'Segoe UI'";
-                ctx.fillStyle = '#ff99aa';
-                ctx.fillText(`Ref: ${referencia.tamanhoReal.toFixed(2)}m`, 10, 40);
-            }
+            // Pontos da referência (sempre visíveis, mas destacados no modo referência)
+            const tamanhoPonto = modoAtual === 'referencia' ? 22 : 12;
+            
+            ctx.beginPath();
+            ctx.arc(refP1.x, refP1.y, tamanhoPonto, 0, 2*Math.PI);
+            ctx.fillStyle = '#ff3366';
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${modoAtual === 'referencia' ? 16 : 12}px sans-serif`;
+            ctx.fillText("1", refP1.x-5, refP1.y+6);
+            
+            ctx.beginPath();
+            ctx.arc(refP2.x, refP2.y, tamanhoPonto, 0, 2*Math.PI);
+            ctx.fillStyle = '#ff3366';
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.fillText("2", refP2.x-5, refP2.y+6);
+            
+            // Mostrar tamanho da referência
+            const distPx = distanciaPixels(referencia.p1, referencia.p2);
+            const mx = (refP1.x + refP2.x)/2;
+            const my = (refP1.y + refP2.y)/2;
+            ctx.font = "bold 12px sans-serif";
+            ctx.fillStyle = '#ff99aa';
+            ctx.fillText(`${distPx.toFixed(0)}px = ${referencia.tamanhoReal.toFixed(2)}m`, mx-40, my-15);
             
             // Desenhar RETÂNGULO
             const retPx = {
-                x: videoRect.x + retangulo.x * videoRect.width,
-                y: videoRect.y + retangulo.y * videoRect.height,
-                w: retangulo.width * videoRect.width,
-                h: retangulo.height * videoRect.height
+                x: videoRect.x + retangulo.x * videoRect.w,
+                y: videoRect.y + retangulo.y * videoRect.h,
+                w: retangulo.width * videoRect.w,
+                h: retangulo.height * videoRect.h
             };
             
             const corRetangulo = modoAtual === 'retangulo' ? '#00ffcc' : '#88aaff';
@@ -488,12 +527,12 @@
             
             // Alças do retângulo (apenas no modo retângulo)
             if (modoAtual === 'retangulo') {
-                const tamanhoAlca = 18;
+                const tamanhoAlca = 20;
                 const cantos = [
-                    { x: retPx.x, y: retPx.y, tipo: 'cantoTL' },
-                    { x: retPx.x + retPx.w, y: retPx.y, tipo: 'cantoTR' },
-                    { x: retPx.x, y: retPx.y + retPx.h, tipo: 'cantoBL' },
-                    { x: retPx.x + retPx.w, y: retPx.y + retPx.h, tipo: 'cantoBR' }
+                    { x: retPx.x, y: retPx.y, tipo: 'cantoTL', label: '◉' },
+                    { x: retPx.x + retPx.w, y: retPx.y, tipo: 'cantoTR', label: '◉' },
+                    { x: retPx.x, y: retPx.y + retPx.h, tipo: 'cantoBL', label: '◉' },
+                    { x: retPx.x + retPx.w, y: retPx.y + retPx.h, tipo: 'cantoBR', label: '◉' }
                 ];
                 
                 cantos.forEach(canto => {
@@ -512,23 +551,20 @@
                 const centroY = retPx.y + retPx.h/2;
                 ctx.fillStyle = 'rgba(255,255,255,0.4)';
                 ctx.beginPath();
-                ctx.arc(centroX, centroY, 12, 0, 2*Math.PI);
+                ctx.arc(centroX, centroY, 15, 0, 2*Math.PI);
                 ctx.fill();
                 ctx.fillStyle = '#00ffcc';
                 ctx.beginPath();
-                ctx.arc(centroX, centroY, 7, 0, 2*Math.PI);
+                ctx.arc(centroX, centroY, 8, 0, 2*Math.PI);
                 ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.font = "bold 10px sans-serif";
+                ctx.fillText("⤫", centroX-4, centroY+4);
             }
-            
-            // Atualizar textos em pixels
-            const alturaPxAtual = retangulo.height * videoRect.height;
-            const larguraPxAtual = retangulo.width * videoRect.width;
-            alturaPxSpan.innerText = Math.round(alturaPxAtual) + ' px';
-            larguraPxSpan.innerText = Math.round(larguraPxAtual) + ' px';
             
             // Atualizar medidas em metros
             atualizarEscala();
-            const dimensoes = getDimensoesMetros();
+            const dimensoes = getMetros();
             if (dimensoes.altura && dimensoes.largura) {
                 alturaDisplay.innerHTML = dimensoes.altura.toFixed(3) + ' m';
                 larguraDisplay.innerHTML = dimensoes.largura.toFixed(3) + ' m';
@@ -540,43 +576,33 @@
             }
         }
         
-        function desenharPonto(p, cor, texto, raio) {
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, raio, 0, 2*Math.PI);
-            ctx.fillStyle = cor;
-            ctx.fill();
-            ctx.fillStyle = 'white';
-            ctx.font = "bold 16px 'Segoe UI'";
-            ctx.fillText(texto, p.x-5, p.y-10);
-        }
-        
         // Verificar qual elemento foi tocado
-        function verificarToque(pixelX, pixelY) {
+        function verificarToque(px, py) {
             const retPx = {
-                x: videoRect.x + retangulo.x * videoRect.width,
-                y: videoRect.y + retangulo.y * videoRect.height,
-                w: retangulo.width * videoRect.width,
-                h: retangulo.height * videoRect.height
+                x: videoRect.x + retangulo.x * videoRect.w,
+                y: videoRect.y + retangulo.y * videoRect.h,
+                w: retangulo.width * videoRect.w,
+                h: retangulo.height * videoRect.h
             };
             
-            const tamanhoAlca = 30;
+            const tamanhoAlca = 35;
             
             // Cantos do retângulo
-            if (Math.hypot(pixelX - retPx.x, pixelY - retPx.y) < tamanhoAlca) return 'cantoTL';
-            if (Math.hypot(pixelX - (retPx.x + retPx.w), pixelY - retPx.y) < tamanhoAlca) return 'cantoTR';
-            if (Math.hypot(pixelX - retPx.x, pixelY - (retPx.y + retPx.h)) < tamanhoAlca) return 'cantoBL';
-            if (Math.hypot(pixelX - (retPx.x + retPx.w), pixelY - (retPx.y + retPx.h)) < tamanhoAlca) return 'cantoBR';
+            if (Math.hypot(px - retPx.x, py - retPx.y) < tamanhoAlca) return 'cantoTL';
+            if (Math.hypot(px - (retPx.x + retPx.w), py - retPx.y) < tamanhoAlca) return 'cantoTR';
+            if (Math.hypot(px - retPx.x, py - (retPx.y + retPx.h)) < tamanhoAlca) return 'cantoBL';
+            if (Math.hypot(px - (retPx.x + retPx.w), py - (retPx.y + retPx.h)) < tamanhoAlca) return 'cantoBR';
             
             // Centro
             const centroX = retPx.x + retPx.w/2;
             const centroY = retPx.y + retPx.h/2;
-            if (Math.hypot(pixelX - centroX, pixelY - centroY) < 35) return 'mover';
+            if (Math.hypot(px - centroX, py - centroY) < 40) return 'mover';
             
             // Pontos da referência
-            const refP1 = normParaPixel(referencia.ponto1);
-            const refP2 = normParaPixel(referencia.ponto2);
-            if (Math.hypot(pixelX - refP1.x, pixelY - refP1.y) < 30) return 'ref1';
-            if (Math.hypot(pixelX - refP2.x, pixelY - refP2.y) < 30) return 'ref2';
+            const refP1 = normToPixel(referencia.p1);
+            const refP2 = normToPixel(referencia.p2);
+            if (Math.hypot(px - refP1.x, py - refP1.y) < 35) return 'ref1';
+            if (Math.hypot(px - refP2.x, py - refP2.y) < 35) return 'ref2';
             
             return null;
         }
@@ -590,19 +616,17 @@
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             
-            let clientX = e.touches[0].clientX;
-            let clientY = e.touches[0].clientY;
+            const touch = e.touches[0];
+            let canvasX = (touch.clientX - rect.left) * scaleX;
+            let canvasY = (touch.clientY - rect.top) * scaleY;
+            canvasX = Math.min(Math.max(0, canvasX), canvasW);
+            canvasY = Math.min(Math.max(0, canvasY), canvasH);
             
-            let canvasX = (clientX - rect.left) * scaleX;
-            let canvasY = (clientY - rect.top) * scaleY;
-            canvasX = Math.min(Math.max(0, canvasX), canvasWidth);
-            canvasY = Math.min(Math.max(0, canvasY), canvasHeight);
+            const item = verificarToque(canvasX, canvasY);
             
-            const alca = verificarToque(canvasX, canvasY);
-            
-            if (alca) {
+            if (item) {
                 arrastando = true;
-                pontoArrastando = alca;
+                itemArrastando = item;
                 ultimoToque = { x: canvasX, y: canvasY };
             }
         }
@@ -615,46 +639,42 @@
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
             
-            let clientX = e.touches[0].clientX;
-            let clientY = e.touches[0].clientY;
+            const touch = e.touches[0];
+            let canvasX = (touch.clientX - rect.left) * scaleX;
+            let canvasY = (touch.clientY - rect.top) * scaleY;
+            canvasX = Math.min(Math.max(0, canvasX), canvasW);
+            canvasY = Math.min(Math.max(0, canvasY), canvasH);
             
-            let canvasX = (clientX - rect.left) * scaleX;
-            let canvasY = (clientY - rect.top) * scaleY;
-            canvasX = Math.min(Math.max(0, canvasX), canvasWidth);
-            canvasY = Math.min(Math.max(0, canvasY), canvasHeight);
+            const deltaX = (canvasX - ultimoToque.x) / videoRect.w;
+            const deltaY = (canvasY - ultimoToque.y) / videoRect.h;
             
-            const deltaX = (canvasX - ultimoToque.x) / videoRect.width;
-            const deltaY = (canvasY - ultimoToque.y) / videoRect.height;
-            
-            if (pontoArrastando === 'cantoTL') {
+            if (itemArrastando === 'cantoTL') {
                 retangulo.width -= deltaX;
                 retangulo.height -= deltaY;
                 retangulo.x += deltaX;
                 retangulo.y += deltaY;
-            } else if (pontoArrastando === 'cantoTR') {
+            } else if (itemArrastando === 'cantoTR') {
                 retangulo.width += deltaX;
                 retangulo.height -= deltaY;
                 retangulo.y += deltaY;
-            } else if (pontoArrastando === 'cantoBL') {
+            } else if (itemArrastando === 'cantoBL') {
                 retangulo.width -= deltaX;
                 retangulo.height += deltaY;
                 retangulo.x += deltaX;
-            } else if (pontoArrastando === 'cantoBR') {
+            } else if (itemArrastando === 'cantoBR') {
                 retangulo.width += deltaX;
                 retangulo.height += deltaY;
-            } else if (pontoArrastando === 'mover') {
+            } else if (itemArrastando === 'mover') {
                 retangulo.x += deltaX;
                 retangulo.y += deltaY;
-            } else if (pontoArrastando === 'ref1') {
-                referencia.ponto1.x += deltaX;
-                referencia.ponto1.y += deltaY;
-                referencia.ponto1.x = Math.min(0.98, Math.max(0.02, referencia.ponto1.x));
-                referencia.ponto1.y = Math.min(0.98, Math.max(0.02, referencia.ponto1.y));
-            } else if (pontoArrastando === 'ref2') {
-                referencia.ponto2.x += deltaX;
-                referencia.ponto2.y += deltaY;
-                referencia.ponto2.x = Math.min(0.98, Math.max(0.02, referencia.ponto2.x));
-                referencia.ponto2.y = Math.min(0.98, Math.max(0.02, referencia.ponto2.y));
+            } else if (itemArrastando === 'ref1') {
+                referencia.p1.x += deltaX;
+                referencia.p1.y += deltaY;
+                aplicarRestricaoReferencia();
+            } else if (itemArrastando === 'ref2') {
+                referencia.p2.x += deltaX;
+                referencia.p2.y += deltaY;
+                aplicarRestricaoReferencia();
             }
             
             // Restringir retângulo
@@ -669,7 +689,7 @@
         
         function handleTouchEnd() {
             arrastando = false;
-            pontoArrastando = null;
+            itemArrastando = null;
             desenhar();
         }
         
@@ -679,39 +699,33 @@
             if (modo === 'referencia') {
                 modoRefBtn.classList.add('ativo');
                 modoRetBtn.classList.remove('ativo');
-                refPanel.style.display = 'block';
-                retPanel.style.display = 'none';
-                modoIndicador.innerHTML = '📏 MODO: REFERÊNCIA (arraste pontos vermelhos)';
-                modoIndicador.style.borderLeftColor = '#ff3366';
+                refConfig.style.display = 'block';
+                retConfig.style.display = 'none';
             } else {
                 modoRefBtn.classList.remove('ativo');
                 modoRetBtn.classList.add('ativo');
-                refPanel.style.display = 'none';
-                retPanel.style.display = 'block';
-                modoIndicador.innerHTML = '⬚ MODO: RETÂNGULO (arraste alças verdes)';
-                modoIndicador.style.borderLeftColor = '#00ffcc';
+                refConfig.style.display = 'none';
+                retConfig.style.display = 'block';
             }
             desenhar();
         }
         
         function aplicarReferencia() {
-            referencia.tamanhoReal = parseFloat(refTamanhoInput.value);
+            referencia.tamanhoReal = parseFloat(refTamanho.value);
             if (isNaN(referencia.tamanhoReal) || referencia.tamanhoReal <= 0) {
                 referencia.tamanhoReal = 1.0;
-                refTamanhoInput.value = '1.00';
+                refTamanho.value = '1.00';
             }
             atualizarEscala();
             desenhar();
         }
         
         function salvarMedicao() {
-            const dimensoes = getDimensoesMetros();
-            if (dimensoes.altura && dimensoes.largura) {
-                const mensagem = `📊 MEDIÇÃO SALVA:\nAltura: ${dimensoes.altura.toFixed(3)} m\nLargura: ${dimensoes.largura.toFixed(3)} m\nÁrea: ${dimensoes.area.toFixed(3)} m²\nReferência: ${referencia.tamanhoReal.toFixed(2)} m`;
-                alert(mensagem);
-                
-                // Opcional: copiar para clipboard
-                navigator.clipboard?.writeText(`${dimensoes.altura.toFixed(3)} x ${dimensoes.largura.toFixed(3)} = ${dimensoes.area.toFixed(3)} m²`);
+            const dim = getMetros();
+            if (dim.altura && dim.largura) {
+                const msg = `📊 MEDIÇÃO SALVA:\n\nAltura: ${dim.altura.toFixed(3)} m\nLargura: ${dim.largura.toFixed(3)} m\nÁrea: ${dim.area.toFixed(3)} m²\n\nReferência: ${referencia.tamanhoReal.toFixed(2)} m (${orientacaoRef})`;
+                alert(msg);
+                navigator.clipboard?.writeText(`${dim.altura.toFixed(3)} x ${dim.largura.toFixed(3)} = ${dim.area.toFixed(3)} m²`);
             } else {
                 alert("⚠️ Ajuste a referência primeiro! Arraste a linha vermelha para um objeto de tamanho conhecido.");
             }
@@ -720,47 +734,62 @@
         function resetCompleto() {
             retangulo = { x: 0.3, y: 0.3, width: 0.4, height: 0.4 };
             referencia = {
-                ponto1: { x: 0.5, y: 0.75 },
-                ponto2: { x: 0.5, y: 0.55 },
-                tamanhoReal: parseFloat(refTamanhoInput.value)
+                p1: { x: 0.5, y: 0.7 },
+                p2: { x: 0.5, y: 0.5 },
+                tamanhoReal: parseFloat(refTamanho.value)
             };
+            aplicarRestricaoReferencia();
             pixelsPorMetro = null;
             desenhar();
         }
         
-        function toggleMenu() {
-            menuVisivel = !menuVisivel;
-            if (menuVisivel) {
-                menu.classList.remove('escondido');
-                toggleMenuBtn.innerHTML = '✖️';
+        function togglePainel() {
+            painelVisivel = !painelVisivel;
+            if (painelVisivel) {
+                painel.classList.remove('oculto');
+                eyeBtn.innerHTML = '👁️';
             } else {
-                menu.classList.add('escondido');
-                toggleMenuBtn.innerHTML = '⚙️';
+                painel.classList.add('oculto');
+                eyeBtn.innerHTML = '🚫';
             }
         }
         
         // Inicializar câmera
         async function iniciarCamera() {
             try {
-                if (streamAtual) streamAtual.getTracks().forEach(track => track.stop());
-                const constraints = { video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } } };
+                if (window.stream) {
+                    window.stream.getTracks().forEach(track => track.stop());
+                }
+                const constraints = {
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    }
+                };
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                streamAtual = stream;
+                window.stream = stream;
                 video.srcObject = stream;
-                await new Promise((resolve) => { video.onloadedmetadata = () => { video.play(); resolve(); }; });
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = () => {
+                        video.play();
+                        resolve();
+                    };
+                });
                 cameraAtiva = true;
                 redimensionar();
                 iniciarLoop();
             } catch(err) {
                 alert("Erro ao acessar câmera. Verifique as permissões.");
+                console.error(err);
             }
         }
         
         function redimensionar() {
-            canvasWidth = window.innerWidth;
-            canvasHeight = window.innerHeight;
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
+            canvasW = window.innerWidth;
+            canvasH = window.innerHeight;
+            canvas.width = canvasW;
+            canvas.height = canvasH;
             calcularVideoRect();
             desenhar();
         }
@@ -768,7 +797,9 @@
         function iniciarLoop() {
             function loop() {
                 if (cameraAtiva && video.readyState >= 2) {
-                    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) redimensionar();
+                    if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+                        redimensionar();
+                    }
                     desenhar();
                 }
                 requestAnimationFrame(loop);
@@ -781,17 +812,18 @@
         canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
         canvas.addEventListener('touchend', handleTouchEnd);
         
-        toggleMenuBtn.addEventListener('click', toggleMenu);
+        eyeBtn.addEventListener('click', togglePainel);
         modoRefBtn.addEventListener('click', () => mudarModo('referencia'));
         modoRetBtn.addEventListener('click', () => mudarModo('retangulo'));
-        aplicarRefBtn.addEventListener('click', aplicarReferencia);
+        orientVerticalBtn.addEventListener('click', () => mudarOrientacao('vertical'));
+        orientHorizontalBtn.addEventListener('click', () => mudarOrientacao('horizontal'));
+        aplicarRef.addEventListener('click', aplicarReferencia);
         salvarBtn.addEventListener('click', salvarMedicao);
         resetBtn.addEventListener('click', resetCompleto);
         window.addEventListener('resize', redimensionar);
         
         // Iniciar
         iniciarCamera();
-    })();
-</script>
+    </script>
 </body>
 </html>
