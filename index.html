@@ -2315,8 +2315,9 @@
     </style>
 </head>
 <body>
-
-    <!-- ===== HEADER ===== -->
+    <!-- ============================================================ -->
+    <!-- HEADER -->
+    <!-- ============================================================ -->
     <header class="header">
         <div class="header-container">
             <div class="logo">
@@ -2352,7 +2353,9 @@
         </div>
     </header>
 
-    <!-- ===== MAIN CONTENT ===== -->
+    <!-- ============================================================ -->
+    <!-- MAIN CONTENT -->
+    <!-- ============================================================ -->
     <main class="main-content">
         <section class="hero-banner">
             <div class="hero-content">
@@ -2384,7 +2387,9 @@
         </section>
     </main>
 
-    <!-- ===== BOTTOM NAVIGATION ===== -->
+    <!-- ============================================================ -->
+    <!-- BOTTOM NAVIGATION -->
+    <!-- ============================================================ -->
     <nav class="bottom-nav">
         <button class="nav-menu-toggle" onclick="abrirMenu()">
             <i class="fas fa-bars"></i><span>Menu</span>
@@ -2407,7 +2412,9 @@
         </button>
     </nav>
 
-    <!-- ===== MENU LATERAL ===== -->
+    <!-- ============================================================ -->
+    <!-- MENU LATERAL -->
+    <!-- ============================================================ -->
     <div class="side-menu-overlay" id="sideMenuOverlay" onclick="fecharMenu()"></div>
     <div class="side-menu" id="sideMenu">
         <div class="side-menu-header">
@@ -2425,7 +2432,9 @@
         <a class="side-menu-item" onclick="fecharMenu();abrirSobre();"><i class="fas fa-info-circle"></i> Sobre Nós</a>
     </div>
 
-    <!-- ===== MODAL PRODUTO ===== -->
+    <!-- ============================================================ -->
+    <!-- MODAL PRODUTO -->
+    <!-- ============================================================ -->
     <div class="modal" id="productModal">
         <div class="modal-content">
             <span class="modal-close" onclick="fecharModal('productModal')">&times;</span>
@@ -2451,7 +2460,9 @@
         </div>
     </div>
 
-    <!-- ===== MODAL CARRINHO ===== -->
+    <!-- ============================================================ -->
+    <!-- MODAL CARRINHO -->
+    <!-- ============================================================ -->
     <div class="modal" id="cartModal">
         <div class="modal-content cart-modal">
             <span class="modal-close" onclick="fecharModal('cartModal')">&times;</span>
@@ -2480,7 +2491,9 @@
         </div>
     </div>
 
-    <!-- ===== MODAL ADMIN ===== -->
+    <!-- ============================================================ -->
+    <!-- MODAL ADMIN -->
+    <!-- ============================================================ -->
     <div class="modal" id="adminModal">
         <div class="modal-content admin-modal">
             <span class="modal-close" onclick="fecharModal('adminModal')">&times;</span>
@@ -2497,7 +2510,9 @@
         </div>
     </div>
 
-    <!-- ===== MODAL LOGIN ===== -->
+    <!-- ============================================================ -->
+    <!-- MODAL LOGIN -->
+    <!-- ============================================================ -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <span class="modal-close" onclick="fecharModal('loginModal')">&times;</span>
@@ -2669,7 +2684,9 @@
         </div>
     </div>
 
-    <!-- ===== MODAL CHECKOUT ===== -->
+    <!-- ============================================================ -->
+    <!-- MODAL CHECKOUT -->
+    <!-- ============================================================ -->
     <div class="modal checkout-modal" id="checkoutModal">
         <div class="modal-content">
             <span class="modal-close" onclick="fecharModal('checkoutModal')">&times;</span>
@@ -2730,12 +2747,10 @@
                             <div class="complemento" id="enderecoComplemento">***, Bairro ***, Cidade - UF, CEP *****-***</div>
                         </div>
 
-                        <!-- Botão para escolher outro endereço -->
                         <button class="btn-outro-endereco" onclick="solicitarOutroEndereco()">
                             <i class="fas fa-exchange-alt"></i> Escolher outro endereço
                         </button>
 
-                        <!-- BOTÃO CONFIRMAR DADOS (NO FINAL) -->
                         <button class="btn-confirmar-dados" id="btnConfirmarDados" onclick="confirmarDadosCheckout()" disabled>
                             <i class="fas fa-check-circle"></i> Confirmar que meus dados estão corretos
                         </button>
@@ -2743,7 +2758,6 @@
                         <div class="confirmacao-status" id="confirmacaoStatus"></div>
                     </div>
 
-                    <!-- Área para novo cadastro -->
                     <div id="areaNovoCadastro" style="display:none;padding:15px;background:#fff3cd;border-radius:8px;border-left:4px solid var(--warning);margin-bottom:15px;">
                         <p style="font-weight:600;color:#856404;">
                             <i class="fas fa-exclamation-triangle"></i> Email não cadastrado
@@ -2756,7 +2770,6 @@
                         </button>
                     </div>
 
-                    <!-- Endereços salvos (apenas da planilha) -->
                     <div id="enderecosSalvos" style="display:none;">
                         <p style="color:#999;font-size:14px;margin-bottom:10px;margin-top:15px;">
                             <i class="fas fa-address-book"></i> Selecione um endereço:
@@ -2845,7 +2858,9 @@
         </div>
     </div>
 
-    <!-- ===== MODAL WHATSAPP FALLBACK ===== -->
+    <!-- ============================================================ -->
+    <!-- MODAL WHATSAPP FALLBACK -->
+    <!-- ============================================================ -->
     <div class="modal whatsapp-fallback-modal" id="whatsappFallbackModal">
         <div class="modal-content">
             <span class="modal-close" onclick="fecharModal('whatsappFallbackModal')">&times;</span>
@@ -2877,7 +2892,9 @@
         </div>
     </div>
 
-    <!-- ===== MODAL PAGAMENTO ===== -->
+    <!-- ============================================================ -->
+    <!-- MODAL PAGAMENTO -->
+    <!-- ============================================================ -->
     <div class="modal pagamento-modal" id="pagamentoModal">
         <div class="modal-content">
             <span class="modal-close" onclick="fecharModal('pagamentoModal')">&times;</span>
@@ -2941,7 +2958,9 @@
         </div>
     </div>
 
-    <!-- ===== MODAL CONFIRMAÇÃO ===== -->
+    <!-- ============================================================ -->
+    <!-- MODAL CONFIRMAÇÃO -->
+    <!-- ============================================================ -->
     <div class="modal confirmacao-modal" id="confirmacaoModal">
         <div class="modal-content">
             <div class="icone-grande"><i class="fas fa-check-circle"></i></div>
@@ -2960,19 +2979,21 @@
         </div>
     </div>
 
+    <!-- ============================================================ -->
+    <!-- SCRIPT -->
+    <!-- ============================================================ -->
     <script>
         // ============================================================
         // 0. CONFIGURAÇÃO DA API E WHATSAPP
         // ============================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwQc2MYeaYjhxdejJeOcLq8lVB6oQTaTuCG8bWcqo2NbVVQF2gbwFCWfidhJeplkwJF6A/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxd633Yn7quZ3eXY9Q1A-GQ5wyCnzfVG-rqx9wMw3zMSUYRq1q04Sx1u6_YyBdftQ3v/exec';
         const WHATSAPP_NUMBER = '5531984834383';
         const PIX_KEY = '10648303000179';
 
         // ============================================================
-        // CONFIGURAÇÃO SUPERFRETE
+        // CONFIGURAÇÃO SUPERFRETE (via AppScript)
         // ============================================================
-        const SUPERFRETE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3ODE4ODkzNjAsInN1YiI6IlNCOXc1dVFFU1NXTTZWUE5XZ2ZDVmVtMGRWeTIifQ.5SyJhPa3TVeaa7Y_Dc9BWiFiOi6YtjPL5ghAynOFqFA';
-        const SUPERFRETE_URL = 'https://api.superfrete.com/v1';
+        const SUPERFRETE_APPSCRIPT_URL = API_URL;
         const CEP_ORIGEM = '31050650';
         const PESO_PADRAO = 2; // kg
         const DIMENSAO_PADRAO = { altura: 10, largura: 10, comprimento: 25 }; // cm
@@ -3375,59 +3396,51 @@
             msgEl.textContent = '🔄 Verificando credenciais...';
             
             try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                const clientes = data.clientes || [];
-                
-                console.log('🔍 Buscando cliente por email:', email);
-                
-                const cliente = clientes.find(c => {
-                    const cEmail = String(c.email || '').toLowerCase().trim();
-                    return cEmail === email.toLowerCase().trim();
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        acao: 'verificar_login',
+                        email: email,
+                        senha: senha
+                    })
                 });
                 
-                console.log('🔍 Cliente encontrado?', cliente ? 'Sim' : 'Não');
+                const data = await response.json();
+                console.log('🔍 Resposta do login:', data);
                 
-                if (!cliente) {
+                if (data.sucesso) {
+                    const cliente = data.cliente || {};
+                    usuarioLogado = {
+                        email: String(cliente.email || email),
+                        nome: String(cliente.nome || 'Cliente'),
+                        documento: String(cliente.cpf || ''),
+                        telefone: String(cliente.telefone || ''),
+                        endereco: String(cliente.endereco || ''),
+                        cep: String(cliente.cep || ''),
+                        tipoPessoa: String(cliente.tipo_pessoa || 'FISICA')
+                    };
+                    
+                    localStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
+                    
+                    atualizarInterfaceUsuario();
+                    atualizarNomeClienteHeader();
+                    
+                    msgEl.className = 'login-message success';
+                    msgEl.textContent = '✅ Login realizado com sucesso!';
+                    
+                    carregarPedidosCliente(email);
+                    
+                    setTimeout(() => {
+                        fecharModal('loginModal');
+                    }, 1500);
+                    
+                } else {
                     msgEl.className = 'login-message error';
-                    msgEl.textContent = '❌ Email não encontrado. Faça seu cadastro.';
-                    return;
+                    msgEl.textContent = '❌ ' + (data.mensagem || 'Email ou senha incorretos.');
                 }
-                
-                const senhaCliente = String(cliente.senha || '');
-                const senhaDigitada = String(senha);
-                
-                console.log('🔍 Comparando senhas...');
-                
-                if (senhaCliente !== senhaDigitada) {
-                    msgEl.className = 'login-message error';
-                    msgEl.textContent = '❌ Senha incorreta. Tente novamente.';
-                    return;
-                }
-                
-                usuarioLogado = {
-                    email: String(cliente.email),
-                    nome: String(cliente.nome || ''),
-                    documento: String(cliente.documento || ''),
-                    telefone: String(cliente.telefone || ''),
-                    endereco: String(cliente.endereco || ''),
-                    cep: String(cliente.cep || ''),
-                    tipoPessoa: String(cliente.tipo_pessoa || 'FISICA')
-                };
-                
-                localStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
-                
-                atualizarInterfaceUsuario();
-                atualizarNomeClienteHeader();
-                
-                msgEl.className = 'login-message success';
-                msgEl.textContent = '✅ Login realizado com sucesso!';
-                
-                carregarPedidosCliente(email);
-                
-                setTimeout(() => {
-                    fecharModal('loginModal');
-                }, 1500);
                 
             } catch (error) {
                 console.error('Erro ao fazer login:', error);
@@ -3505,8 +3518,10 @@
             try {
                 await fetch(API_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         acao: 'salvar_cliente',
                         cliente: {
@@ -3517,7 +3532,12 @@
                             tipo_pessoa: tipoPessoa,
                             inscricao_estadual: inscricaoEstadual,
                             senha: senha,
-                            endereco: enderecoCompleto,
+                            endereco: endereco,
+                            numero: numero,
+                            complemento: complemento,
+                            bairro: bairro,
+                            cidade: cidade,
+                            estado: uf,
                             cep: cep,
                             endereco_entrega: enderecoEntrega,
                             cep_entrega: cepEntrega
@@ -3525,6 +3545,8 @@
                     })
                 });
                 
+                // Como a requisição é no-cors, não podemos ler a resposta
+                // Mas assumimos que deu certo se não houve erro
                 msgEl.className = 'login-message success';
                 msgEl.textContent = '✅ Cadastro realizado com sucesso! Faça login para continuar.';
                 
@@ -3957,7 +3979,6 @@
             const totalEl = document.getElementById('cartTotal');
             const totalUnidadesEl = document.getElementById('totalUnidades');
             
-            // Mostrar/ocultar área de frete
             const freteContainer = document.getElementById('freteCarrinhoContainer');
             if (carrinho.length > 0) {
                 freteContainer.style.display = 'block';
@@ -4286,14 +4307,13 @@
         }
 
         // ============================================================
-        // 8. FUNÇÕES DO SUPERFRETE
+        // 8. FUNÇÕES DO SUPERFRETE (VIA APPScript)
         // ============================================================
         
         // Extrair peso e dimensões de uma string no formato "peso-dimensoes"
         function extrairPesoDimensoes(info) {
             if (!info) return null;
             
-            // Exemplo: "0.5kg-30x20x15"
             const parts = info.split('-');
             if (parts.length !== 2) return null;
             
@@ -4320,7 +4340,6 @@
                 if (product && product.weight > 0) {
                     pesoTotal += product.weight * item.quantity;
                 } else {
-                    // Usar peso dos detalhes se disponível
                     let pesoItem = 0;
                     if (item.detalhes && item.detalhes.length > 0) {
                         item.detalhes.forEach(d => {
@@ -4334,7 +4353,7 @@
                 }
             });
             
-            return Math.max(pesoTotal, 0.1); // Mínimo 0.1kg
+            return Math.max(pesoTotal, 0.1);
         }
 
         // Calcular dimensões da caixa (volume + margem)
@@ -4346,7 +4365,6 @@
                 let dims = null;
                 let quantidade = item.quantity;
                 
-                // Tentar extrair dimensões dos detalhes do carrinho
                 if (item.detalhes && item.detalhes.length > 0) {
                     item.detalhes.forEach(d => {
                         if (d.dimensions) {
@@ -4359,9 +4377,7 @@
                     });
                 }
                 
-                // Se não conseguiu dos detalhes, tentar do produto
                 if (volumeTotal === 0 && product) {
-                    // Pegar a primeira opção de quantidade com dimensões
                     for (const qty of product.quantities) {
                         if (qty.dimensions && qty.weight) {
                             const info = extrairPesoDimensoes(qty.weight + '-' + qty.dimensions);
@@ -4375,21 +4391,17 @@
                 }
             });
             
-            // Se não conseguiu calcular, usar dimensão padrão
             if (volumeTotal === 0) {
                 const volPadrao = DIMENSAO_PADRAO.altura * DIMENSAO_PADRAO.largura * DIMENSAO_PADRAO.comprimento;
                 volumeTotal = volPadrao * carrinho.reduce((sum, item) => sum + item.quantity, 0);
             }
             
-            // Aplicar margem de segurança
             volumeTotal *= MARGEM_SEGURANCA;
             
-            // Calcular caixa cúbica
             const lado = Math.cbrt(volumeTotal);
             const dimensao = Math.ceil(lado);
             
-            // Garantir tamanho mínimo
-            const minimo = 10; // cm
+            const minimo = 10;
             const tamanho = Math.max(dimensao, minimo);
             
             return {
@@ -4406,7 +4418,6 @@
             carrinho.forEach(item => {
                 const product = encontrarProduto(item.productId);
                 if (product) {
-                    // Se não tem estoque suficiente, considerar prazo de produção
                     if (product.stock < item.quantity) {
                         const prazo = product.productionDays || 0;
                         if (prazo > maiorPrazo) {
@@ -4419,55 +4430,45 @@
             return maiorPrazo;
         }
 
-        // Buscar frete no SuperFrete
+        // Buscar frete via AppScript (proxy)
         async function buscarFreteSuperFrete(cepDestino) {
             try {
                 const peso = calcularPesoTotal();
                 const dims = calcularDimensoes();
                 
-                // Garantir que as dimensões estão dentro dos limites do SuperFrete
                 const altura = Math.min(Math.max(dims.altura, 2), 105);
                 const largura = Math.min(Math.max(dims.largura, 11), 105);
                 const comprimento = Math.min(Math.max(dims.comprimento, 16), 105);
                 
-                const payload = {
-                    from: { postal_code: CEP_ORIGEM },
-                    to: { postal_code: cepDestino },
-                    package: {
-                        height: altura,
-                        width: largura,
-                        length: comprimento,
-                        weight: peso
-                    },
-                    options: {
-                        insurance_value: 0,
-                        receipt: false,
-                        own_hand: false,
-                        reverse: false
-                    }
-                };
+                console.log('📦 Calculando frete via AppScript:', { cepDestino, peso, altura, largura, comprimento });
                 
-                console.log('📦 Calculando frete:', payload);
-                
-                const response = await fetch(`${SUPERFRETE_URL}/quote`, {
+                const response = await fetch(SUPERFRETE_APPSCRIPT_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${SUPERFRETE_TOKEN}`
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        acao: 'calcular_frete',
+                        cepDestino: cepDestino,
+                        peso: peso,
+                        altura: altura,
+                        largura: largura,
+                        comprimento: comprimento
+                    })
                 });
                 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('❌ Erro SuperFrete:', errorText);
-                    throw new Error(`Erro na API: ${response.status}`);
+                    throw new Error(`Erro HTTP: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('✅ Resposta SuperFrete:', data);
+                console.log('✅ Resposta do AppScript:', data);
                 
-                return data;
+                if (!data.success) {
+                    throw new Error(data.error || 'Erro ao calcular frete');
+                }
+                
+                return data.data || [];
                 
             } catch (error) {
                 console.error('❌ Erro ao buscar frete:', error);
@@ -4479,7 +4480,6 @@
         function formatarOpcoesFrete(opcoes) {
             const opcoesFormatadas = [];
             
-            // Opção Retirada na Loja (sempre disponível)
             const producaoDias = calcularPrazoProducao();
             const prazoTotal = PRAZO_RETIRADA_LOJA + producaoDias;
             
@@ -4492,16 +4492,13 @@
                 producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : ''
             });
             
-            // Opções do SuperFrete
             if (opcoes && opcoes.length > 0) {
                 opcoes.forEach(op => {
-                    // Verificar se é uma opção válida
                     if (op.price && op.delivery_time) {
                         const valorComAcrescimo = parseFloat(op.price) + ACRESCIMO_VALOR_FRETE;
                         const prazoComAcrescimo = parseInt(op.delivery_time) + ACRESCIMO_PRAZO_FRETE + producaoDias;
                         
                         let nome = op.name || op.service || 'Frete';
-                        // Traduzir nomes
                         if (nome.includes('PAC')) nome = 'PAC';
                         else if (nome.includes('SEDEX')) nome = 'SEDEX';
                         else if (nome.includes('Expresso')) nome = 'Expresso';
@@ -4518,7 +4515,6 @@
                 });
             }
             
-            // Ordenar por valor
             opcoesFormatadas.sort((a, b) => a.valor - b.valor);
             
             return opcoesFormatadas;
@@ -4545,13 +4541,9 @@
             btnCalcular.disabled = true;
             
             try {
-                // Buscar frete no SuperFrete
                 const resposta = await buscarFreteSuperFrete(cep);
-                
-                // Formatar opções
                 const opcoes = formatarOpcoesFrete(resposta);
                 
-                // Exibir resultados
                 resultadoEl.style.display = 'block';
                 resultadoEl.innerHTML = '';
                 
@@ -4614,37 +4606,48 @@
             document.getElementById('confirmacaoStatus').textContent = '';
 
             try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                const clientes = data.clientes || [];
-
-                console.log('🔍 Clientes encontrados na planilha:', clientes.length);
-                
-                const emailLower = email.toLowerCase().trim();
-                
-                const cliente = clientes.find(c => {
-                    const cEmail = String(c.email || '').toLowerCase().trim();
-                    return cEmail === emailLower;
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        acao: 'buscar_cliente',
+                        email: email
+                    })
                 });
+                
+                const data = await response.json();
+                console.log('🔍 Resposta da busca:', data);
 
-                console.log('🔍 Cliente encontrado?', cliente ? 'Sim' : 'Não');
-
-                if (cliente) {
+                if (data.sucesso && data.cliente) {
+                    const cliente = data.cliente;
                     checkoutState.clienteEncontrado = true;
                     checkoutState.clienteData = cliente;
-                    checkoutState.emailBuscado = emailLower;
+                    checkoutState.emailBuscado = email;
 
                     const nomeCamuflado = camuflarNome(cliente.nome);
                     const telCamuflado = camuflarTelefone(cliente.telefone);
                     const emailCamuflado = camuflarEmail(email);
-                    const enderecoCamuflado = camuflarEndereco(cliente.endereco);
+                    
+                    // Montar endereço completo para exibição
+                    let enderecoCompleto = '';
+                    if (cliente.endereco) enderecoCompleto += cliente.endereco;
+                    if (cliente.numero) enderecoCompleto += ', ' + cliente.numero;
+                    if (cliente.complemento) enderecoCompleto += ' - ' + cliente.complemento;
+                    if (cliente.bairro) enderecoCompleto += ' - ' + cliente.bairro;
+                    if (cliente.cidade) enderecoCompleto += ' - ' + cliente.cidade;
+                    if (cliente.estado) enderecoCompleto += ' - ' + cliente.estado;
+                    if (cliente.cep) enderecoCompleto += ', CEP ' + cliente.cep;
+                    
+                    const enderecoCamuflado = camuflarEndereco(enderecoCompleto);
 
-                    let ruaNumero = cliente.endereco || 'Endereço não informado';
+                    let ruaNumero = enderecoCompleto || 'Endereço não informado';
                     let complemento = '';
-                    const numMatch = cliente.endereco ? String(cliente.endereco).match(/(.*?),\s*(\d+)/) : null;
+                    const numMatch = enderecoCompleto ? enderecoCompleto.match(/(.*?),\s*(\d+)/) : null;
                     if (numMatch) {
                         ruaNumero = numMatch[1].trim() + ', ' + numMatch[2];
-                        complemento = String(cliente.endereco).replace(ruaNumero, '').replace(/^,\s*/, '').trim();
+                        complemento = enderecoCompleto.replace(ruaNumero, '').replace(/^,\s*/, '').trim();
                     }
                     let ruaCamuflada = ruaNumero;
                     if (ruaCamuflada.length > 6) {
@@ -4664,18 +4667,18 @@
                     
                     checkoutState.enderecoSelecionado = {
                         nome: String(cliente.nome || 'Cliente'),
-                        endereco: String(cliente.endereco || ''),
-                        enderecoCompleto: String(cliente.endereco || ''),
+                        endereco: enderecoCompleto,
+                        enderecoCompleto: enderecoCompleto,
                         cep: String(cliente.cep || ''),
                         telefone: String(cliente.telefone || ''),
                         email: email,
-                        documento: String(cliente.documento || '')
+                        documento: String(cliente.cpf || '')
                     };
 
                     document.getElementById('btnConfirmarDados').style.display = 'block';
                     document.getElementById('btnConfirmarDados').disabled = false;
 
-                    carregarEnderecosAdicionais(emailLower);
+                    carregarEnderecosAdicionais(email);
                     document.getElementById('btnPasso1Avancar').disabled = true;
 
                 } else {
@@ -4736,7 +4739,7 @@
         }
 
         // ============================================================
-        // 12. CARREGAR ENDEREÇOS ADICIONAIS (apenas da planilha)
+        // 12. CARREGAR ENDEREÇOS ADICIONAIS
         // ============================================================
         function carregarEnderecosAdicionais(email) {
             const container = document.getElementById('listaEnderecos');
@@ -4877,19 +4880,16 @@
                 const cep = checkoutState.enderecoSelecionado.cep || '00000-000';
                 document.getElementById('checkoutCepDisplay').textContent = cep;
 
-                // Calcular prazo de produção
                 checkoutState.producaoDias = calcularPrazoProducao();
                 
-                // Buscar frete no SuperFrete
                 let opcoesSuperFrete = [];
                 try {
                     const resposta = await buscarFreteSuperFrete(cep);
                     opcoesSuperFrete = resposta || [];
                 } catch (error) {
-                    console.warn('⚠️ Erro ao buscar SuperFrete, usando opções padrão:', error);
+                    console.warn('⚠️ Erro ao buscar SuperFrete:', error);
                 }
                 
-                // Formatar opções
                 const opcoes = formatarOpcoesFrete(opcoesSuperFrete);
                 checkoutState.opcoesFrete = opcoes;
                 
@@ -4908,7 +4908,6 @@
                         const div = document.createElement('div');
                         div.className = 'frete-opcao';
                         
-                        // Selecionar a primeira opção (mais barata) por padrão
                         if (index === 0) {
                             div.classList.add('selecionado');
                             checkoutState.freteSelecionado = op;
@@ -4973,7 +4972,6 @@
                 `;
             });
 
-            // Mostrar prazo de produção se houver
             if (checkoutState.producaoDias > 0) {
                 html += `
                     <div class="resumo-item" style="color:#f39c12;border-bottom:1px dashed #f39c12;">
@@ -5049,7 +5047,6 @@
             const freteValor = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.valor : 0;
             const totalFinal = totalProdutos + freteValor;
 
-            // Calcular prazo de entrega final (produção + frete)
             const prazoEntrega = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.prazoDias : 0;
 
             pedidoDataEnvio = {
@@ -5106,13 +5103,17 @@
                     itens: pedidoDataEnvio.itens,
                     total: pedidoDataEnvio.total,
                     endereco_entrega: pedidoDataEnvio.endereco,
-                    observacoes: `Frete: ${pedidoDataEnvio.frete} (R$ ${pedidoDataEnvio.freteValor.toFixed(2)}) | Pagamento: ${pedidoDataEnvio.pagamento} | Prazo: ${pedidoDataEnvio.prazoEntrega} dias`
+                    observacoes: `Frete: ${pedidoDataEnvio.frete} (R$ ${pedidoDataEnvio.freteValor.toFixed(2)}) | Pagamento: ${pedidoDataEnvio.pagamento} | Prazo: ${pedidoDataEnvio.prazoEntrega} dias`,
+                    prazo_entrega: pedidoDataEnvio.prazoEntrega,
+                    producao_dias: pedidoDataEnvio.producaoDias
                 };
 
                 await fetch(API_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         acao: 'salvar_pedido',
                         pedido: pedidoData
@@ -5221,8 +5222,10 @@
                 };
                 await fetch(API_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(dados)
                 });
                 console.log('✅ Estoque atualizado na planilha!');
@@ -5703,12 +5706,9 @@
             });
         });
 
-        // Mostrar área de frete no carrinho quando houver itens
-        document.addEventListener('DOMContentLoaded', function() {
-            if (carrinho.length > 0) {
-                document.getElementById('freteCarrinhoContainer').style.display = 'block';
-            }
-        });
+        if (carrinho.length > 0) {
+            document.getElementById('freteCarrinhoContainer').style.display = 'block';
+        }
     </script>
 </body>
 </html>
