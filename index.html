@@ -982,8 +982,8 @@
         .carrinho-vazio p { font-size: 16px; font-weight: 600; color: #666; }
         .carrinho-vazio span { font-size: 13px; color: #aaa; }
 
-        /* ===== FRETE ===== */
-        .frete-container {
+        /* ===== FRETE NO CARRINHO ===== */
+        .frete-carrinho-container {
             margin: 15px 0;
             padding: 15px;
             background: #f8f9fa;
@@ -991,37 +991,30 @@
             border: 1px solid #e0e0e0;
         }
 
-        .frete-input-group label {
-            font-weight: 600;
-            color: var(--primary-dark);
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .frete-row {
+        .frete-carrinho-container .frete-row {
             display: flex;
             gap: 10px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
-        .cep-input {
+        .frete-carrinho-container .frete-row input {
             flex: 1;
             padding: 10px 12px;
             border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 14px;
-            transition: var(--transition);
             min-width: 150px;
+            transition: var(--transition);
         }
 
-        .cep-input:focus {
+        .frete-carrinho-container .frete-row input:focus {
             border-color: var(--primary-blue);
             outline: none;
             box-shadow: 0 0 0 3px rgba(26,58,92,0.1);
         }
 
-        .btn-calcular-frete {
+        .frete-carrinho-container .btn-calcular-frete {
             background: var(--primary-blue);
             color: white;
             border: none;
@@ -1036,31 +1029,42 @@
             gap: 8px;
         }
 
-        .btn-calcular-frete:hover {
+        .frete-carrinho-container .btn-calcular-frete:hover {
             background: var(--secondary-blue);
             transform: scale(1.02);
         }
 
-        .frete-resultado {
+        .frete-carrinho-container .btn-calcular-frete:disabled {
+            background: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .frete-carrinho-resultado {
             margin-top: 10px;
             padding: 10px;
             background: white;
             border-radius: 8px;
             border: 1px solid #d4edda;
+            display: none;
         }
 
-        .frete-resultado .opcao-frete {
+        .frete-carrinho-resultado .opcao-frete {
             display: flex;
             justify-content: space-between;
             padding: 6px 0;
             border-bottom: 1px solid #eee;
             font-size: 14px;
+            align-items: center;
         }
 
-        .frete-resultado .opcao-frete:last-child { border-bottom: none; }
-        .frete-resultado .opcao-nome { color: #555; }
-        .frete-resultado .opcao-valor { font-weight: 700; color: var(--primary-blue); }
-        .frete-resultado .opcao-prazo { color: #888; font-size: 12px; }
+        .frete-carrinho-resultado .opcao-frete:last-child { border-bottom: none; }
+
+        .frete-carrinho-resultado .opcao-frete .frete-info { flex: 1; }
+        .frete-carrinho-resultado .opcao-frete .frete-nome { font-weight: 600; color: var(--primary-dark); }
+        .frete-carrinho-resultado .opcao-frete .frete-prazo { font-size: 12px; color: #888; }
+        .frete-carrinho-resultado .opcao-frete .frete-valor { font-weight: 700; color: var(--primary-blue); }
+        .frete-carrinho-resultado .opcao-frete .frete-valor.gratis { color: var(--success); }
 
         .frete-carregando {
             text-align: center;
@@ -1075,6 +1079,87 @@
             to { transform: rotate(360deg); }
         }
 
+        .frete-erro {
+            color: var(--danger);
+            font-size: 14px;
+            padding: 8px 12px;
+            background: #fde8e8;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .frete-erro.show { display: block; }
+
+        /* ===== FRETE NO CHECKOUT ===== */
+        .frete-opcao {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .frete-opcao:hover {
+            border-color: var(--primary-blue);
+            background: #f8f9fa;
+        }
+
+        .frete-opcao.selecionado {
+            border-color: var(--primary-blue);
+            background: #f0f8ff;
+        }
+
+        .frete-opcao .frete-info .nome {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .frete-opcao .frete-info .prazo {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .frete-opcao .frete-info .producao {
+            font-size: 11px;
+            color: #f39c12;
+            font-weight: 500;
+        }
+
+        .frete-opcao .frete-valor {
+            font-weight: 700;
+            color: var(--primary-blue);
+            font-size: 16px;
+        }
+
+        .frete-opcao .frete-valor.gratis {
+            color: var(--success);
+        }
+
+        .frete-carregando-opcoes {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+
+        .frete-erro-checkout {
+            color: var(--danger);
+            font-size: 14px;
+            padding: 12px;
+            background: #fde8e8;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .frete-erro-checkout.show { display: block; }
+
+        /* ===== CART TOTAL ===== */
         .cart-total {
             margin-top: 20px;
             padding: 15px;
@@ -1190,7 +1275,7 @@
         .mb-10 { margin-bottom: 10px; }
 
         /* ============================================================
-           CHECKOUT - COM VALIDAÇÃO DE CPF/CNPJ
+           CHECKOUT
            ============================================================ */
         .checkout-modal .modal-content {
             max-width: 800px;
@@ -1272,7 +1357,7 @@
             transform: none;
         }
 
-        /* ===== VALIDAÇÃO CPF/CNPJ ===== */
+        /* ===== VALIDAÇÃO ===== */
         .validacao-container {
             background: #f8f9fa;
             border-radius: 8px;
@@ -1427,6 +1512,37 @@
             color: #666;
         }
 
+        /* ===== BOTÃO CONFIRMAR DADOS ===== */
+        .btn-confirmar-dados {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s;
+            display: none;
+        }
+
+        .btn-confirmar-dados:hover {
+            background: #219a52;
+            transform: scale(1.02);
+        }
+
+        .btn-confirmar-dados:disabled {
+            background: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-confirmar-dados i {
+            margin-right: 8px;
+        }
+
         .btn-outro-endereco {
             background: var(--warning);
             color: white;
@@ -1436,7 +1552,7 @@
             cursor: pointer;
             font-weight: 600;
             transition: all 0.3s;
-            margin-top: 10px;
+            margin-top: 15px;
             width: 100%;
         }
 
@@ -1447,6 +1563,33 @@
 
         .btn-outro-endereco i {
             margin-right: 8px;
+        }
+
+        /* Status da confirmação */
+        .confirmacao-status {
+            display: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .confirmacao-status.show {
+            display: block;
+        }
+
+        .confirmacao-status.success {
+            background: #e8f5e9;
+            color: #155724;
+            border: 1px solid #c8e6c9;
+        }
+
+        .confirmacao-status.error {
+            background: #fde8e8;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
 
         /* Endereços listados */
@@ -1512,140 +1655,6 @@
         .endereco-card .endereco-badge.confirmado {
             background: #cce5ff;
             color: #004085;
-        }
-
-        .btn-cadastrar-endereco {
-            background: var(--primary-blue);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .btn-cadastrar-endereco:hover {
-            background: var(--secondary-blue);
-            transform: scale(1.02);
-        }
-
-        /* Novo Endereço Form */
-        .novo-endereco-form {
-            display: none;
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 2px dashed #ddd;
-        }
-
-        .novo-endereco-form.show {
-            display: block;
-        }
-
-        .novo-endereco-form .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .novo-endereco-form .form-group {
-            margin-bottom: 10px;
-        }
-
-        .novo-endereco-form .form-group label {
-            display: block;
-            font-weight: 600;
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 3px;
-        }
-
-        .novo-endereco-form .form-group input,
-        .novo-endereco-form .form-group select {
-            width: 100%;
-            padding: 8px 10px;
-            border: 2px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .novo-endereco-form .form-group input:focus,
-        .novo-endereco-form .form-group select:focus {
-            border-color: var(--primary-blue);
-            outline: none;
-        }
-
-        .novo-endereco-form .btn-salvar-endereco {
-            background: var(--success);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .novo-endereco-form .btn-salvar-endereco:hover {
-            background: #219a52;
-            transform: scale(1.02);
-        }
-
-        /* Frete */
-        .frete-opcao {
-            background: white;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            padding: 12px 15px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .frete-opcao:hover {
-            border-color: var(--primary-blue);
-            background: #f8f9fa;
-        }
-
-        .frete-opcao.selecionado {
-            border-color: var(--primary-blue);
-            background: #f0f8ff;
-        }
-
-        .frete-opcao .frete-info .nome {
-            font-weight: 600;
-            color: var(--primary-dark);
-        }
-
-        .frete-opcao .frete-info .prazo {
-            font-size: 12px;
-            color: #888;
-        }
-
-        .frete-opcao .frete-valor {
-            font-weight: 700;
-            color: var(--primary-blue);
-            font-size: 16px;
-        }
-
-        .frete-opcao .frete-valor.gratis {
-            color: var(--success);
-        }
-
-        .frete-carregando-opcoes {
-            text-align: center;
-            padding: 20px;
-            color: #999;
         }
 
         /* Pagamento */
@@ -1878,7 +1887,48 @@
         }
 
         /* ===== MODAL LOGIN ===== */
-        #loginModal .form-group { margin-bottom: 12px; }
+        #loginModal .modal-content {
+            max-width: 500px;
+        }
+
+        .login-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .login-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: #888;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .login-tab.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--primary-blue);
+        }
+
+        .login-tab:hover {
+            color: var(--primary-blue);
+        }
+
+        .login-panel {
+            display: none;
+        }
+
+        .login-panel.active {
+            display: block;
+        }
+
+        #loginModal .form-group {
+            margin-bottom: 15px;
+        }
+
         #loginModal .form-group label {
             display: block;
             font-weight: 600;
@@ -1886,6 +1936,7 @@
             font-size: 13px;
             color: #333;
         }
+
         #loginModal .form-group input,
         #loginModal .form-group select {
             width: 100%;
@@ -1895,12 +1946,49 @@
             font-size: 14px;
             transition: all 0.3s;
         }
+
         #loginModal .form-group input:focus,
         #loginModal .form-group select:focus {
             border-color: var(--primary-blue);
             outline: none;
             box-shadow: 0 0 0 3px rgba(26,58,92,0.1);
         }
+
+        #loginModal .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        #loginModal .btn-login-action {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            width: 100%;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        #loginModal .btn-login-action:hover {
+            background: var(--secondary-blue);
+            transform: scale(1.02);
+        }
+
+        #loginModal .btn-login-action:disabled {
+            background: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #loginModal .btn-login-action i {
+            margin-right: 8px;
+        }
+
         #loginModal .status-badge {
             padding: 2px 10px;
             border-radius: 12px;
@@ -1908,11 +1996,89 @@
             font-weight: 600;
             display: inline-block;
         }
+
         #loginModal .status-pendente { background: #fff3cd; color: #856404; }
         #loginModal .status-em_andamento { background: #cce5ff; color: #004085; }
         #loginModal .status-enviado { background: #d4edda; color: #155724; }
         #loginModal .status-entregue { background: #d1ecf1; color: #0c5460; }
         #loginModal .status-cancelado { background: #f8d7da; color: #721c24; }
+
+        .login-message {
+            padding: 10px 14px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .login-message.success {
+            display: block;
+            background: #e8f5e9;
+            color: #155724;
+            border: 1px solid #c8e6c9;
+        }
+
+        .login-message.error {
+            display: block;
+            background: #fde8e8;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .login-pedidos-container {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .login-pedido-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .login-pedido-item:last-child {
+            border-bottom: none;
+        }
+
+        .login-pedido-item .pedido-info {
+            flex: 1;
+        }
+
+        .login-pedido-item .pedido-info .numero {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .login-pedido-item .pedido-info .data {
+            font-size: 12px;
+            color: #888;
+            margin-left: 8px;
+        }
+
+        .login-pedido-item .pedido-info .total {
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .login-pedido-item .pedido-status {
+            font-size: 12px;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .login-pedido-vazio {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
 
         /* ===== CHECKBOX ALINHADO ===== */
         .checkbox-group {
@@ -2066,15 +2232,16 @@
             .cart-item-image-moderno { width: 48px; height: 48px; }
             .cart-item-right-moderno { flex-direction: row; justify-content: space-between; align-items: center; padding-left: 58px; }
             .cart-item-nome { font-size: 12px; }
-            .frete-row { flex-direction: column; }
-            .btn-calcular-frete { width: 100%; justify-content: center; }
+            .frete-carrinho-container .frete-row { flex-direction: column; }
+            .frete-carrinho-container .btn-calcular-frete { width: 100%; justify-content: center; }
             .cart-total { flex-direction: column; align-items: flex-end; gap: 4px; }
             .checkout-modal .modal-content { padding: 15px; }
-            .novo-endereco-form .form-row { grid-template-columns: 1fr; }
             .dados-cliente-encontrado .info-row { flex-direction: column; gap: 2px; }
-            .validacao-container .form-row { grid-template-columns: 1fr; }
             .user-dropdown-content { right: -30px; min-width: 180px; }
             .checkbox-group { flex-wrap: wrap; }
+            #loginModal .form-row { grid-template-columns: 1fr; }
+            .login-pedido-item { flex-direction: column; align-items: flex-start; }
+            .btn-confirmar-dados { font-size: 14px; padding: 12px; }
         }
 
         @media (max-width: 480px) {
@@ -2104,6 +2271,9 @@
             .cart-total span { font-size: 20px; }
             .user-dropdown-content { right: -40px; min-width: 160px; }
             .user-dropdown-content .dropdown-item { font-size: 13px; padding: 10px 15px; }
+            .login-pedido-item { font-size: 13px; }
+            .btn-confirmar-dados { font-size: 13px; padding: 10px; }
+            .frete-carrinho-resultado .opcao-frete { flex-direction: column; align-items: flex-start; gap: 4px; }
         }
 
         @media (max-width: 380px) {
@@ -2124,6 +2294,7 @@
             .side-menu { width: 260px; left: -280px; }
             .cart-item-image-moderno { width: 40px; height: 40px; }
             .cart-item-nome { font-size: 11px; }
+            .btn-confirmar-dados { font-size: 12px; padding: 8px; }
         }
 
         @media (hover: none) {
@@ -2166,13 +2337,13 @@
                         <div class="dropdown-item login-item" onclick="abrirLogin()">
                             <i class="fas fa-sign-in-alt"></i> Entrar / Cadastrar
                         </div>
-                        <div class="dropdown-item" onclick="abrirLogin()">
+                        <div class="dropdown-item" onclick="abrirLogin()" style="display:none;">
                             <i class="fas fa-user-circle"></i> Dados Pessoais
                         </div>
-                        <div class="dropdown-item" onclick="abrirPedidos()">
+                        <div class="dropdown-item" onclick="abrirMeusPedidos()" style="display:none;">
                             <i class="fas fa-box"></i> Meus Pedidos
                         </div>
-                        <div class="dropdown-item sair" onclick="sairConta()">
+                        <div class="dropdown-item sair" onclick="sairConta()" style="display:none;">
                             <i class="fas fa-sign-out-alt"></i> Sair da Conta
                         </div>
                     </div>
@@ -2225,7 +2396,7 @@
             <i class="fas fa-shopping-cart"></i><span>Carrinho</span>
             <span class="badge" id="cartBadge">0</span>
         </button>
-        <button class="nav-item" onclick="abrirPedidos()">
+        <button class="nav-item" onclick="abrirMeusPedidos()">
             <i class="fas fa-box"></i><span>Pedidos</span>
         </button>
         <button class="nav-item" onclick="abrirAtendimento()">
@@ -2245,7 +2416,7 @@
         </div>
         <a class="side-menu-item" onclick="fecharMenu();showHome();"><i class="fas fa-home"></i> Início</a>
         <a class="side-menu-item" onclick="fecharMenu();abrirCarrinho();"><i class="fas fa-shopping-cart"></i> Meu Carrinho</a>
-        <a class="side-menu-item" onclick="fecharMenu();abrirPedidos();"><i class="fas fa-box"></i> Meus Pedidos</a>
+        <a class="side-menu-item" onclick="fecharMenu();abrirMeusPedidos();"><i class="fas fa-box"></i> Meus Pedidos</a>
         <a class="side-menu-item" onclick="fecharMenu();abrirAtendimento();"><i class="fas fa-headset"></i> Central de Atendimento</a>
         <a class="side-menu-item" onclick="fecharMenu();abrirWhatsApp();"><i class="fab fa-whatsapp"></i> WhatsApp</a>
         <a class="side-menu-item" onclick="fecharMenu();abrirPoliticaTroca();"><i class="fas fa-exchange-alt"></i> Política de Troca</a>
@@ -2288,6 +2459,19 @@
             <div id="cartItems">
                 <p style="text-align:center;padding:30px;color:#999;">Seu carrinho está vazio</p>
             </div>
+
+            <!-- FRETE NO CARRINHO -->
+            <div class="frete-carrinho-container" id="freteCarrinhoContainer" style="display:none;">
+                <div class="frete-row">
+                    <input type="text" id="cepCarrinho" placeholder="Digite seu CEP (ex: 31050650)" maxlength="9" oninput="this.value=this.value.replace(/\D/g,'')">
+                    <button class="btn-calcular-frete" id="btnCalcularFreteCarrinho" onclick="calcularFreteCarrinho()">
+                        <i class="fas fa-truck"></i> Calcular Frete
+                    </button>
+                </div>
+                <div class="frete-erro" id="freteErroCarrinho"></div>
+                <div class="frete-carrinho-resultado" id="freteResultadoCarrinho"></div>
+            </div>
+
             <div class="cart-total">
                 <h3>Total: <span id="cartTotal">R$ 0,00</span></h3>
                 <span class="total-unidades" id="totalUnidades">0 un</span>
@@ -2315,77 +2499,104 @@
 
     <!-- ===== MODAL LOGIN ===== -->
     <div class="modal" id="loginModal">
-        <div class="modal-content" style="max-width:550px;">
+        <div class="modal-content">
             <span class="modal-close" onclick="fecharModal('loginModal')">&times;</span>
-            <h2 style="margin-bottom:20px;">🔐 Área do Cliente</h2>
-            <div id="loginForm">
+            <h2 style="margin-bottom:5px;">🔐 Área do Cliente</h2>
+            <p style="color:#888;font-size:14px;margin-bottom:20px;">Acesse sua conta ou crie um cadastro</p>
+
+            <div class="login-tabs">
+                <div class="login-tab active" data-tab="login" onclick="switchLoginTab('login')">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </div>
+                <div class="login-tab" data-tab="cadastro" onclick="switchLoginTab('cadastro')">
+                    <i class="fas fa-user-plus"></i> Cadastrar
+                </div>
+            </div>
+
+            <div class="login-panel active" id="panelLogin">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmailLogin" placeholder="seu@email.com" onkeypress="if(event.key==='Enter'){fazerLogin()}">
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="loginSenhaLogin" placeholder="••••••" onkeypress="if(event.key==='Enter'){fazerLogin()}">
+                </div>
+                <button class="btn-login-action" onclick="fazerLogin()">
+                    <i class="fas fa-sign-in-alt"></i> Entrar
+                </button>
+                <div id="loginMessage" class="login-message"></div>
+
+                <div class="login-pedidos-container" id="pedidosLogado" style="display:none;">
+                    <h4 style="margin-bottom:10px;">📦 Meus Pedidos</h4>
+                    <div id="listaPedidosLogado"></div>
+                </div>
+            </div>
+
+            <div class="login-panel" id="panelCadastro">
                 <div class="form-group">
                     <label>Tipo de Pessoa</label>
-                    <select id="loginTipoPessoa" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
+                    <select id="cadastroTipoPessoa">
                         <option value="FISICA">Pessoa Física</option>
                         <option value="JURIDICA">Pessoa Jurídica</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Nome / Razão Social *</label>
-                    <input type="text" id="loginNome" placeholder="Nome completo ou Razão Social" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
+                    <input type="text" id="cadastroNome" placeholder="Nome completo ou Razão Social">
                 </div>
-                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="form-row">
                     <div class="form-group">
                         <label>CPF / CNPJ *</label>
-                        <input type="text" id="loginDocumento" placeholder="00000000000 ou 00000000000000" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;" oninput="this.value=this.value.replace(/\D/g,'')">
+                        <input type="text" id="cadastroDocumento" placeholder="00000000000 ou 00000000000000" oninput="this.value=this.value.replace(/\D/g,'')">
                     </div>
                     <div class="form-group" id="grupoInscricaoEstadual" style="display:none;">
                         <label>Inscrição Estadual</label>
-                        <input type="text" id="loginInscricaoEstadual" placeholder="IE" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
+                        <input type="text" id="cadastroInscricaoEstadual" placeholder="IE">
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>Nome do Responsável</label>
-                    <input type="text" id="loginResponsavel" placeholder="Nome do responsável" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
                 </div>
                 <div class="form-group">
                     <label>Email *</label>
-                    <input type="email" id="loginEmail" placeholder="seu@email.com" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
+                    <input type="email" id="cadastroEmail" placeholder="seu@email.com">
                 </div>
                 <div class="form-group">
                     <label>Telefone *</label>
-                    <input type="text" id="loginTelefone" placeholder="11999999999" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;" oninput="this.value=this.value.replace(/\D/g,'')">
+                    <input type="text" id="cadastroTelefone" placeholder="11999999999" oninput="this.value=this.value.replace(/\D/g,'')">
                 </div>
                 <div class="form-group">
                     <label>Senha (mínimo 6 caracteres) *</label>
-                    <input type="password" id="loginSenha" placeholder="••••••" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;" minlength="6">
+                    <input type="password" id="cadastroSenha" placeholder="••••••" minlength="6">
                 </div>
                 <div class="form-group">
                     <label>CEP *</label>
-                    <input type="text" id="loginCep" placeholder="00000000" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;" oninput="this.value=this.value.replace(/\D/g,'')">
-                </div>
-                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                    <div class="form-group">
-                        <label>Endereço *</label>
-                        <input type="text" id="loginEndereco" placeholder="Rua, Av..." style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
-                    </div>
-                    <div class="form-group">
-                        <label>Número *</label>
-                        <input type="text" id="loginNumero" placeholder="123" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
-                    </div>
+                    <input type="text" id="cadastroCep" placeholder="00000000" oninput="this.value=this.value.replace(/\D/g,'')">
                 </div>
                 <div class="form-group">
-                    <label>Complemento</label>
-                    <input type="text" id="loginComplemento" placeholder="Apto, Bloco..." style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
+                    <label>Endereço *</label>
+                    <input type="text" id="cadastroEndereco" placeholder="Rua, Av...">
                 </div>
-                <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Número *</label>
+                        <input type="text" id="cadastroNumero" placeholder="123">
+                    </div>
+                    <div class="form-group">
+                        <label>Complemento</label>
+                        <input type="text" id="cadastroComplemento" placeholder="Apto, Bloco...">
+                    </div>
+                </div>
+                <div class="form-row">
                     <div class="form-group">
                         <label>Bairro *</label>
-                        <input type="text" id="loginBairro" placeholder="Bairro" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
+                        <input type="text" id="cadastroBairro" placeholder="Bairro">
                     </div>
                     <div class="form-group">
                         <label>Cidade *</label>
-                        <input type="text" id="loginCidade" placeholder="Cidade" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
+                        <input type="text" id="cadastroCidade" placeholder="Cidade">
                     </div>
                     <div class="form-group">
                         <label>UF *</label>
-                        <select id="loginUf" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
+                        <select id="cadastroUf">
                             <option value="">UF</option>
                             <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
                             <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
@@ -2399,43 +2610,43 @@
                         </select>
                     </div>
                 </div>
-                <div class="form-group" style="margin-top:15px;padding-top:15px;border-top:2px solid #eee;">
+                <div class="form-group" style="margin-top:10px;padding-top:10px;border-top:2px solid #eee;">
                     <div class="checkbox-group">
-                        <input type="checkbox" id="mesmoEnderecoEntrega" checked onchange="toggleEnderecoEntrega()">
-                        <label for="mesmoEnderecoEntrega">Mesmo endereço para entrega</label>
+                        <input type="checkbox" id="mesmoEnderecoEntregaCadastro" checked onchange="toggleEnderecoEntregaCadastro()">
+                        <label for="mesmoEnderecoEntregaCadastro">Mesmo endereço para entrega</label>
                     </div>
                 </div>
-                <div id="enderecoEntregaDiv" style="display:none;padding:15px;background:#f8f9fa;border-radius:8px;margin-top:10px;">
+                <div id="enderecoEntregaCadastro" style="display:none;padding:15px;background:#f8f9fa;border-radius:8px;margin-top:10px;">
                     <div class="form-group">
                         <label>CEP (Entrega)</label>
-                        <input type="text" id="loginCepEntrega" placeholder="00000000" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;" oninput="this.value=this.value.replace(/\D/g,'')">
-                    </div>
-                    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                        <div class="form-group">
-                            <label>Endereço (Entrega)</label>
-                            <input type="text" id="loginEnderecoEntrega" placeholder="Rua, Av..." style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
-                        </div>
-                        <div class="form-group">
-                            <label>Número (Entrega)</label>
-                            <input type="text" id="loginNumeroEntrega" placeholder="123" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
-                        </div>
+                        <input type="text" id="cadastroCepEntrega" placeholder="00000000" oninput="this.value=this.value.replace(/\D/g,'')">
                     </div>
                     <div class="form-group">
-                        <label>Complemento (Entrega)</label>
-                        <input type="text" id="loginComplementoEntrega" placeholder="Apto, Bloco..." style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
+                        <label>Endereço (Entrega)</label>
+                        <input type="text" id="cadastroEnderecoEntrega" placeholder="Rua, Av...">
                     </div>
-                    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Número (Entrega)</label>
+                            <input type="text" id="cadastroNumeroEntrega" placeholder="123">
+                        </div>
+                        <div class="form-group">
+                            <label>Complemento (Entrega)</label>
+                            <input type="text" id="cadastroComplementoEntrega" placeholder="Apto, Bloco...">
+                        </div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group">
                             <label>Bairro (Entrega)</label>
-                            <input type="text" id="loginBairroEntrega" placeholder="Bairro" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
+                            <input type="text" id="cadastroBairroEntrega" placeholder="Bairro">
                         </div>
                         <div class="form-group">
                             <label>Cidade (Entrega)</label>
-                            <input type="text" id="loginCidadeEntrega" placeholder="Cidade" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
+                            <input type="text" id="cadastroCidadeEntrega" placeholder="Cidade">
                         </div>
                         <div class="form-group">
                             <label>UF (Entrega)</label>
-                            <select id="loginUfEntrega" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:14px;">
+                            <select id="cadastroUfEntrega">
                                 <option value="">UF</option>
                                 <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
                                 <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
@@ -2450,53 +2661,38 @@
                         </div>
                     </div>
                 </div>
-                <button onclick="salvarCliente()" class="btn-checkout" style="margin-top:15px;">
-                    <i class="fas fa-user-plus"></i> Cadastrar / Entrar
+                <button class="btn-login-action" onclick="fazerCadastro()">
+                    <i class="fas fa-user-plus"></i> Cadastrar
                 </button>
-                <p style="text-align:center;margin-top:10px;font-size:12px;color:#888;">
-                    Ao cadastrar, você poderá acompanhar seus pedidos
-                </p>
-            </div>
-            <div id="loginSuccess" style="display:none;text-align:center;padding:20px;">
-                <i class="fas fa-check-circle" style="font-size:48px;color:#27ae60;"></i>
-                <h3 style="margin-top:10px;">✅ Cadastro realizado!</h3>
-                <p style="color:#666;">Agora você pode acompanhar seus pedidos.</p>
-                <button onclick="fecharModal('loginModal')" class="btn-checkout" style="margin-top:15px;">Fechar</button>
-            </div>
-            <div id="loginPedidos" style="display:none;margin-top:15px;">
-                <h4>📦 Seus Pedidos</h4>
-                <div id="loginPedidosLista" style="max-height:200px;overflow-y:auto;"></div>
+                <div id="cadastroMessage" class="login-message"></div>
             </div>
         </div>
     </div>
 
-    <!-- ===== MODAL CHECKOUT COM VALIDAÇÃO CPF/CNPJ ===== -->
+    <!-- ===== MODAL CHECKOUT ===== -->
     <div class="modal checkout-modal" id="checkoutModal">
         <div class="modal-content">
             <span class="modal-close" onclick="fecharModal('checkoutModal')">&times;</span>
 
-            <!-- Loading -->
             <div id="checkoutLoading" style="display:none;text-align:center;padding:40px;">
                 <div class="spinner" style="width:50px;height:50px;border:4px solid #e0e0e0;border-top:4px solid var(--primary-blue);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;"></div>
                 <p style="color:#666;">Processando seu pedido...</p>
             </div>
 
-            <!-- Conteúdo do Checkout -->
             <div id="checkoutContent">
-                <!-- PASSO 1: Validação CPF/CNPJ + Endereço -->
+                <!-- PASSO 1: Identificação por EMAIL -->
                 <div class="checkout-passo active" id="checkoutPasso1">
                     <div class="checkout-passo-header">
-                        <h2><i class="fas fa-id-card"></i> Identificação</h2>
+                        <h2><i class="fas fa-envelope"></i> Identificação</h2>
                         <span class="passo-indicador">Passo <strong>1</strong> de 3</span>
                     </div>
 
-                    <!-- Validação CPF/CNPJ -->
-                    <div class="validacao-container" id="validacaoContainer">
+                    <div class="validacao-container">
                         <div class="form-group">
-                            <label>Digite seu CPF ou CNPJ cadastrado (apenas números)</label>
+                            <label>Digite seu email cadastrado</label>
                             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                                <input type="text" id="documentoBusca" placeholder="00000000000 ou 00000000000000" style="flex:1;min-width:200px;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:16px;letter-spacing:1px;" oninput="this.value=this.value.replace(/\D/g,'')">
-                                <button class="btn-buscar-cliente" id="btnBuscarCliente" onclick="buscarClientePorDocumento()">
+                                <input type="email" id="emailBusca" placeholder="seu@email.com" style="flex:1;min-width:200px;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:16px;">
+                                <button class="btn-buscar-cliente" id="btnBuscarCliente" onclick="buscarClientePorEmail()">
                                     <i class="fas fa-search"></i> Buscar
                                 </button>
                             </div>
@@ -2507,11 +2703,11 @@
                         </div>
                     </div>
 
-                    <!-- Dados do cliente encontrado -->
+                    <!-- Dados do cliente encontrado (CAMUFLADOS) -->
                     <div class="dados-cliente-encontrado" id="dadosClienteEncontrado">
                         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                             <span style="font-weight:600;color:var(--success);"><i class="fas fa-check-circle"></i> Cliente encontrado!</span>
-                            <span style="font-size:12px;color:#888;" id="documentoConfirmado"></span>
+                            <span style="font-size:12px;color:#888;" id="emailConfirmado"></span>
                         </div>
                         <div class="info-row">
                             <span class="label">Nome</span>
@@ -2523,7 +2719,7 @@
                         </div>
                         <div class="info-row">
                             <span class="label">Email</span>
-                            <span class="value camuflado" id="clienteEmailEncontrado">---</span>
+                            <span class="value" id="clienteEmailEncontrado" style="color:var(--primary-blue);">---</span>
                         </div>
                         <div class="info-row" style="border-bottom:2px solid #c8e6c9;padding-bottom:8px;">
                             <span class="label">Endereço</span>
@@ -2533,30 +2729,34 @@
                             <div class="rua-numero" id="enderecoRuaNumero">Rua ****** 123</div>
                             <div class="complemento" id="enderecoComplemento">***, Bairro ***, Cidade - UF, CEP *****-***</div>
                         </div>
-                        <div style="margin-top:8px;font-size:13px;color:#666;display:flex;gap:10px;flex-wrap:wrap;">
-                            <span><i class="fas fa-check-circle" style="color:var(--success);"></i> Endereço confirmado?</span>
-                            <span style="font-weight:600;">Verifique se o endereço acima está correto.</span>
-                        </div>
 
+                        <!-- Botão para escolher outro endereço -->
                         <button class="btn-outro-endereco" onclick="solicitarOutroEndereco()">
                             <i class="fas fa-exchange-alt"></i> Escolher outro endereço
                         </button>
+
+                        <!-- BOTÃO CONFIRMAR DADOS (NO FINAL) -->
+                        <button class="btn-confirmar-dados" id="btnConfirmarDados" onclick="confirmarDadosCheckout()" disabled>
+                            <i class="fas fa-check-circle"></i> Confirmar que meus dados estão corretos
+                        </button>
+
+                        <div class="confirmacao-status" id="confirmacaoStatus"></div>
                     </div>
 
-                    <!-- Área para novo cadastro (quando não encontra o cliente) -->
+                    <!-- Área para novo cadastro -->
                     <div id="areaNovoCadastro" style="display:none;padding:15px;background:#fff3cd;border-radius:8px;border-left:4px solid var(--warning);margin-bottom:15px;">
                         <p style="font-weight:600;color:#856404;">
-                            <i class="fas fa-exclamation-triangle"></i> Cliente não encontrado
+                            <i class="fas fa-exclamation-triangle"></i> Email não cadastrado
                         </p>
-                        <p style="font-size:14px;color:#856404;">
-                            Você precisa se cadastrar para finalizar o pedido.
+                        <p style="font-size:14px;color:#856404;margin-bottom:10px;">
+                            Para finalizar o pedido, você precisa se cadastrar.
                         </p>
-                        <button class="btn-checkout" onclick="abrirCadastroDireto()" style="margin-top:10px;background:var(--primary-blue);">
+                        <button class="btn-checkout" onclick="abrirCadastroDiretoCheckout()" style="margin-top:10px;background:var(--primary-blue);">
                             <i class="fas fa-user-plus"></i> Fazer Cadastro
                         </button>
                     </div>
 
-                    <!-- Endereços salvos (para quem já tem cadastro) -->
+                    <!-- Endereços salvos (apenas da planilha) -->
                     <div id="enderecosSalvos" style="display:none;">
                         <p style="color:#999;font-size:14px;margin-bottom:10px;margin-top:15px;">
                             <i class="fas fa-address-book"></i> Selecione um endereço:
@@ -2579,6 +2779,8 @@
                         <span class="passo-indicador">Passo <strong>2</strong> de 3</span>
                     </div>
 
+                    <div class="frete-erro-checkout" id="freteErroCheckout"></div>
+
                     <div id="freteOpcoesContainer">
                         <div class="frete-carregando-opcoes">
                             <i class="fas fa-spinner fa-spin"></i> Carregando opções de frete...
@@ -2597,16 +2799,14 @@
                     </div>
                 </div>
 
-                <!-- PASSO 3: Pagamento e Resumo -->
+                <!-- PASSO 3: Pagamento -->
                 <div class="checkout-passo" id="checkoutPasso3">
                     <div class="checkout-passo-header">
                         <h2><i class="fas fa-credit-card"></i> Pagamento e Resumo</h2>
                         <span class="passo-indicador">Passo <strong>3</strong> de 3</span>
                     </div>
 
-                    <div class="checkout-resumo" id="checkoutResumo">
-                        <!-- Resumo será preenchido via JS -->
-                    </div>
+                    <div class="checkout-resumo" id="checkoutResumo"></div>
 
                     <h4 style="margin-bottom:12px;color:var(--primary-dark);">Forma de Pagamento</h4>
 
@@ -2769,6 +2969,19 @@
         const PIX_KEY = '10648303000179';
 
         // ============================================================
+        // CONFIGURAÇÃO SUPERFRETE
+        // ============================================================
+        const SUPERFRETE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3ODE4ODkzNjAsInN1YiI6IlNCOXc1dVFFU1NXTTZWUE5XZ2ZDVmVtMGRWeTIifQ.5SyJhPa3TVeaa7Y_Dc9BWiFiOi6YtjPL5ghAynOFqFA';
+        const SUPERFRETE_URL = 'https://api.superfrete.com/v1';
+        const CEP_ORIGEM = '31050650';
+        const PESO_PADRAO = 2; // kg
+        const DIMENSAO_PADRAO = { altura: 10, largura: 10, comprimento: 25 }; // cm
+        const MARGEM_SEGURANCA = 1.1; // 10% a mais
+        const ACRESCIMO_VALOR_FRETE = 10; // R$ 10,00
+        const ACRESCIMO_PRAZO_FRETE = 3; // 3 dias úteis
+        const PRAZO_RETIRADA_LOJA = 1; // 1 dia útil
+
+        // ============================================================
         // 1. DADOS DOS PRODUTOS
         // ============================================================
         let PRODUCTS_DATA = { categories: [] };
@@ -2788,7 +3001,10 @@
             loadingFrete: false,
             clienteEncontrado: false,
             clienteData: null,
-            documentoBuscado: ''
+            emailBuscado: '',
+            dadosConfirmados: false,
+            opcoesFrete: [],
+            producaoDias: 0
         };
 
         let ultimoNumeroPedido = 13000;
@@ -2796,6 +3012,11 @@
         let maxTentativas = 2;
         let pedidoDataEnvio = null;
         let isEnviando = false;
+
+        // ============================================================
+        // USUÁRIO LOGADO
+        // ============================================================
+        let usuarioLogado = null;
 
         // ============================================================
         // FUNÇÃO PARA CARREGAR DADOS DA PLANILHA
@@ -2988,6 +3209,7 @@
                 atalhoAdmin();
                 controlarHistoricoNavegacao();
                 atualizarBadge();
+                verificarSessao();
                 inicializando = false;
                 return;
             }
@@ -2998,7 +3220,7 @@
             controlarHistoricoNavegacao();
             atualizarBadge();
             
-            atualizarNomeClienteHeader();
+            verificarSessao();
             
             const restaurado = restaurarEstadoNavegacao();
             if (!restaurado) {
@@ -3007,41 +3229,62 @@
             inicializando = false;
         }
 
-        function atualizarNomeClienteHeader() {
-            const nome = localStorage.getItem('clienteNome');
-            const el = document.getElementById('clienteNomeHeader');
-            const dropdown = document.getElementById('userDropdown');
-            
-            if (nome && el) {
-                el.textContent = '👤 ' + nome;
-                el.classList.add('show');
-                document.getElementById('btnUserMenu').innerHTML = '<i class="fas fa-user-check"></i>';
-                
-                // Esconde o botão de login e mostra as outras opções
+        // ============================================================
+        // VERIFICAR SESSÃO DO USUÁRIO
+        // ============================================================
+        function verificarSessao() {
+            const sessao = localStorage.getItem('usuarioLogado');
+            if (sessao) {
+                try {
+                    usuarioLogado = JSON.parse(sessao);
+                    atualizarInterfaceUsuario();
+                    carregarPedidosCliente(usuarioLogado.email);
+                } catch (e) {
+                    usuarioLogado = null;
+                    localStorage.removeItem('usuarioLogado');
+                }
+            } else {
+                usuarioLogado = null;
+            }
+            atualizarNomeClienteHeader();
+        }
+
+        function atualizarInterfaceUsuario() {
+            if (usuarioLogado) {
+                const dropdown = document.getElementById('userDropdown');
                 const loginItem = dropdown.querySelector('.login-item');
-                if (loginItem) loginItem.style.display = 'none';
-                
-                // Mostra os itens de sair
+                const dadosItem = dropdown.querySelector('.dropdown-item:not(.login-item):not(.sair)');
+                const pedidosItem = dropdown.querySelector('.dropdown-item:nth-child(3)');
                 const sairItem = dropdown.querySelector('.sair');
+                
+                if (loginItem) loginItem.style.display = 'none';
+                if (dadosItem) dadosItem.style.display = 'flex';
+                if (pedidosItem) pedidosItem.style.display = 'flex';
                 if (sairItem) sairItem.style.display = 'flex';
                 
-                const dadosItem = dropdown.querySelector('.dropdown-item:not(.login-item):not(.sair)');
-                if (dadosItem) dadosItem.style.display = 'flex';
-                
-            } else if (el) {
+                document.getElementById('btnUserMenu').innerHTML = '<i class="fas fa-user-check"></i>';
+            }
+        }
+
+        function atualizarNomeClienteHeader() {
+            const el = document.getElementById('clienteNomeHeader');
+            if (usuarioLogado && usuarioLogado.nome) {
+                el.textContent = '👤 ' + usuarioLogado.nome;
+                el.classList.add('show');
+            } else {
                 el.classList.remove('show');
                 document.getElementById('btnUserMenu').innerHTML = '<i class="fas fa-user"></i>';
                 
-                // Mostra o botão de login
+                const dropdown = document.getElementById('userDropdown');
                 const loginItem = dropdown.querySelector('.login-item');
-                if (loginItem) loginItem.style.display = 'flex';
-                
-                // Esconde os itens de sair e dados
-                const sairItem = dropdown.querySelector('.sair');
-                if (sairItem) sairItem.style.display = 'none';
-                
                 const dadosItem = dropdown.querySelector('.dropdown-item:not(.login-item):not(.sair)');
+                const pedidosItem = dropdown.querySelector('.dropdown-item:nth-child(3)');
+                const sairItem = dropdown.querySelector('.sair');
+                
+                if (loginItem) loginItem.style.display = 'flex';
                 if (dadosItem) dadosItem.style.display = 'none';
+                if (pedidosItem) pedidosItem.style.display = 'none';
+                if (sairItem) sairItem.style.display = 'none';
             }
         }
 
@@ -3053,7 +3296,6 @@
             dropdown.classList.toggle('show');
         }
 
-        // Fecha o dropdown ao clicar fora
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('userDropdown');
             const btn = document.getElementById('btnUserMenu');
@@ -3062,31 +3304,258 @@
             }
         });
 
+        // ============================================================
+        // SAIR DA CONTA
+        // ============================================================
         function sairConta() {
             if (confirm('Tem certeza que deseja sair da sua conta?')) {
-                localStorage.removeItem('clienteNome');
-                localStorage.removeItem('clienteEmail');
-                localStorage.removeItem('clienteTelefone');
-                localStorage.removeItem('clienteDocumento');
-                localStorage.removeItem('clienteTipoPessoa');
-                localStorage.removeItem('clienteInscricaoEstadual');
-                localStorage.removeItem('clienteResponsavel');
-                localStorage.removeItem('clienteEndereco');
-                localStorage.removeItem('clienteCep');
-                localStorage.removeItem('clienteEnderecoEntrega');
-                localStorage.removeItem('clienteSenha');
-                localStorage.removeItem('carrinho');
-                carrinho = [];
-                atualizarBadge();
+                localStorage.removeItem('usuarioLogado');
+                usuarioLogado = null;
                 atualizarNomeClienteHeader();
                 document.getElementById('userDropdown').classList.remove('show');
+                document.getElementById('pedidosLogado').style.display = 'none';
                 alert('✅ Você saiu da sua conta com sucesso!');
                 showHome();
             }
         }
 
         // ============================================================
-        // PERSISTÊNCIA DE NAVEGAÇÃO (apenas para UX, não dados de cliente)
+        // LOGIN
+        // ============================================================
+        function abrirLogin() {
+            const modal = document.getElementById('loginModal');
+            
+            document.getElementById('loginEmailLogin').value = '';
+            document.getElementById('loginSenhaLogin').value = '';
+            document.getElementById('loginMessage').className = 'login-message';
+            document.getElementById('loginMessage').textContent = '';
+            
+            document.getElementById('panelLogin').classList.add('active');
+            document.getElementById('panelCadastro').classList.remove('active');
+            
+            document.querySelectorAll('.login-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === 'login');
+            });
+            
+            modal.style.display = 'block';
+        }
+
+        function switchLoginTab(tab) {
+            document.querySelectorAll('.login-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === tab);
+            });
+            
+            document.getElementById('panelLogin').classList.toggle('active', tab === 'login');
+            document.getElementById('panelCadastro').classList.toggle('active', tab === 'cadastro');
+            
+            document.getElementById('loginMessage').className = 'login-message';
+            document.getElementById('loginMessage').textContent = '';
+            document.getElementById('cadastroMessage').className = 'login-message';
+            document.getElementById('cadastroMessage').textContent = '';
+        }
+
+        async function fazerLogin() {
+            const email = document.getElementById('loginEmailLogin').value.trim();
+            const senha = document.getElementById('loginSenhaLogin').value;
+            const msgEl = document.getElementById('loginMessage');
+            
+            if (!email) {
+                msgEl.className = 'login-message error';
+                msgEl.textContent = '⚠️ Digite seu email.';
+                return;
+            }
+            
+            if (!senha) {
+                msgEl.className = 'login-message error';
+                msgEl.textContent = '⚠️ Digite sua senha.';
+                return;
+            }
+            
+            msgEl.className = 'login-message';
+            msgEl.textContent = '🔄 Verificando credenciais...';
+            
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                const clientes = data.clientes || [];
+                
+                console.log('🔍 Buscando cliente por email:', email);
+                
+                const cliente = clientes.find(c => {
+                    const cEmail = String(c.email || '').toLowerCase().trim();
+                    return cEmail === email.toLowerCase().trim();
+                });
+                
+                console.log('🔍 Cliente encontrado?', cliente ? 'Sim' : 'Não');
+                
+                if (!cliente) {
+                    msgEl.className = 'login-message error';
+                    msgEl.textContent = '❌ Email não encontrado. Faça seu cadastro.';
+                    return;
+                }
+                
+                const senhaCliente = String(cliente.senha || '');
+                const senhaDigitada = String(senha);
+                
+                console.log('🔍 Comparando senhas...');
+                
+                if (senhaCliente !== senhaDigitada) {
+                    msgEl.className = 'login-message error';
+                    msgEl.textContent = '❌ Senha incorreta. Tente novamente.';
+                    return;
+                }
+                
+                usuarioLogado = {
+                    email: String(cliente.email),
+                    nome: String(cliente.nome || ''),
+                    documento: String(cliente.documento || ''),
+                    telefone: String(cliente.telefone || ''),
+                    endereco: String(cliente.endereco || ''),
+                    cep: String(cliente.cep || ''),
+                    tipoPessoa: String(cliente.tipo_pessoa || 'FISICA')
+                };
+                
+                localStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
+                
+                atualizarInterfaceUsuario();
+                atualizarNomeClienteHeader();
+                
+                msgEl.className = 'login-message success';
+                msgEl.textContent = '✅ Login realizado com sucesso!';
+                
+                carregarPedidosCliente(email);
+                
+                setTimeout(() => {
+                    fecharModal('loginModal');
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Erro ao fazer login:', error);
+                msgEl.className = 'login-message error';
+                msgEl.textContent = '❌ Erro ao conectar. Tente novamente.';
+            }
+        }
+
+        // ============================================================
+        // CADASTRO
+        // ============================================================
+        function toggleEnderecoEntregaCadastro() {
+            const checkbox = document.getElementById('mesmoEnderecoEntregaCadastro');
+            const div = document.getElementById('enderecoEntregaCadastro');
+            div.style.display = checkbox.checked ? 'none' : 'block';
+        }
+
+        async function fazerCadastro() {
+            const nome = document.getElementById('cadastroNome').value.trim();
+            const email = document.getElementById('cadastroEmail').value.trim();
+            const telefone = document.getElementById('cadastroTelefone').value.trim();
+            const senha = document.getElementById('cadastroSenha').value;
+            const documentoInput = document.getElementById('cadastroDocumento').value.trim();
+            const tipoPessoa = document.getElementById('cadastroTipoPessoa').value;
+            const inscricaoEstadual = document.getElementById('cadastroInscricaoEstadual').value.trim();
+            const cep = document.getElementById('cadastroCep').value.trim();
+            const endereco = document.getElementById('cadastroEndereco').value.trim();
+            const numero = document.getElementById('cadastroNumero').value.trim();
+            const complemento = document.getElementById('cadastroComplemento').value.trim();
+            const bairro = document.getElementById('cadastroBairro').value.trim();
+            const cidade = document.getElementById('cadastroCidade').value.trim();
+            const uf = document.getElementById('cadastroUf').value;
+            
+            const msgEl = document.getElementById('cadastroMessage');
+            
+            if (!nome) { msgEl.className = 'login-message error'; msgEl.textContent = '⚠️ Preencha o Nome/Razão Social.'; return; }
+            if (!email) { msgEl.className = 'login-message error'; msgEl.textContent = '⚠️ Preencha o Email.'; return; }
+            if (!documentoInput) { msgEl.className = 'login-message error'; msgEl.textContent = '⚠️ Preencha o CPF/CNPJ.'; return; }
+            if (senha.length < 6) { msgEl.className = 'login-message error'; msgEl.textContent = '⚠️ A senha deve ter no mínimo 6 caracteres.'; return; }
+            if (!cep || !endereco || !numero || !bairro || !cidade || !uf) {
+                msgEl.className = 'login-message error';
+                msgEl.textContent = '⚠️ Preencha todos os campos do endereço.';
+                return;
+            }
+            
+            const docValidado = validarDocumento(documentoInput);
+            if (!docValidado.valido) {
+                msgEl.className = 'login-message error';
+                msgEl.textContent = '⚠️ CPF/CNPJ inválido. Digite 11 números (CPF) ou 14 números (CNPJ).';
+                return;
+            }
+            
+            let enderecoEntrega = '';
+            let cepEntrega = '';
+            if (!document.getElementById('mesmoEnderecoEntregaCadastro').checked) {
+                cepEntrega = document.getElementById('cadastroCepEntrega').value.trim();
+                const enderecoE = document.getElementById('cadastroEnderecoEntrega').value.trim();
+                const numeroE = document.getElementById('cadastroNumeroEntrega').value.trim();
+                const complementoE = document.getElementById('cadastroComplementoEntrega').value.trim();
+                const bairroE = document.getElementById('cadastroBairroEntrega').value.trim();
+                const cidadeE = document.getElementById('cadastroCidadeEntrega').value.trim();
+                const ufE = document.getElementById('cadastroUfEntrega').value;
+                enderecoEntrega = `${enderecoE}, ${numeroE}${complementoE ? ', ' + complementoE : ''} - ${bairroE}, ${cidadeE} - ${ufE}, ${cepEntrega}`;
+            } else {
+                enderecoEntrega = `${endereco}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}, ${cidade} - ${uf}, ${cep}`;
+                cepEntrega = cep;
+            }
+            
+            const enderecoCompleto = `${endereco}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}, ${cidade} - ${uf}, ${cep}`;
+            const documentoSalvo = docValidado.documento;
+            
+            msgEl.className = 'login-message';
+            msgEl.textContent = '🔄 Cadastrando...';
+            
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        acao: 'salvar_cliente',
+                        cliente: {
+                            nome: nome,
+                            email: email,
+                            telefone: telefone,
+                            documento: documentoSalvo,
+                            tipo_pessoa: tipoPessoa,
+                            inscricao_estadual: inscricaoEstadual,
+                            senha: senha,
+                            endereco: enderecoCompleto,
+                            cep: cep,
+                            endereco_entrega: enderecoEntrega,
+                            cep_entrega: cepEntrega
+                        }
+                    })
+                });
+                
+                msgEl.className = 'login-message success';
+                msgEl.textContent = '✅ Cadastro realizado com sucesso! Faça login para continuar.';
+                
+                document.getElementById('cadastroNome').value = '';
+                document.getElementById('cadastroEmail').value = '';
+                document.getElementById('cadastroTelefone').value = '';
+                document.getElementById('cadastroDocumento').value = '';
+                document.getElementById('cadastroSenha').value = '';
+                document.getElementById('cadastroCep').value = '';
+                document.getElementById('cadastroEndereco').value = '';
+                document.getElementById('cadastroNumero').value = '';
+                document.getElementById('cadastroComplemento').value = '';
+                document.getElementById('cadastroBairro').value = '';
+                document.getElementById('cadastroCidade').value = '';
+                document.getElementById('cadastroUf').value = '';
+                
+                setTimeout(() => {
+                    switchLoginTab('login');
+                    document.getElementById('loginEmailLogin').value = email;
+                    msgEl.textContent = '✅ Cadastro concluído! Agora faça login.';
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Erro ao cadastrar:', error);
+                msgEl.className = 'login-message error';
+                msgEl.textContent = '❌ Erro ao cadastrar. Tente novamente.';
+            }
+        }
+
+        // ============================================================
+        // PERSISTÊNCIA DE NAVEGAÇÃO
         // ============================================================
         function salvarEstadoNavegacao(pagina) {
             try {
@@ -3127,22 +3596,6 @@
             } catch (e) {
                 return false;
             }
-        }
-
-        // ============================================================
-        // FUNÇÃO CALCULAR FRETE
-        // ============================================================
-        function calcularFreteCheckout(cep) {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    const opcoes = [
-                        { nome: 'PAC', valor: 15.90, prazo: '5 a 8 dias úteis' },
-                        { nome: 'SEDEX', valor: 32.50, prazo: '2 a 3 dias úteis' },
-                        { nome: 'Transportadora', valor: 45.00, prazo: '4 a 6 dias úteis' }
-                    ];
-                    resolve(opcoes);
-                }, 1000);
-            });
         }
 
         // ============================================================
@@ -3367,7 +3820,9 @@
                     stock: product.stock,
                     productionDays: product.productionDays || 7,
                     detalhes: detalhesArray,
-                    vender_zerado: product.vender_zerado
+                    vender_zerado: product.vender_zerado,
+                    weight: product.weight || 0,
+                    dimensions: product.quantities.length > 0 ? product.quantities[0].dimensions : ''
                 });
             }
             salvarCarrinho();
@@ -3501,6 +3956,15 @@
             const container = document.getElementById('cartItems');
             const totalEl = document.getElementById('cartTotal');
             const totalUnidadesEl = document.getElementById('totalUnidades');
+            
+            // Mostrar/ocultar área de frete
+            const freteContainer = document.getElementById('freteCarrinhoContainer');
+            if (carrinho.length > 0) {
+                freteContainer.style.display = 'block';
+            } else {
+                freteContainer.style.display = 'none';
+            }
+            
             if (carrinho.length === 0) {
                 container.innerHTML = '<div class="carrinho-vazio"><i class="fas fa-shopping-cart"></i><p>Seu carrinho está vazio</p><span>Adicione produtos para começar</span></div>';
                 totalEl.textContent = 'R$ 0,00';
@@ -3682,7 +4146,7 @@
         }
 
         // ============================================================
-        // FUNÇÃO PARA VALIDAR E FORMATAR CPF/CNPJ (apenas números)
+        // FUNÇÃO PARA VALIDAR E FORMATAR CPF/CNPJ
         // ============================================================
         function validarDocumento(documento) {
             const numeros = documento.replace(/[^\d]/g, '');
@@ -3734,7 +4198,574 @@
         }
 
         // ============================================================
-        // 8. CHECKOUT COM VALIDAÇÃO
+        // 7. FUNÇÕES DE CAMUFLAÇÃO DE DADOS
+        // ============================================================
+        function camuflarNome(nome) {
+            if (!nome) return '---';
+            const nomeStr = String(nome).trim();
+            if (!nomeStr) return '---';
+            const partes = nomeStr.split(' ');
+            return partes.map(p => {
+                if (p.length <= 2) return p;
+                return p[0] + '***' + p[p.length - 1];
+            }).join(' ');
+        }
+
+        function camuflarTelefone(telefone) {
+            if (!telefone) return 'Não informado';
+            const telStr = String(telefone).replace(/\D/g, '');
+            if (!telStr) return 'Não informado';
+            
+            if (telStr.length >= 10) {
+                const ddd = telStr.substring(0, 2);
+                const ultimos = telStr.substring(telStr.length - 4);
+                return `(${ddd}) ****-${ultimos}`;
+            }
+            return String(telefone);
+        }
+
+        function camuflarEmail(email) {
+            if (!email) return '---';
+            const emailStr = String(email).trim();
+            if (!emailStr) return '---';
+            const partes = emailStr.split('@');
+            if (partes.length !== 2) return emailStr;
+            const usuario = partes[0];
+            const dominio = partes[1];
+            if (usuario.length <= 3) return usuario + '@' + dominio;
+            return usuario.substring(0, 3) + '***@' + dominio;
+        }
+
+        function camuflarEndereco(endereco) {
+            if (!endereco) return 'Não informado';
+            const endStr = String(endereco).trim();
+            if (!endStr) return 'Não informado';
+            
+            let rua = endStr;
+            let numero = '';
+            let complemento = '';
+            let bairro = '';
+            let cidade = '';
+            let uf = '';
+            let cep = '';
+
+            const numMatch = endStr.match(/(.*?),\s*(\d+)/);
+            if (numMatch) {
+                rua = numMatch[1].trim();
+                numero = numMatch[2];
+            }
+
+            if (rua.length > 6) {
+                rua = rua.substring(0, 3) + '****' + rua.substring(rua.length - 3);
+            }
+
+            const cidadeMatch = endStr.match(/-\s*([A-Za-zÀ-ÿ\s]+)\s*-\s*([A-Z]{2})/);
+            if (cidadeMatch) {
+                const cidadeOriginal = cidadeMatch[1].trim();
+                if (cidadeOriginal.length > 4) {
+                    cidade = cidadeOriginal.substring(0, 2) + '***' + cidadeOriginal.substring(cidadeOriginal.length - 2);
+                } else {
+                    cidade = cidadeOriginal;
+                }
+                uf = cidadeMatch[2];
+            }
+
+            const cepMatch = endStr.match(/\b(\d{5})-?(\d{3})\b/);
+            if (cepMatch) {
+                cep = cepMatch[1] + '-***';
+            }
+
+            let result = rua;
+            if (numero) result += ', ' + numero;
+            if (bairro) result += ' - ' + bairro;
+            if (cidade) result += ' - ' + cidade;
+            if (uf) result += ' - ' + uf;
+            if (cep) result += ', CEP ' + cep;
+
+            return result || 'Não informado';
+        }
+
+        // ============================================================
+        // 8. FUNÇÕES DO SUPERFRETE
+        // ============================================================
+        
+        // Extrair peso e dimensões de uma string no formato "peso-dimensoes"
+        function extrairPesoDimensoes(info) {
+            if (!info) return null;
+            
+            // Exemplo: "0.5kg-30x20x15"
+            const parts = info.split('-');
+            if (parts.length !== 2) return null;
+            
+            const pesoStr = parts[0].replace(/[^0-9.,]/g, '').replace(',', '.');
+            const peso = parseFloat(pesoStr) || 0;
+            
+            const dims = parts[1].split('x').map(d => parseInt(d.trim()) || 0);
+            if (dims.length !== 3) return null;
+            
+            return {
+                peso: peso,
+                altura: dims[0],
+                largura: dims[1],
+                comprimento: dims[2]
+            };
+        }
+
+        // Calcular peso total do pedido
+        function calcularPesoTotal() {
+            let pesoTotal = 0;
+            
+            carrinho.forEach(item => {
+                const product = encontrarProduto(item.productId);
+                if (product && product.weight > 0) {
+                    pesoTotal += product.weight * item.quantity;
+                } else {
+                    // Usar peso dos detalhes se disponível
+                    let pesoItem = 0;
+                    if (item.detalhes && item.detalhes.length > 0) {
+                        item.detalhes.forEach(d => {
+                            if (d.weight) {
+                                const peso = parseFloat(d.weight.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+                                pesoItem += peso * d.qty;
+                            }
+                        });
+                    }
+                    pesoTotal += pesoItem || (PESO_PADRAO * item.quantity);
+                }
+            });
+            
+            return Math.max(pesoTotal, 0.1); // Mínimo 0.1kg
+        }
+
+        // Calcular dimensões da caixa (volume + margem)
+        function calcularDimensoes() {
+            let volumeTotal = 0;
+            
+            carrinho.forEach(item => {
+                const product = encontrarProduto(item.productId);
+                let dims = null;
+                let quantidade = item.quantity;
+                
+                // Tentar extrair dimensões dos detalhes do carrinho
+                if (item.detalhes && item.detalhes.length > 0) {
+                    item.detalhes.forEach(d => {
+                        if (d.dimensions) {
+                            const info = extrairPesoDimensoes(d.weight + '-' + d.dimensions);
+                            if (info) {
+                                const volume = info.altura * info.largura * info.comprimento;
+                                volumeTotal += volume * d.qty;
+                            }
+                        }
+                    });
+                }
+                
+                // Se não conseguiu dos detalhes, tentar do produto
+                if (volumeTotal === 0 && product) {
+                    // Pegar a primeira opção de quantidade com dimensões
+                    for (const qty of product.quantities) {
+                        if (qty.dimensions && qty.weight) {
+                            const info = extrairPesoDimensoes(qty.weight + '-' + qty.dimensions);
+                            if (info) {
+                                const volume = info.altura * info.largura * info.comprimento;
+                                volumeTotal += volume * (item.quantity / qty.qty);
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Se não conseguiu calcular, usar dimensão padrão
+            if (volumeTotal === 0) {
+                const volPadrao = DIMENSAO_PADRAO.altura * DIMENSAO_PADRAO.largura * DIMENSAO_PADRAO.comprimento;
+                volumeTotal = volPadrao * carrinho.reduce((sum, item) => sum + item.quantity, 0);
+            }
+            
+            // Aplicar margem de segurança
+            volumeTotal *= MARGEM_SEGURANCA;
+            
+            // Calcular caixa cúbica
+            const lado = Math.cbrt(volumeTotal);
+            const dimensao = Math.ceil(lado);
+            
+            // Garantir tamanho mínimo
+            const minimo = 10; // cm
+            const tamanho = Math.max(dimensao, minimo);
+            
+            return {
+                altura: tamanho,
+                largura: tamanho,
+                comprimento: tamanho
+            };
+        }
+
+        // Calcular prazo de produção do pedido
+        function calcularPrazoProducao() {
+            let maiorPrazo = 0;
+            
+            carrinho.forEach(item => {
+                const product = encontrarProduto(item.productId);
+                if (product) {
+                    // Se não tem estoque suficiente, considerar prazo de produção
+                    if (product.stock < item.quantity) {
+                        const prazo = product.productionDays || 0;
+                        if (prazo > maiorPrazo) {
+                            maiorPrazo = prazo;
+                        }
+                    }
+                }
+            });
+            
+            return maiorPrazo;
+        }
+
+        // Buscar frete no SuperFrete
+        async function buscarFreteSuperFrete(cepDestino) {
+            try {
+                const peso = calcularPesoTotal();
+                const dims = calcularDimensoes();
+                
+                // Garantir que as dimensões estão dentro dos limites do SuperFrete
+                const altura = Math.min(Math.max(dims.altura, 2), 105);
+                const largura = Math.min(Math.max(dims.largura, 11), 105);
+                const comprimento = Math.min(Math.max(dims.comprimento, 16), 105);
+                
+                const payload = {
+                    from: { postal_code: CEP_ORIGEM },
+                    to: { postal_code: cepDestino },
+                    package: {
+                        height: altura,
+                        width: largura,
+                        length: comprimento,
+                        weight: peso
+                    },
+                    options: {
+                        insurance_value: 0,
+                        receipt: false,
+                        own_hand: false,
+                        reverse: false
+                    }
+                };
+                
+                console.log('📦 Calculando frete:', payload);
+                
+                const response = await fetch(`${SUPERFRETE_URL}/quote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPERFRETE_TOKEN}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Erro SuperFrete:', errorText);
+                    throw new Error(`Erro na API: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ Resposta SuperFrete:', data);
+                
+                return data;
+                
+            } catch (error) {
+                console.error('❌ Erro ao buscar frete:', error);
+                throw error;
+            }
+        }
+
+        // Formatar opções de frete para exibição
+        function formatarOpcoesFrete(opcoes) {
+            const opcoesFormatadas = [];
+            
+            // Opção Retirada na Loja (sempre disponível)
+            const producaoDias = calcularPrazoProducao();
+            const prazoTotal = PRAZO_RETIRADA_LOJA + producaoDias;
+            
+            opcoesFormatadas.push({
+                nome: 'Retirada na Loja',
+                valor: 0,
+                prazo: `${prazoTotal} dias úteis`,
+                prazoDias: prazoTotal,
+                codigo: 'RETIRADA',
+                producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : ''
+            });
+            
+            // Opções do SuperFrete
+            if (opcoes && opcoes.length > 0) {
+                opcoes.forEach(op => {
+                    // Verificar se é uma opção válida
+                    if (op.price && op.delivery_time) {
+                        const valorComAcrescimo = parseFloat(op.price) + ACRESCIMO_VALOR_FRETE;
+                        const prazoComAcrescimo = parseInt(op.delivery_time) + ACRESCIMO_PRAZO_FRETE + producaoDias;
+                        
+                        let nome = op.name || op.service || 'Frete';
+                        // Traduzir nomes
+                        if (nome.includes('PAC')) nome = 'PAC';
+                        else if (nome.includes('SEDEX')) nome = 'SEDEX';
+                        else if (nome.includes('Expresso')) nome = 'Expresso';
+                        
+                        opcoesFormatadas.push({
+                            nome: nome,
+                            valor: valorComAcrescimo,
+                            prazo: `${prazoComAcrescimo} dias úteis`,
+                            prazoDias: prazoComAcrescimo,
+                            codigo: op.id || op.code || nome,
+                            producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : ''
+                        });
+                    }
+                });
+            }
+            
+            // Ordenar por valor
+            opcoesFormatadas.sort((a, b) => a.valor - b.valor);
+            
+            return opcoesFormatadas;
+        }
+
+        // ============================================================
+        // 9. CALCULAR FRETE NO CARRINHO
+        // ============================================================
+        async function calcularFreteCarrinho() {
+            const cep = document.getElementById('cepCarrinho').value.trim();
+            const erroEl = document.getElementById('freteErroCarrinho');
+            const resultadoEl = document.getElementById('freteResultadoCarrinho');
+            const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
+            
+            if (!cep || cep.length < 8) {
+                erroEl.textContent = '⚠️ Digite um CEP válido com 8 dígitos.';
+                erroEl.classList.add('show');
+                return;
+            }
+            
+            erroEl.classList.remove('show');
+            resultadoEl.style.display = 'none';
+            resultadoEl.innerHTML = '<div class="frete-carregando"><i class="fas fa-spinner"></i> Calculando frete...</div>';
+            btnCalcular.disabled = true;
+            
+            try {
+                // Buscar frete no SuperFrete
+                const resposta = await buscarFreteSuperFrete(cep);
+                
+                // Formatar opções
+                const opcoes = formatarOpcoesFrete(resposta);
+                
+                // Exibir resultados
+                resultadoEl.style.display = 'block';
+                resultadoEl.innerHTML = '';
+                
+                opcoes.forEach(op => {
+                    const div = document.createElement('div');
+                    div.className = 'opcao-frete';
+                    
+                    const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
+                    const infoProducao = op.producao ? `<span class="frete-prazo">${op.producao}</span>` : '';
+                    
+                    div.innerHTML = `
+                        <div class="frete-info">
+                            <div class="frete-nome">${op.nome}</div>
+                            <div class="frete-prazo">${op.prazo}</div>
+                            ${infoProducao}
+                        </div>
+                        <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
+                    `;
+                    resultadoEl.appendChild(div);
+                });
+                
+            } catch (error) {
+                console.error('❌ Erro ao calcular frete:', error);
+                erroEl.textContent = '❌ Erro ao calcular frete. Tente novamente.';
+                erroEl.classList.add('show');
+                resultadoEl.style.display = 'none';
+            } finally {
+                btnCalcular.disabled = false;
+            }
+        }
+
+        // ============================================================
+        // 10. BUSCAR CLIENTE POR EMAIL (CHECKOUT)
+        // ============================================================
+        async function buscarClientePorEmail() {
+            const email = document.getElementById('emailBusca').value.trim();
+            const erroEl = document.getElementById('erroBusca');
+            const loadingEl = document.getElementById('loadingBusca');
+            const btnBuscar = document.getElementById('btnBuscarCliente');
+
+            if (!email) {
+                erroEl.textContent = '⚠️ Digite um email válido.';
+                erroEl.classList.add('show');
+                return;
+            }
+
+            if (!email.includes('@') || !email.includes('.')) {
+                erroEl.textContent = '⚠️ Digite um email válido (ex: nome@email.com).';
+                erroEl.classList.add('show');
+                return;
+            }
+
+            erroEl.classList.remove('show');
+            loadingEl.style.display = 'block';
+            btnBuscar.disabled = true;
+
+            checkoutState.dadosConfirmados = false;
+            document.getElementById('btnConfirmarDados').disabled = true;
+            document.getElementById('confirmacaoStatus').className = 'confirmacao-status';
+            document.getElementById('confirmacaoStatus').textContent = '';
+
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                const clientes = data.clientes || [];
+
+                console.log('🔍 Clientes encontrados na planilha:', clientes.length);
+                
+                const emailLower = email.toLowerCase().trim();
+                
+                const cliente = clientes.find(c => {
+                    const cEmail = String(c.email || '').toLowerCase().trim();
+                    return cEmail === emailLower;
+                });
+
+                console.log('🔍 Cliente encontrado?', cliente ? 'Sim' : 'Não');
+
+                if (cliente) {
+                    checkoutState.clienteEncontrado = true;
+                    checkoutState.clienteData = cliente;
+                    checkoutState.emailBuscado = emailLower;
+
+                    const nomeCamuflado = camuflarNome(cliente.nome);
+                    const telCamuflado = camuflarTelefone(cliente.telefone);
+                    const emailCamuflado = camuflarEmail(email);
+                    const enderecoCamuflado = camuflarEndereco(cliente.endereco);
+
+                    let ruaNumero = cliente.endereco || 'Endereço não informado';
+                    let complemento = '';
+                    const numMatch = cliente.endereco ? String(cliente.endereco).match(/(.*?),\s*(\d+)/) : null;
+                    if (numMatch) {
+                        ruaNumero = numMatch[1].trim() + ', ' + numMatch[2];
+                        complemento = String(cliente.endereco).replace(ruaNumero, '').replace(/^,\s*/, '').trim();
+                    }
+                    let ruaCamuflada = ruaNumero;
+                    if (ruaCamuflada.length > 6) {
+                        ruaCamuflada = ruaCamuflada.substring(0, 3) + '****' + ruaCamuflada.substring(ruaCamuflada.length - 3);
+                    }
+
+                    document.getElementById('clienteNomeEncontrado').textContent = nomeCamuflado;
+                    document.getElementById('clienteTelefoneEncontrado').textContent = telCamuflado;
+                    document.getElementById('clienteEmailEncontrado').textContent = emailCamuflado;
+                    document.getElementById('clienteEnderecoEncontrado').textContent = enderecoCamuflado;
+                    document.getElementById('enderecoRuaNumero').textContent = ruaCamuflada;
+                    document.getElementById('enderecoComplemento').textContent = complemento || 'Sem complemento';
+                    document.getElementById('emailConfirmado').textContent = `📧 ${email}`;
+
+                    document.getElementById('dadosClienteEncontrado').classList.add('show');
+                    document.getElementById('areaNovoCadastro').style.display = 'none';
+                    
+                    checkoutState.enderecoSelecionado = {
+                        nome: String(cliente.nome || 'Cliente'),
+                        endereco: String(cliente.endereco || ''),
+                        enderecoCompleto: String(cliente.endereco || ''),
+                        cep: String(cliente.cep || ''),
+                        telefone: String(cliente.telefone || ''),
+                        email: email,
+                        documento: String(cliente.documento || '')
+                    };
+
+                    document.getElementById('btnConfirmarDados').style.display = 'block';
+                    document.getElementById('btnConfirmarDados').disabled = false;
+
+                    carregarEnderecosAdicionais(emailLower);
+                    document.getElementById('btnPasso1Avancar').disabled = true;
+
+                } else {
+                    checkoutState.clienteEncontrado = false;
+                    checkoutState.clienteData = null;
+                    document.getElementById('dadosClienteEncontrado').classList.remove('show');
+                    document.getElementById('enderecosSalvos').style.display = 'none';
+                    document.getElementById('btnPasso1Avancar').disabled = true;
+                    document.getElementById('btnConfirmarDados').style.display = 'none';
+                    
+                    const areaNovoCadastro = document.getElementById('areaNovoCadastro');
+                    areaNovoCadastro.style.display = 'block';
+                    areaNovoCadastro.innerHTML = `
+                        <p style="font-weight:600;color:#856404;">
+                            <i class="fas fa-exclamation-triangle"></i> Email não cadastrado
+                        </p>
+                        <p style="font-size:14px;color:#856404;margin-bottom:10px;">
+                            Para finalizar o pedido, você precisa se cadastrar.
+                        </p>
+                        <button class="btn-checkout" onclick="abrirCadastroDiretoCheckout()" style="margin-top:10px;background:var(--primary-blue);">
+                            <i class="fas fa-user-plus"></i> Fazer Cadastro
+                        </button>
+                    `;
+                    
+                    erroEl.textContent = '❌ Nenhum cliente encontrado com este email.';
+                    erroEl.classList.add('show');
+                }
+
+            } catch (error) {
+                console.error('Erro ao buscar cliente:', error);
+                erroEl.textContent = '❌ Erro ao buscar dados. Tente novamente.';
+                erroEl.classList.add('show');
+            } finally {
+                loadingEl.style.display = 'none';
+                btnBuscar.disabled = false;
+            }
+        }
+
+        // ============================================================
+        // 11. CONFIRMAR DADOS DO CLIENTE
+        // ============================================================
+        function confirmarDadosCheckout() {
+            if (!checkoutState.clienteEncontrado || !checkoutState.clienteData) {
+                alert('⚠️ Nenhum cliente encontrado para confirmar.');
+                return;
+            }
+
+            checkoutState.dadosConfirmados = true;
+            
+            const statusEl = document.getElementById('confirmacaoStatus');
+            statusEl.className = 'confirmacao-status show success';
+            statusEl.innerHTML = '✅ Dados confirmados com sucesso! Clique em "Próximo" para continuar.';
+            
+            document.getElementById('btnConfirmarDados').disabled = true;
+            document.getElementById('btnConfirmarDados').innerHTML = '<i class="fas fa-check-circle"></i> Dados confirmados ✓';
+            
+            document.getElementById('btnPasso1Avancar').disabled = false;
+        }
+
+        // ============================================================
+        // 12. CARREGAR ENDEREÇOS ADICIONAIS (apenas da planilha)
+        // ============================================================
+        function carregarEnderecosAdicionais(email) {
+            const container = document.getElementById('listaEnderecos');
+            const enderecosSalvosDiv = document.getElementById('enderecosSalvos');
+            
+            enderecosSalvosDiv.style.display = 'none';
+            container.innerHTML = '';
+        }
+
+        function solicitarOutroEndereco() {
+            fecharModal('checkoutModal');
+            abrirLogin();
+            alert('🔐 Para escolher outro endereço, faça login e atualize seu cadastro.\n\nApós atualizar, volte ao checkout.');
+        }
+
+        function abrirCadastroDiretoCheckout() {
+            const email = document.getElementById('emailBusca').value.trim();
+            fecharModal('checkoutModal');
+            setTimeout(() => {
+                abrirLogin();
+                switchLoginTab('cadastro');
+                if (email) {
+                    document.getElementById('cadastroEmail').value = email;
+                }
+            }, 300);
+        }
+
+        // ============================================================
+        // 13. CHECKOUT
         // ============================================================
         function abrirCheckout() {
             if (carrinho.length === 0) {
@@ -3742,8 +4773,7 @@
                 return;
             }
 
-            // NÃO preenche automaticamente o documento - sempre em branco
-            document.getElementById('documentoBusca').value = '';
+            document.getElementById('emailBusca').value = '';
 
             checkoutState.passo = 1;
             checkoutState.enderecoSelecionado = null;
@@ -3753,9 +4783,12 @@
             checkoutState.cep = '';
             checkoutState.clienteEncontrado = false;
             checkoutState.clienteData = null;
+            checkoutState.emailBuscado = '';
+            checkoutState.dadosConfirmados = false;
+            checkoutState.opcoesFrete = [];
+            checkoutState.producaoDias = 0;
 
             fecharModal('cartModal');
-            fecharModal('loginModal');
 
             document.getElementById('checkoutModal').style.display = 'block';
 
@@ -3771,6 +4804,10 @@
             document.getElementById('dadosClienteEncontrado').classList.remove('show');
             document.getElementById('enderecosSalvos').style.display = 'none';
             document.getElementById('erroBusca').classList.remove('show');
+            document.getElementById('btnConfirmarDados').style.display = 'none';
+            document.getElementById('confirmacaoStatus').className = 'confirmacao-status';
+            document.getElementById('confirmacaoStatus').textContent = '';
+            document.getElementById('freteErroCheckout').className = 'frete-erro-checkout';
             
             const areaNovoCadastro = document.getElementById('areaNovoCadastro');
             areaNovoCadastro.style.display = 'block';
@@ -3781,17 +4818,21 @@
                 <p style="font-size:14px;color:#856404;margin-bottom:10px;">
                     Cadastre-se agora para finalizar seu pedido.
                 </p>
-                <button class="btn-checkout" onclick="abrirCadastroDireto()" style="margin-top:10px;background:var(--primary-blue);">
+                <button class="btn-checkout" onclick="abrirCadastroDiretoCheckout()" style="margin-top:10px;background:var(--primary-blue);">
                     <i class="fas fa-user-plus"></i> Fazer Cadastro
                 </button>
             `;
-            document.getElementById('documentoBusca').value = '';
+            document.getElementById('emailBusca').value = '';
         }
 
         function avancarPasso(passo) {
             if (passo === 2) {
                 if (!checkoutState.enderecoSelecionado) {
                     alert('⚠️ Selecione um endereço para continuar.');
+                    return;
+                }
+                if (!checkoutState.dadosConfirmados) {
+                    alert('⚠️ Confirme seus dados clicando no botão "Confirmar que meus dados estão corretos".');
                     return;
                 }
                 carregarOpcoesFrete();
@@ -3816,8 +4857,14 @@
             document.getElementById(`checkoutPasso${passo}`).classList.add('active');
         }
 
+        // ============================================================
+        // 14. CARREGAR OPÇÕES DE FRETE NO CHECKOUT
+        // ============================================================
         async function carregarOpcoesFrete() {
             const container = document.getElementById('freteOpcoesContainer');
+            const erroEl = document.getElementById('freteErroCheckout');
+            
+            erroEl.className = 'frete-erro-checkout';
             container.innerHTML = `
                 <div class="frete-carregando-opcoes">
                     <i class="fas fa-spinner fa-spin"></i> Carregando opções de frete...
@@ -3830,48 +4877,84 @@
                 const cep = checkoutState.enderecoSelecionado.cep || '00000-000';
                 document.getElementById('checkoutCepDisplay').textContent = cep;
 
-                const opcoes = await calcularFreteCheckout(cep);
+                // Calcular prazo de produção
+                checkoutState.producaoDias = calcularPrazoProducao();
+                
+                // Buscar frete no SuperFrete
+                let opcoesSuperFrete = [];
+                try {
+                    const resposta = await buscarFreteSuperFrete(cep);
+                    opcoesSuperFrete = resposta || [];
+                } catch (error) {
+                    console.warn('⚠️ Erro ao buscar SuperFrete, usando opções padrão:', error);
+                }
+                
+                // Formatar opções
+                const opcoes = formatarOpcoesFrete(opcoesSuperFrete);
+                checkoutState.opcoesFrete = opcoes;
                 
                 container.innerHTML = '';
-                opcoes.forEach((op, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'frete-opcao';
-                    if (index === 1) {
-                        div.classList.add('selecionado');
-                        checkoutState.freteSelecionado = op;
-                        document.getElementById('btnPasso2Avancar').disabled = false;
-                    }
-                    const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
-                    div.innerHTML = `
-                        <div class="frete-info">
-                            <div class="nome">${op.nome}</div>
-                            <div class="prazo">${op.prazo}</div>
+                
+                if (opcoes.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align:center;padding:20px;color:#e74c3c;">
+                            <i class="fas fa-exclamation-circle"></i> Nenhuma opção de frete disponível.
+                            <br><span style="font-size:13px;">Tente outro CEP ou selecione "Retirada na Loja".</span>
                         </div>
-                        <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
                     `;
-                    div.onclick = function() {
-                        document.querySelectorAll('.frete-opcao').forEach(el => el.classList.remove('selecionado'));
-                        this.classList.add('selecionado');
-                        checkoutState.freteSelecionado = op;
-                        document.getElementById('btnPasso2Avancar').disabled = false;
-                    };
-                    container.appendChild(div);
-                });
+                    document.getElementById('btnPasso2Avancar').disabled = true;
+                } else {
+                    opcoes.forEach((op, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'frete-opcao';
+                        
+                        // Selecionar a primeira opção (mais barata) por padrão
+                        if (index === 0) {
+                            div.classList.add('selecionado');
+                            checkoutState.freteSelecionado = op;
+                            document.getElementById('btnPasso2Avancar').disabled = false;
+                        }
+                        
+                        const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
+                        const infoProducao = op.producao ? `<div class="frete-info producao">🔄 ${op.producao}</div>` : '';
+                        
+                        div.innerHTML = `
+                            <div class="frete-info">
+                                <div class="nome">${op.nome}</div>
+                                <div class="prazo">📦 ${op.prazo}</div>
+                                ${infoProducao}
+                            </div>
+                            <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
+                        `;
+                        
+                        div.onclick = function() {
+                            document.querySelectorAll('.frete-opcao').forEach(el => el.classList.remove('selecionado'));
+                            this.classList.add('selecionado');
+                            checkoutState.freteSelecionado = op;
+                            document.getElementById('btnPasso2Avancar').disabled = false;
+                        };
+                        
+                        container.appendChild(div);
+                    });
+                }
 
                 checkoutState.loadingFrete = false;
 
             } catch (error) {
-                console.error('Erro ao carregar frete:', error);
+                console.error('❌ Erro ao carregar frete:', error);
                 container.innerHTML = `
                     <div style="text-align:center;padding:20px;color:#e74c3c;">
                         <i class="fas fa-exclamation-circle"></i> Erro ao carregar opções de frete.
-                        <br><span style="font-size:13px;">Tente novamente.</span>
+                        <br><span style="font-size:13px;">Tente novamente ou selecione "Retirada na Loja".</span>
                     </div>
                 `;
                 checkoutState.loadingFrete = false;
             }
         }
 
+        // ============================================================
+        // 15. ATUALIZAR RESUMO DO CHECKOUT
+        // ============================================================
         function atualizarResumoCheckout() {
             const container = document.getElementById('checkoutResumo');
             const totalProdutos = carrinho.reduce((sum, item) => sum + item.price, 0);
@@ -3890,10 +4973,24 @@
                 `;
             });
 
+            // Mostrar prazo de produção se houver
+            if (checkoutState.producaoDias > 0) {
+                html += `
+                    <div class="resumo-item" style="color:#f39c12;border-bottom:1px dashed #f39c12;">
+                        <span>🔄 Prazo de produção</span>
+                        <span>${checkoutState.producaoDias} dias úteis</span>
+                    </div>
+                `;
+            }
+
             html += `
                 <div class="resumo-item">
                     <span>Frete (${checkoutState.freteSelecionado ? checkoutState.freteSelecionado.nome : 'N/A'})</span>
                     <span>${freteValor === 0 ? 'Grátis' : `R$ ${freteValor.toFixed(2)}`}</span>
+                </div>
+                <div class="resumo-item" style="font-size:12px;color:#888;border-bottom:1px solid #eee;padding-bottom:8px;">
+                    <span>Prazo de entrega</span>
+                    <span>${checkoutState.freteSelecionado ? checkoutState.freteSelecionado.prazo : 'N/A'}</span>
                 </div>
                 <div class="resumo-item resumo-total">
                     <span>TOTAL</span>
@@ -3914,7 +5011,7 @@
         }
 
         // ============================================================
-        // 8.1 FINALIZAR PEDIDO
+        // 16. FINALIZAR PEDIDO
         // ============================================================
         async function finalizarPedidoCheckout() {
             if (carrinho.length === 0) {
@@ -3943,14 +5040,17 @@
             ultimoNumeroPedido++;
             const numeroPedido = ultimoNumeroPedido;
 
-            const clienteNome = checkoutState.clienteData?.nome || localStorage.getItem('clienteNome') || 'Cliente não identificado';
-            const clienteEmail = checkoutState.clienteData?.email || localStorage.getItem('clienteEmail') || 'cliente_nao_identificado@email.com';
-            const clienteTelefone = checkoutState.clienteData?.telefone || localStorage.getItem('clienteTelefone') || '';
-            const clienteDocumento = checkoutState.documentoBuscado || localStorage.getItem('clienteDocumento') || '';
+            const clienteNome = checkoutState.clienteData?.nome || usuarioLogado?.nome || localStorage.getItem('clienteNome') || 'Cliente não identificado';
+            const clienteEmail = checkoutState.clienteData?.email || usuarioLogado?.email || checkoutState.emailBuscado || localStorage.getItem('clienteEmail') || 'cliente_nao_identificado@email.com';
+            const clienteTelefone = checkoutState.clienteData?.telefone || usuarioLogado?.telefone || localStorage.getItem('clienteTelefone') || '';
+            const clienteDocumento = checkoutState.clienteData?.documento || usuarioLogado?.documento || localStorage.getItem('clienteDocumento') || '';
 
             const totalProdutos = carrinho.reduce((sum, item) => sum + item.price, 0);
             const freteValor = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.valor : 0;
             const totalFinal = totalProdutos + freteValor;
+
+            // Calcular prazo de entrega final (produção + frete)
+            const prazoEntrega = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.prazoDias : 0;
 
             pedidoDataEnvio = {
                 clienteNome: clienteNome,
@@ -3966,6 +5066,8 @@
                 totalProdutos: totalProdutos,
                 frete: checkoutState.freteSelecionado.nome,
                 freteValor: freteValor,
+                prazoEntrega: prazoEntrega,
+                producaoDias: checkoutState.producaoDias || 0,
                 pagamento: checkoutState.pagamentoSelecionado,
                 endereco: checkoutState.enderecoSelecionado.enderecoCompleto || checkoutState.enderecoSelecionado.endereco,
                 cep: checkoutState.enderecoSelecionado.cep || '',
@@ -4004,7 +5106,7 @@
                     itens: pedidoDataEnvio.itens,
                     total: pedidoDataEnvio.total,
                     endereco_entrega: pedidoDataEnvio.endereco,
-                    observacoes: `Frete: ${pedidoDataEnvio.frete} (R$ ${pedidoDataEnvio.freteValor.toFixed(2)}) | Pagamento: ${pedidoDataEnvio.pagamento}`
+                    observacoes: `Frete: ${pedidoDataEnvio.frete} (R$ ${pedidoDataEnvio.freteValor.toFixed(2)}) | Pagamento: ${pedidoDataEnvio.pagamento} | Prazo: ${pedidoDataEnvio.prazoEntrega} dias`
                 };
 
                 await fetch(API_URL, {
@@ -4045,7 +5147,8 @@
                     status: 'Pendente',
                     frete: pedidoDataEnvio.frete,
                     pagamento: pedidoDataEnvio.pagamento,
-                    endereco: pedidoDataEnvio.endereco
+                    endereco: pedidoDataEnvio.endereco,
+                    prazo: `${pedidoDataEnvio.prazoEntrega} dias`
                 };
                 let historico = [];
                 try {
@@ -4131,7 +5234,7 @@
         }
 
         // ============================================================
-        // 9. FUNÇÕES AUXILIARES DO CHECKOUT
+        // FUNÇÕES AUXILIARES
         // ============================================================
         function abrirWhatsAppFallback() {
             document.getElementById('tentativasRealizadas').textContent = maxTentativas;
@@ -4159,16 +5262,17 @@
 
             let message = `*📦 NOVO PEDIDO - Embalagens Express*%0A%0A`;
             message += `*Pedido Nº:* ${dados.numeroPedido || 'N/A'}%0A`;
-            message += `*Cliente:* ${dados.clienteNome || localStorage.getItem('clienteNome') || 'Cliente'}%0A`;
-            message += `*Documento:* ${dados.clienteDocumento || localStorage.getItem('clienteDocumento') || 'N/A'}%0A`;
-            message += `*Telefone:* ${dados.clienteTelefone || localStorage.getItem('clienteTelefone') || ''}%0A`;
-            message += `*Email:* ${dados.clienteEmail || localStorage.getItem('clienteEmail') || ''}%0A`;
+            message += `*Cliente:* ${dados.clienteNome || usuarioLogado?.nome || 'Cliente'}%0A`;
+            message += `*Documento:* ${dados.clienteDocumento || usuarioLogado?.documento || 'N/A'}%0A`;
+            message += `*Telefone:* ${dados.clienteTelefone || usuarioLogado?.telefone || ''}%0A`;
+            message += `*Email:* ${dados.clienteEmail || usuarioLogado?.email || ''}%0A`;
             message += `*Produtos:*%0A`;
             itens.forEach(item => {
                 message += `- ${item.nome} (${item.quantidade} un) - R$ ${item.price.toFixed(2)}%0A`;
             });
             message += `%0A*Subtotal:* R$ ${(dados.totalProdutos || total).toFixed(2)}%0A`;
             message += `*Frete:* ${dados.frete || checkoutState.freteSelecionado?.nome || 'Não selecionado'} - R$ ${(dados.freteValor || checkoutState.freteSelecionado?.valor || 0).toFixed(2)}%0A`;
+            message += `*Prazo:* ${dados.prazoEntrega || 'N/A'} dias%0A`;
             message += `*Total:* R$ ${total.toFixed(2)}%0A`;
             message += `*Pagamento:* ${dados.pagamento || checkoutState.pagamentoSelecionado || 'Não selecionado'}%0A`;
             message += `*Endereço:* ${dados.endereco || checkoutState.enderecoSelecionado?.endereco || 'Não informado'}%0A`;
@@ -4212,7 +5316,7 @@
         }
 
         // ============================================================
-        // 10. ADMIN
+        // ADMIN
         // ============================================================
         function atalhoAdmin() {
             document.addEventListener('keydown', (e) => {
@@ -4297,7 +5401,7 @@
         }
 
         // ============================================================
-        // 11. NAVEGAÇÃO
+        // NAVEGAÇÃO
         // ============================================================
         function showHome() {
             document.getElementById('categoriesSection').style.display = 'block';
@@ -4351,7 +5455,7 @@
         }
 
         // ============================================================
-        // 12. MENU LATERAL
+        // MENU LATERAL
         // ============================================================
         function abrirMenu() {
             document.getElementById('sideMenu').classList.add('open');
@@ -4366,7 +5470,7 @@
         }
 
         // ============================================================
-        // 13. BARRA DE PESQUISA
+        // BARRA DE PESQUISA
         // ============================================================
         function buscarProduto() {
             const termo = prompt('🔍 Buscar produtos:');
@@ -4406,421 +5510,69 @@
         }
 
         // ============================================================
-        // 14. LOGIN / CADASTRO
+        // PEDIDOS DO CLIENTE
         // ============================================================
-        function abrirLogin() {
-            const modal = document.getElementById('loginModal');
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('loginSuccess').style.display = 'none';
-            document.getElementById('loginPedidos').style.display = 'none';
-            
-            // SEMPRE LIMPA OS CAMPOS - não preenche com dados salvos
-            document.getElementById('loginNome').value = '';
-            document.getElementById('loginEmail').value = '';
-            document.getElementById('loginTelefone').value = '';
-            document.getElementById('loginDocumento').value = '';
-            document.getElementById('loginCep').value = '';
-            document.getElementById('loginEndereco').value = '';
-            document.getElementById('loginNumero').value = '';
-            document.getElementById('loginComplemento').value = '';
-            document.getElementById('loginBairro').value = '';
-            document.getElementById('loginCidade').value = '';
-            document.getElementById('loginUf').value = '';
-            document.getElementById('loginSenha').value = '';
-            
-            modal.style.display = 'block';
-            
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    e.stopPropagation();
-                }
-            });
-            
-            document.getElementById('loginTipoPessoa').addEventListener('change', function() {
-                const grupoIE = document.getElementById('grupoInscricaoEstadual');
-                if (this.value === 'JURIDICA') {
-                    grupoIE.style.display = 'block';
-                } else {
-                    grupoIE.style.display = 'none';
-                }
-            });
+        function abrirMeusPedidos() {
+            if (!usuarioLogado) {
+                alert('🔐 Faça login para ver seus pedidos.\n\nClique no ícone 👤 no topo para entrar.');
+                abrirLogin();
+                return;
+            }
+            carregarPedidosCliente(usuarioLogado.email);
+            document.getElementById('pedidosLogado').style.display = 'block';
+            abrirLogin();
+            switchLoginTab('login');
         }
 
-        function toggleEnderecoEntrega() {
-            const checkbox = document.getElementById('mesmoEnderecoEntrega');
-            const div = document.getElementById('enderecoEntregaDiv');
-            if (checkbox.checked) {
-                div.style.display = 'none';
-                document.getElementById('loginCepEntrega').value = document.getElementById('loginCep').value;
-                document.getElementById('loginEnderecoEntrega').value = document.getElementById('loginEndereco').value;
-                document.getElementById('loginNumeroEntrega').value = document.getElementById('loginNumero').value;
-                document.getElementById('loginComplementoEntrega').value = document.getElementById('loginComplemento').value;
-                document.getElementById('loginBairroEntrega').value = document.getElementById('loginBairro').value;
-                document.getElementById('loginCidadeEntrega').value = document.getElementById('loginCidade').value;
-                document.getElementById('loginUfEntrega').value = document.getElementById('loginUf').value;
-            } else {
-                div.style.display = 'block';
-            }
-        }
-
-        async function salvarCliente() {
-            const nome = document.getElementById('loginNome').value.trim();
-            const email = document.getElementById('loginEmail').value.trim();
-            const telefone = document.getElementById('loginTelefone').value.trim();
-            const senha = document.getElementById('loginSenha').value;
-            const documentoInput = document.getElementById('loginDocumento').value.trim();
-            const tipoPessoa = document.getElementById('loginTipoPessoa').value;
-            const inscricaoEstadual = document.getElementById('loginInscricaoEstadual').value.trim();
-            const responsavel = document.getElementById('loginResponsavel').value.trim();
-            const cep = document.getElementById('loginCep').value.trim();
-            const endereco = document.getElementById('loginEndereco').value.trim();
-            const numero = document.getElementById('loginNumero').value.trim();
-            const complemento = document.getElementById('loginComplemento').value.trim();
-            const bairro = document.getElementById('loginBairro').value.trim();
-            const cidade = document.getElementById('loginCidade').value.trim();
-            const uf = document.getElementById('loginUf').value;
-
-            if (!nome) { alert('⚠️ Preencha o Nome/Razão Social.'); return; }
-            if (!email) { alert('⚠️ Preencha o Email.'); return; }
-            
-            const docValidado = validarDocumento(documentoInput);
-            if (!documentoInput) {
-                alert('⚠️ Preencha o CPF/CNPJ (apenas números).');
-                return;
-            }
-            if (!docValidado.valido) {
-                alert('⚠️ CPF/CNPJ inválido. Digite 11 números (CPF) ou 14 números (CNPJ).');
-                return;
-            }
-            
-            if (senha.length < 6) { alert('⚠️ A senha deve ter no mínimo 6 caracteres.'); return; }
-            if (!cep || !endereco || !numero || !bairro || !cidade || !uf) {
-                alert('⚠️ Preencha todos os campos do endereço.');
-                return;
-            }
-
-            let enderecoEntrega = '';
-            let cepEntrega = '';
-            if (!document.getElementById('mesmoEnderecoEntrega').checked) {
-                cepEntrega = document.getElementById('loginCepEntrega').value.trim();
-                const enderecoE = document.getElementById('loginEnderecoEntrega').value.trim();
-                const numeroE = document.getElementById('loginNumeroEntrega').value.trim();
-                const complementoE = document.getElementById('loginComplementoEntrega').value.trim();
-                const bairroE = document.getElementById('loginBairroEntrega').value.trim();
-                const cidadeE = document.getElementById('loginCidadeEntrega').value.trim();
-                const ufE = document.getElementById('loginUfEntrega').value;
-                enderecoEntrega = `${enderecoE}, ${numeroE}${complementoE ? ', ' + complementoE : ''} - ${bairroE}, ${cidadeE} - ${ufE}, ${cepEntrega}`;
-            } else {
-                enderecoEntrega = `${endereco}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}, ${cidade} - ${uf}, ${cep}`;
-                cepEntrega = cep;
-            }
-
-            const enderecoCompleto = `${endereco}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}, ${cidade} - ${uf}, ${cep}`;
-            
-            const documentoSalvo = docValidado.documento;
-
-            localStorage.setItem('clienteNome', nome);
-            localStorage.setItem('clienteEmail', email);
-            localStorage.setItem('clienteTelefone', telefone);
-            localStorage.setItem('clienteDocumento', documentoSalvo);
-            localStorage.setItem('clienteTipoPessoa', tipoPessoa);
-            localStorage.setItem('clienteInscricaoEstadual', inscricaoEstadual);
-            localStorage.setItem('clienteResponsavel', responsavel);
-            localStorage.setItem('clienteEndereco', enderecoCompleto);
-            localStorage.setItem('clienteCep', cep);
-            localStorage.setItem('clienteEnderecoEntrega', enderecoEntrega);
-            localStorage.setItem('clienteSenha', senha);
-
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        acao: 'salvar_cliente',
-                        cliente: {
-                            nome: nome,
-                            email: email,
-                            telefone: telefone,
-                            documento: documentoSalvo,
-                            tipo_pessoa: tipoPessoa,
-                            inscricao_estadual: inscricaoEstadual,
-                            responsavel: responsavel,
-                            senha: senha,
-                            endereco: enderecoCompleto,
-                            cep: cep,
-                            endereco_entrega: enderecoEntrega,
-                            cep_entrega: cepEntrega
-                        }
-                    })
-                });
-                
-                document.getElementById('loginForm').style.display = 'none';
-                document.getElementById('loginSuccess').style.display = 'block';
-                atualizarNomeClienteHeader();
-                carregarPedidosCliente(email);
-                document.getElementById('userDropdown').classList.remove('show');
-                
-                if (document.getElementById('checkoutModal').style.display === 'block') {
-                    fecharModal('loginModal');
-                    document.getElementById('documentoBusca').value = documentoSalvo;
-                    setTimeout(() => {
-                        buscarClientePorDocumento();
-                    }, 500);
-                } else {
-                    setTimeout(() => {
-                        fecharModal('loginModal');
-                    }, 2000);
-                }
-                
-            } catch (error) {
-                console.error('Erro ao salvar cliente:', error);
-                alert('⚠️ Erro ao cadastrar. Tente novamente.');
-            }
-        }
-
-        // ============================================================
-        // BUSCAR CLIENTE POR DOCUMENTO (apenas números)
-        // ============================================================
-        async function buscarClientePorDocumento() {
-            const documento = document.getElementById('documentoBusca').value.trim();
-            const erroEl = document.getElementById('erroBusca');
-            const loadingEl = document.getElementById('loadingBusca');
-            const btnBuscar = document.getElementById('btnBuscarCliente');
-
-            if (!documento) {
-                erroEl.textContent = '⚠️ Digite um CPF ou CNPJ válido.';
-                erroEl.classList.add('show');
-                return;
-            }
-
-            erroEl.classList.remove('show');
-            loadingEl.style.display = 'block';
-            btnBuscar.disabled = true;
-
+        async function carregarPedidosCliente(email) {
             try {
                 const response = await fetch(API_URL);
                 const data = await response.json();
-                const clientes = data.clientes || [];
-
-                console.log('🔍 Clientes encontrados na planilha:', clientes.length);
-                console.log('🔍 Buscando por documento:', documento);
-
-                const docValidado = validarDocumento(documento);
-                if (!docValidado.valido) {
-                    erroEl.textContent = '⚠️ CPF/CNPJ inválido. Digite apenas números.';
-                    erroEl.classList.add('show');
-                    loadingEl.style.display = 'none';
-                    btnBuscar.disabled = false;
-                    return;
-                }
+                const pedidos = data.pedidos || [];
+                const pedidosCliente = pedidos.filter(p => p.cliente_email && p.cliente_email.toLowerCase() === email.toLowerCase());
                 
-                const docLimpo = docValidado.documento;
-                console.log('🔍 Documento limpo para busca:', docLimpo);
-                
-                const cliente = clientes.find(c => {
-                    const cDoc = String(c.documento || '').replace(/[^\d]/g, '');
-                    console.log('🔍 Comparando:', cDoc, 'com', docLimpo);
-                    return cDoc === docLimpo;
-                });
-
-                console.log('🔍 Cliente encontrado:', cliente);
-
-                if (cliente) {
-                    checkoutState.clienteEncontrado = true;
-                    checkoutState.clienteData = cliente;
-                    checkoutState.documentoBuscado = docLimpo;
-
-                    const nome = cliente.nome || 'Cliente';
-                    const nomeCamuflado = nome.length > 4 ? nome.substring(0, 2) + '****' + nome.substring(nome.length - 2) : nome;
-                    
-                    const telefone = cliente.telefone || '';
-                    const telCamuflado = telefone ? telefone.replace(/(\d{2})(\d{4})(\d{4})/, '($1) ****-$3') : '';
-
-                    const email = cliente.email || '';
-                    const emailCamuflado = email.length > 6 ? email.substring(0, 3) + '****' + email.substring(email.indexOf('@') - 1) : email;
-
-                    const endereco = cliente.endereco || '';
-                    const enderecoCamuflado = endereco.length > 10 ? 
-                        endereco.substring(0, 5) + '****' + endereco.substring(endereco.length - 5) : endereco;
-
-                    let ruaNumero = endereco;
-                    let complemento = '';
-                    const numMatch = endereco.match(/(.*?),\s*(\d+)/);
-                    if (numMatch) {
-                        ruaNumero = numMatch[1].trim() + ', ' + numMatch[2];
-                        complemento = endereco.replace(ruaNumero, '').replace(/^,\s*/, '').trim();
-                    }
-
-                    document.getElementById('clienteNomeEncontrado').textContent = nomeCamuflado;
-                    document.getElementById('clienteTelefoneEncontrado').textContent = telCamuflado;
-                    document.getElementById('clienteEmailEncontrado').textContent = emailCamuflado;
-                    document.getElementById('clienteEnderecoEncontrado').textContent = enderecoCamuflado;
-                    document.getElementById('enderecoRuaNumero').textContent = ruaNumero;
-                    document.getElementById('enderecoComplemento').textContent = complemento || 'Sem complemento';
-                    document.getElementById('documentoConfirmado').textContent = `📄 ${docValidado.formatado}`;
-
-                    document.getElementById('dadosClienteEncontrado').classList.add('show');
-                    document.getElementById('areaNovoCadastro').style.display = 'none';
-                    
-                    checkoutState.enderecoSelecionado = {
-                        nome: nome,
-                        endereco: endereco,
-                        enderecoCompleto: endereco,
-                        cep: cliente.cep || '',
-                        telefone: telefone,
-                        email: email,
-                        documento: docLimpo
-                    };
-
-                    document.getElementById('btnPasso1Avancar').disabled = false;
-                    carregarEnderecosAdicionais(docLimpo);
-
-                } else {
-                    checkoutState.clienteEncontrado = false;
-                    checkoutState.clienteData = null;
-                    document.getElementById('dadosClienteEncontrado').classList.remove('show');
-                    document.getElementById('enderecosSalvos').style.display = 'none';
-                    document.getElementById('btnPasso1Avancar').disabled = true;
-                    
-                    const areaNovoCadastro = document.getElementById('areaNovoCadastro');
-                    areaNovoCadastro.style.display = 'block';
-                    areaNovoCadastro.innerHTML = `
-                        <p style="font-weight:600;color:#856404;">
-                            <i class="fas fa-exclamation-triangle"></i> Cliente não encontrado
-                        </p>
-                        <p style="font-size:14px;color:#856404;margin-bottom:10px;">
-                            Nenhum cadastro encontrado para este CPF/CNPJ.
-                        </p>
-                        <button class="btn-checkout" onclick="abrirCadastroDireto()" style="margin-top:10px;background:var(--primary-blue);">
-                            <i class="fas fa-user-plus"></i> Fazer Cadastro
-                        </button>
-                    `;
-                    
-                    erroEl.textContent = '❌ Nenhum cliente encontrado com este CPF/CNPJ.';
-                    erroEl.classList.add('show');
-                }
-
-            } catch (error) {
-                console.error('Erro ao buscar cliente:', error);
-                erroEl.textContent = '❌ Erro ao buscar dados. Tente novamente.';
-                erroEl.classList.add('show');
-            } finally {
-                loadingEl.style.display = 'none';
-                btnBuscar.disabled = false;
-            }
-        }
-
-        // ============================================================
-        // FUNÇÃO PARA ABRIR CADASTRO DIRETO
-        // ============================================================
-        function abrirCadastroDireto() {
-            fecharModal('checkoutModal');
-            
-            setTimeout(() => {
-                abrirLogin();
-            }, 300);
-        }
-
-        // ============================================================
-        // CARREGAR ENDEREÇOS ADICIONAIS
-        // ============================================================
-        function carregarEnderecosAdicionais(documento) {
-            const container = document.getElementById('listaEnderecos');
-            const enderecosSalvosDiv = document.getElementById('enderecosSalvos');
-            
-            const enderecos = [];
-            
-            if (checkoutState.enderecoSelecionado) {
-                enderecos.push({
-                    ...checkoutState.enderecoSelecionado,
-                    principal: true,
-                    id: 1
-                });
-            }
-
-            try {
-                const enderecosSalvos = localStorage.getItem('enderecosSalvos');
-                if (enderecosSalvos) {
-                    const parsed = JSON.parse(enderecosSalvos);
-                    parsed.forEach((e, index) => {
-                        if (e.documento !== documento) {
-                            enderecos.push({
-                                ...e,
-                                principal: false,
-                                id: index + 2,
-                                enderecoCompleto: e.endereco
-                            });
-                        }
-                    });
-                }
-            } catch (e) {}
-
-            if (enderecos.length > 1) {
-                enderecosSalvosDiv.style.display = 'block';
-                container.innerHTML = '';
-                enderecos.forEach((end, index) => {
-                    const div = document.createElement('div');
-                    div.className = 'endereco-card';
-                    if (index === 0) {
-                        div.classList.add('selecionado');
-                    }
-                    div.dataset.index = index;
-
-                    const badgeClass = end.principal ? 'principal' : 'camuflado';
-                    const badgeText = end.principal ? 'Principal' : 'Camuflado';
-
-                    const endCamuflado = end.endereco && end.endereco.length > 10 ? 
-                        end.endereco.substring(0, 5) + '****' + end.endereco.substring(end.endereco.length - 5) : end.endereco;
-
-                    div.innerHTML = `
-                        <div class="endereco-info">
-                            <div class="nome">${end.nome || 'Cliente'} <span class="endereco-badge ${badgeClass}">${badgeText}</span></div>
-                            <div class="endereco-text">${endCamuflado}</div>
-                            <div class="telefone">CEP: ${end.cep || '_____-___'} | ${end.telefone || ''}</div>
+                const container = document.getElementById('listaPedidosLogado');
+                if (pedidosCliente.length === 0) {
+                    container.innerHTML = `
+                        <div class="login-pedido-vazio">
+                            <i class="fas fa-box-open" style="font-size:32px;color:#ddd;display:block;margin-bottom:10px;"></i>
+                            <p>Você ainda não tem pedidos.</p>
+                            <span style="font-size:13px;color:#aaa;">Faça sua primeira compra!</span>
                         </div>
-                        <i class="fas fa-chevron-right" style="color:#999;"></i>
                     `;
-
-                    div.onclick = function() {
-                        document.querySelectorAll('#listaEnderecos .endereco-card').forEach(el => el.classList.remove('selecionado'));
-                        this.classList.add('selecionado');
-                        checkoutState.enderecoSelecionado = end;
-                        checkoutState.cep = end.cep || '';
-                        document.getElementById('btnPasso1Avancar').disabled = false;
-                    };
-
-                    container.appendChild(div);
-                });
-            } else {
-                enderecosSalvosDiv.style.display = 'none';
+                } else {
+                    container.innerHTML = pedidosCliente.sort((a, b) => b.id_pedido - a.id_pedido).map(p => {
+                        const statusClass = (p.status || 'pendente').toLowerCase().replace(/ /g, '_');
+                        return `
+                            <div class="login-pedido-item">
+                                <div class="pedido-info">
+                                    <span class="numero">#${p.id_pedido}</span>
+                                    <span class="data">${p.data_pedido || ''}</span>
+                                    <br>
+                                    <span class="total">R$ ${parseFloat(p.total || 0).toFixed(2)}</span>
+                                    <span style="font-size:12px;color:#888;margin-left:8px;">${p.itens ? JSON.parse(p.itens).length : 0} itens</span>
+                                </div>
+                                <span class="pedido-status status-${statusClass}">${p.status || 'Pendente'}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
+                document.getElementById('pedidosLogado').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Erro ao carregar pedidos:', error);
+                document.getElementById('listaPedidosLogado').innerHTML = `
+                    <div class="login-pedido-vazio">
+                        <p style="color:#e74c3c;">❌ Erro ao carregar pedidos.</p>
+                    </div>
+                `;
             }
         }
 
-        function solicitarOutroEndereco() {
-            fecharModal('checkoutModal');
-            abrirLogin();
-            alert('🔐 Para escolher outro endereço, faça login e atualize seu cadastro.\n\nApós atualizar, volte ao checkout.');
-        }
-
         // ============================================================
-        // 15. FUNÇÕES DOS BOTÕES
+        // FUNÇÕES DOS BOTÕES
         // ============================================================
-        function abrirPedidos() {
-            const email = localStorage.getItem('clienteEmail');
-            if (!email) {
-                alert('🔐 Faça login para ver seus pedidos.\n\nClique no ícone 👤 no topo para se cadastrar.');
-                return;
-            }
-            carregarPedidosCliente(email);
-            // Abre o modal de login e mostra a aba de pedidos
-            const modal = document.getElementById('loginModal');
-            document.getElementById('loginForm').style.display = 'block';
-            document.getElementById('loginSuccess').style.display = 'none';
-            document.getElementById('loginPedidos').style.display = 'block';
-            modal.style.display = 'block';
-        }
-
         function abrirAtendimento() {
             alert('📞 Central de Atendimento\n\n' +
                   'Telefone: (11) 99999-9999\n' +
@@ -4871,12 +5623,7 @@
         }
 
         // ============================================================
-        // 16. FECHAR MODAIS APENAS COM BOTÃO DE FECHAR
-        // ============================================================
-        // Os modais só fecham com os botões de fechar, não com clique fora
-
-        // ============================================================
-        // 17. VERIFICAR PEDIDOS CANCELADOS
+        // VERIFICAR PEDIDOS CANCELADOS
         // ============================================================
         async function verificarPedidosCancelados() {
             try {
@@ -4938,39 +5685,30 @@
             return null;
         }
 
-        async function carregarPedidosCliente(email) {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                const pedidos = data.pedidos || [];
-                const pedidosCliente = pedidos.filter(p => p.cliente_email === email);
-                if (pedidosCliente.length > 0) {
-                    document.getElementById('loginPedidos').style.display = 'block';
-                    const lista = document.getElementById('loginPedidosLista');
-                    lista.innerHTML = pedidosCliente.map(p => `
-                        <div style="padding:8px;border-bottom:1px solid #eee;font-size:13px;">
-                            <strong>#${p.id_pedido}</strong> - 
-                            R$ ${parseFloat(p.total || 0).toFixed(2)} - 
-                            <span class="status-badge status-${(p.status || 'pendente').toLowerCase().replace(/ /g, '_')}">${p.status || 'Pendente'}</span>
-                            <br><span style="font-size:11px;color:#888;">${p.data_pedido || ''}</span>
-                        </div>
-                    `).join('');
-                } else {
-                    document.getElementById('loginPedidos').style.display = 'block';
-                    const lista = document.getElementById('loginPedidosLista');
-                    lista.innerHTML = '<p style="color:#999;text-align:center;padding:10px;">Nenhum pedido encontrado.</p>';
-                }
-            } catch (error) {
-                console.error('Erro ao carregar pedidos:', error);
-            }
-        }
-
         // ============================================================
-        // 18. INICIALIZAR
+        // INICIALIZAR
         // ============================================================
         carregarDadosPlanilha();
 
         setInterval(verificarPedidosCancelados, 300000);
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('cadastroTipoPessoa').addEventListener('change', function() {
+                const grupoIE = document.getElementById('grupoInscricaoEstadual');
+                if (this.value === 'JURIDICA') {
+                    grupoIE.style.display = 'block';
+                } else {
+                    grupoIE.style.display = 'none';
+                }
+            });
+        });
+
+        // Mostrar área de frete no carrinho quando houver itens
+        document.addEventListener('DOMContentLoaded', function() {
+            if (carrinho.length > 0) {
+                document.getElementById('freteCarrinhoContainer').style.display = 'block';
+            }
+        });
     </script>
 </body>
 </html>
