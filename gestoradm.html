@@ -589,112 +589,156 @@
             -webkit-appearance: none;
         }
 
-        /* ===== IMPRESSÃO 80 COLUNAS - REFEITA DO ZERO ===== */
-        #printArea {
-            display: none;
-            width: 80mm;
-            padding: 3mm 4mm;
-            font-family: 'Courier New', monospace;
-            font-size: 9px;
-            background: white;
-            color: black;
-            box-sizing: border-box;
-            line-height: 1.3;
-        }
+      /* ===== IMPRESSÃO 80 COLUNAS - PRIORIZANDO VALORES ===== */
+#printArea {
+    display: none;
+    width: 80mm;                     /* MANTÉM LARGURA ORIGINAL */
+    padding: 2mm 5mm 2mm 3mm;        /* DIREITA 5mm, ESQUERDA 3mm - equilíbrio */
+    font-family: 'Courier New', monospace;
+    font-size: 7.5px;
+    background: white;
+    color: black;
+    box-sizing: border-box;          /* IMPORTANTE: padding incluso na largura */
+    line-height: 1.15;
+    margin: -8 auto;                  /* CENTRALIZADO, SEM MARGEM NEGATIVA */
+    overflow: hidden;
+}
 
-        #printArea .print-header {
-            text-align: center;
-            border-bottom: 1px dashed #000;
-            padding-bottom: 4px;
-            margin-bottom: 4px;
-        }
 
-        #printArea .print-header h2 {
-            font-size: 13px;
-            margin: 0;
-            letter-spacing: 1px;
-        }
+/* CABEÇALHO */
+.print-header {
+    text-align: center;
+    border-bottom: 1px dashed #000;
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+    width: 100%;
+}
 
-        #printArea .print-header p {
-            font-size: 8px;
-            margin: 1px 0;
-        }
+.print-header h2 {
+    font-size: 10px;
+    margin: 0;
+    letter-spacing: 0.3px;
+}
 
-        #printArea .print-header .hr {
-            border: none;
-            border-top: 1px dashed #000;
-            margin: 3px 0;
-        }
+.print-header p {
+    font-size: 6.5px;
+    margin: 0.3px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-        #printArea .print-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 8px;
-            padding: 1px 0;
-        }
+/* INFORMAÇÕES - DISTRIBUIR IGUALMENTE */
+.print-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 6.5px;
+    padding: 0.3px 0;
+    width: 100%;
+}
 
-        #printArea .print-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 1px 0;
-            border-bottom: 1px dotted #ccc;
-            font-size: 8.5px;
-        }
+.print-info span:first-child {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 55%;
+}
 
-        #printArea .print-item .nome {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 65%;
-        }
+.print-info span:last-child {
+    flex-shrink: 0;
+    white-space: nowrap;
+    text-align: right;
+    max-width: 42%;
+}
 
-        #printArea .print-item .valor {
-            flex-shrink: 0;
-            margin-left: 4px;
-        }
+/* ITENS DO PEDIDO - PRIORIZANDO O VALOR */
+.print-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3px 0;
+    border-bottom: 1px dotted #ccc;
+    font-size: 7px;
+    width: 100%;
+}
 
-        #printArea .print-subtotal {
-            display: flex;
-            justify-content: space-between;
-            padding: 1px 0;
-            font-size: 8.5px;
-        }
+/* NOME DO PRODUTO - OCUPA MENOS ESPAÇO */
+.print-item .nome {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 50%;              /* REDUZIDO: 50% para dar mais espaço ao valor */
+    font-size: 7px;
+    padding-right: 2px;
+}
 
-        #printArea .print-total {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            padding: 3px 0;
-            border-top: 2px solid #000;
-            margin-top: 3px;
-            font-size: 10px;
-        }
+/* VALOR - PRIORIDADE MÁXIMA, NUNCA CORTA */
+.print-item .valor {
+    flex-shrink: 0;
+    margin-left: 0;              /* SEM MARGEM */
+    font-size: 7px;
+    white-space: nowrap;
+    text-align: right;
+    min-width: 50px;             /* LARGURA MÍNIMA PARA O VALOR */
+    max-width: 70px;             /* LARGURA MÁXIMA PARA O VALOR */
+}
 
-        #printArea .print-footer {
-            text-align: center;
-            border-top: 1px dashed #000;
-            padding-top: 4px;
-            margin-top: 4px;
-            font-size: 7px;
-        }
+/* STATUS DE PRODUÇÃO - PEQUENO */
+.print-item .status-print {
+    font-size: 5.5px;
+    color: #666;
+    margin: 0 2px 0 0;
+    flex-shrink: 0;
+    max-width: 30px;
+}
 
-        #printArea .print-footer p {
-            margin: 1px 0;
-        }
+/* SUBTOTAL */
+.print-subtotal {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3px 0;
+    font-size: 7px;
+    width: 100%;
+}
 
-        #printArea .print-produto {
-            font-size: 7px;
-            color: #666;
-            padding: 1px 0;
-            border-bottom: 1px dotted #ccc;
-        }
+.print-subtotal span:last-child {
+    flex-shrink: 0;
+    min-width: 55px;
+    text-align: right;
+}
 
-        #printArea .print-produto .detalhe {
-            display: flex;
-            justify-content: space-between;
-            font-size: 7px;
-        }
+/* TOTAL - DESTAQUE */
+.print-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    padding: 1.5px 0;
+    border-top: 2px solid #000;
+    margin-top: 1.5px;
+    font-size: 8.5px;
+    width: 100%;
+}
+
+.print-total span:last-child {
+    flex-shrink: 0;
+    min-width: 60px;
+    text-align: right;
+}
+
+/* RODAPÉ */
+.print-footer {
+    text-align: center;
+    border-top: 1px dashed #000;
+    padding-top: 2px;
+    margin-top: 2px;
+    font-size: 5.5px;
+    width: 100%;
+}
+
+.print-footer p {
+    margin: 0.3px 0;
+}
 
         @media print {
             body * {
@@ -708,14 +752,14 @@
                 left: 0;
                 top: 0;
                 width: 80mm;
-                padding: 3mm 4mm;
-                font-size: 9px;
+                padding: 2mm 3mm;
+                font-size: 8px;
                 font-family: 'Courier New', monospace;
                 background: white;
                 color: black;
                 box-sizing: border-box;
                 display: block !important;
-                line-height: 1.3;
+                line-height: 1.2;
                 page-break-after: avoid;
                 page-break-inside: avoid;
             }
@@ -1623,7 +1667,7 @@ function renderizarTodosPedidos() {
 }
 
 // ============================================================
-// IMPRIMIR CUPOM 80 COLUNAS - REFEITA DO ZERO
+// IMPRIMIR CUPOM 80 COLUNAS - CORRIGIDA
 // ============================================================
 function imprimirCupom(idPedido) {
     const pedido = dados.pedidos.find(p => parseInt(p.id_pedido) === parseInt(idPedido));
@@ -1644,11 +1688,12 @@ function imprimirCupom(idPedido) {
                 const preco = parseFloat(item.price) || 0;
                 const qtd = parseInt(item.quantidade) || 0;
                 subtotal += preco;
-                const nome = (item.nome || 'Produto').substring(0, 20);
-                const isCustom = item.isCustom ? '*' : '';
+                const nome = (item.nome || 'Produto').substring(0, 16);
+                const isProducao = item.isProducao ? ' 🔨' : '';
+                const prazo = item.prazoProducao ? ` ${item.prazoProducao}d` : '';
                 itensHtml += `
                     <div class="print-item">
-                        <span class="nome">${qtd}x ${nome}${isCustom}</span>
+                        <span class="nome">${qtd}x ${nome}${isProducao}${prazo}</span>
                         <span class="valor">R$ ${preco.toFixed(2)}</span>
                     </div>
                 `;
@@ -1662,16 +1707,16 @@ function imprimirCupom(idPedido) {
     const frete = parseFloat(pedido.frete_valor) || 0;
     const status = pedido.status || 'Pendente';
     const data = pedido.data_pedido || new Date().toLocaleString();
-    const endereco = (pedido.endereco_entrega || '').substring(0, 28);
+    const endereco = (pedido.endereco_entrega || '').substring(0, 22);
     const pagamento = pedido.pagamento || 'Não informado';
-    const cliente = (pedido.cliente_nome || 'Não identificado').substring(0, 22);
+    const cliente = (pedido.cliente_nome || 'Não identificado').substring(0, 18);
     const telefone = pedido.cliente_telefone || '';
     
     printArea.innerHTML = `
         <div class="print-header">
             <h2>EMBALAGENS EXPRESS</h2>
-            <p>Praça Santuário São Geraldo, 46 - BH/MG</p>
-            <p>CEP: 31050-650 | Tel: (31) 3487-5905</p>
+            <p>Pç Santuário S Geraldo,46 - BH/MG</p>
+            <p>CEP:31050-650 | Tel:(31)3487-5905</p>
             <div class="hr"></div>
             <p><strong>CUPOM NÃO FISCAL</strong></p>
             <div class="print-info"><span>Pedido #${pedido.id_pedido}</span><span>${data}</span></div>
@@ -1681,8 +1726,8 @@ function imprimirCupom(idPedido) {
             <div class="hr"></div>
         </div>
         
-        <div style="margin:2px 0;">
-            <div style="font-weight:bold;border-bottom:1px solid #000;padding-bottom:1px;margin-bottom:1px;display:flex;justify-content:space-between;font-size:9px;">
+        <div style="margin:1px 0;">
+            <div style="font-weight:bold;border-bottom:1px solid #000;padding-bottom:0.5px;margin-bottom:0.5px;display:flex;justify-content:space-between;font-size:8px;">
                 <span>ITEM</span>
                 <span>VALOR</span>
             </div>
@@ -1702,7 +1747,7 @@ function imprimirCupom(idPedido) {
             <span>R$ ${total.toFixed(2)}</span>
         </div>
         
-        <div style="margin:2px 0;border-top:1px dashed #000;padding-top:2px;">
+        <div style="margin:1.5px 0;border-top:1px dashed #000;padding-top:1.5px;">
             <div class="print-info"><span>End: ${endereco}</span></div>
             <div class="print-info"><span>Pag: ${pagamento}</span></div>
             <div class="print-info"><span>Frete: ${pedido.frete || 'N/A'}</span></div>
@@ -2479,6 +2524,9 @@ function adicionarQtdCustomManual(productId) {
     inputPreco.value = '';
 }
 
+// ============================================================
+// FUNÇÃO PRINCIPAL - ADICIONAR AO CARRINHO COM LÓGICA DE PRODUÇÃO
+// ============================================================
 function adicionarAoCarrinhoManual(productId, quantidade, precoCustom = null) {
     const product = dados.produtos.find(p => parseInt(p.id) === productId);
     if (!product) {
@@ -2492,12 +2540,13 @@ function adicionarAoCarrinhoManual(productId, quantidade, precoCustom = null) {
         return;
     }
     
-    const estoque = parseInt(product.estoque) || 0;
-    
-    // Verifica se pode vender (vender zerado ou tem estoque)
-    if (product.vender_zerado !== 'SIM' && estoque < qtd) {
-        alert(`⚠️ Estoque insuficiente!\nDisponível: ${estoque} unidades\nSolicitado: ${qtd} unidades`);
-        return;
+    // Se NÃO vende zerado, verifica estoque
+    if (product.vender_zerado !== 'SIM') {
+        const estoque = parseInt(product.estoque) || 0;
+        if (estoque < qtd) {
+            alert(`⚠️ Estoque insuficiente!\nDisponível: ${estoque} unidades\nSolicitado: ${qtd} unidades`);
+            return;
+        }
     }
     
     let precoUnitario = 0;
@@ -2534,15 +2583,7 @@ function adicionarAoCarrinhoManual(productId, quantidade, precoCustom = null) {
         return;
     }
     
-    // Verifica se é produção (ultrapassou o estoque)
-    const totalNoCarrinho = carrinhoManual
-        .filter(item => item.productId === productId)
-        .reduce((sum, item) => sum + item.quantidade, 0);
-    
-    const totalSolicitado = totalNoCarrinho + qtd;
-    const isProducao = product.vender_zerado === 'SIM' && totalSolicitado > estoque;
-    const prazoProducao = isProducao ? product.prazo_producao || 3 : 0;
-    
+    // Adiciona ao carrinho
     idCounter++;
     carrinhoManual.push({
         id: idCounter,
@@ -2551,28 +2592,26 @@ function adicionarAoCarrinhoManual(productId, quantidade, precoCustom = null) {
         quantidade: qtd,
         precoUnitario: precoUnitario,
         preco: precoUnitario * qtd,
-        estoque: estoque,
+        estoque: parseInt(product.estoque) || 0,
         vender_zerado: product.vender_zerado === 'SIM',
         isCustom: precoCustom !== null,
-        isProducao: isProducao,
-        prazoProducao: prazoProducao,
-        totalSolicitado: totalSolicitado
+        prazoProducao: parseInt(product.prazo_producao) || 0
     });
     
+    // Recalcular status de produção para todos os itens do mesmo produto
+    recalcularProducao();
     atualizarCarrinhoManual();
 }
 
-function atualizarCarrinhoManual() {
-    const container = document.getElementById('carrinhoManual');
-    let total = 0;
-    let totalItens = 0;
-    
-    // Agrupar por produto para mostrar status de produção
+// ============================================================
+// RECALCULAR PRODUÇÃO - SOMA TODOS OS ITENS DO MESMO PRODUTO
+// ============================================================
+function recalcularProducao() {
+    // Agrupar por productId
     const grupos = {};
     carrinhoManual.forEach(item => {
         if (!grupos[item.productId]) {
             grupos[item.productId] = {
-                nome: item.nome,
                 total: 0,
                 estoque: item.estoque,
                 vender_zerado: item.vender_zerado,
@@ -2584,54 +2623,82 @@ function atualizarCarrinhoManual() {
         grupos[item.productId].itens.push(item);
     });
     
+    // Para cada grupo, determinar se entra em produção
+    Object.values(grupos).forEach(grupo => {
+        // Se vende zerado E total > estoque => PRODUÇÃO
+        const isProducao = grupo.vender_zerado && grupo.total > grupo.estoque;
+        
+        // Aplica a todos os itens do grupo
+        grupo.itens.forEach(item => {
+            item.isProducao = isProducao;
+            // Se for produção, usa o prazo do produto
+            if (isProducao) {
+                item.prazoProducao = grupo.prazoProducao;
+            }
+        });
+    });
+}
+
+// ============================================================
+// ATUALIZAR CARRINHO MANUAL
+// ============================================================
+function atualizarCarrinhoManual() {
+    const container = document.getElementById('carrinhoManual');
+    let total = 0;
+    let totalItens = 0;
+    
     if (carrinhoManual.length === 0) {
         container.innerHTML = `
             <div style="text-align:center;padding:15px;color:#999;font-size:13px;">
                 Nenhum item adicionado
             </div>
         `;
-    } else {
-        container.innerHTML = carrinhoManual.map((item, index) => {
-            total += item.preco || 0;
-            totalItens += item.quantidade || 0;
-            
-            const grupo = grupos[item.productId];
-            const isProducao = grupo && grupo.total > grupo.estoque && grupo.vender_zerado === 'SIM';
-            const prazo = grupo && isProducao ? grupo.prazoProducao : 0;
-            
-            const nomeExibicao = item.isCustom ? `${item.nome} (personalizado)` : item.nome;
-            const statusLabel = isProducao ? `🔨 Produção ${prazo}d` : '✅ Disponível';
-            const statusClass = isProducao ? 'badge-producao' : 'badge-disponivel';
-            
-            return `
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid #f0f0f0;font-size:13px;">
-                    <div style="flex:1;min-width:0;">
-                        <span style="font-weight:600;">${nomeExibicao}</span>
-                        <span style="color:#888;font-size:12px;">x${item.quantidade}</span>
-                        <span style="color:#666;font-size:11px;">R$ ${(item.precoUnitario || 0).toFixed(2)}/un</span>
-                        <span class="${statusClass}" style="font-size:9px;padding:1px 6px;border-radius:10px;margin-left:4px;">${statusLabel}</span>
-                        ${item.isCustom ? ' <span style="color:#6c5ce7;font-size:10px;">📝</span>' : ''}
-                    </div>
-                    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-                        <div class="carrinho-item-actions">
-                            <button class="btn-minus" onclick="alterarQtdCarrinho(${index}, -1)">−</button>
-                            <span style="font-weight:600;min-width:20px;text-align:center;">${item.quantidade}</span>
-                            <button class="btn-plus" onclick="alterarQtdCarrinho(${index}, 1)">+</button>
-                            <button class="btn-remove-item" onclick="removerDoCarrinhoManual(${index})" title="Remover item">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <span style="font-weight:600;color:var(--primary-blue);min-width:70px;text-align:right;">R$ ${(item.preco || 0).toFixed(2)}</span>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        document.getElementById('totalManual').textContent = 'R$ 0,00';
+        document.getElementById('totalItensManual').textContent = '0 itens';
+        return;
     }
+    
+    container.innerHTML = carrinhoManual.map((item, index) => {
+        total += item.preco || 0;
+        totalItens += item.quantidade || 0;
+        
+        const nomeExibicao = item.isCustom ? `${item.nome} (personalizado)` : item.nome;
+        const isProducao = item.isProducao || false;
+        const prazo = isProducao ? item.prazoProducao : 0;
+        const statusLabel = isProducao ? `🔨 Produção ${prazo}d` : '✅ Disponível';
+        const statusClass = isProducao ? 'badge-producao' : 'badge-disponivel';
+        
+        return `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-bottom:1px solid #f0f0f0;font-size:13px;">
+                <div style="flex:1;min-width:0;">
+                    <span style="font-weight:600;">${nomeExibicao}</span>
+                    <span style="color:#888;font-size:12px;">x${item.quantidade}</span>
+                    <span style="color:#666;font-size:11px;">R$ ${(item.precoUnitario || 0).toFixed(2)}/un</span>
+                    <span class="${statusClass}" style="font-size:9px;padding:1px 6px;border-radius:10px;margin-left:4px;">${statusLabel}</span>
+                    ${item.isCustom ? ' <span style="color:#6c5ce7;font-size:10px;">📝</span>' : ''}
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+                    <div class="carrinho-item-actions">
+                        <button class="btn-minus" onclick="alterarQtdCarrinho(${index}, -1)">−</button>
+                        <span style="font-weight:600;min-width:20px;text-align:center;">${item.quantidade}</span>
+                        <button class="btn-plus" onclick="alterarQtdCarrinho(${index}, 1)">+</button>
+                        <button class="btn-remove-item" onclick="removerDoCarrinhoManual(${index})" title="Remover item">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <span style="font-weight:600;color:var(--primary-blue);min-width:70px;text-align:right;">R$ ${(item.preco || 0).toFixed(2)}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
     
     document.getElementById('totalManual').textContent = `R$ ${total.toFixed(2)}`;
     document.getElementById('totalItensManual').textContent = `${totalItens} itens`;
 }
 
+// ============================================================
+// ALTERAR QUANTIDADE NO CARRINHO
+// ============================================================
 function alterarQtdCarrinho(index, delta) {
     const item = carrinhoManual[index];
     if (!item) return;
@@ -2644,33 +2711,31 @@ function alterarQtdCarrinho(index, delta) {
         return;
     }
     
-    // Verifica se pode vender (vender zerado ou tem estoque)
-    const totalNoCarrinho = carrinhoManual
-        .filter(i => i.productId === item.productId && i.id !== item.id)
-        .reduce((sum, i) => sum + i.quantidade, 0);
-    
-    const totalSolicitado = totalNoCarrinho + novaQtd;
-    const estoque = item.estoque || 0;
-    
-    if (item.vender_zerado !== 'SIM' && estoque < totalSolicitado) {
-        alert(`⚠️ Estoque insuficiente!\nDisponível: ${estoque} unidades\nTotal solicitado: ${totalSolicitado} unidades`);
-        return;
+    // Se NÃO vende zerado, verifica estoque TOTAL do produto
+    if (item.vender_zerado !== 'SIM') {
+        // Soma todas as quantidades deste produto no carrinho (incluindo a nova)
+        const totalNoCarrinho = carrinhoManual
+            .filter(i => i.productId === item.productId && i.id !== item.id)
+            .reduce((sum, i) => sum + i.quantidade, 0);
+        const totalSolicitado = totalNoCarrinho + novaQtd;
+        
+        if (item.estoque < totalSolicitado) {
+            alert(`⚠️ Estoque insuficiente!\nDisponível: ${item.estoque} unidades\nTotal solicitado: ${totalSolicitado} unidades`);
+            return;
+        }
     }
     
     item.quantidade = novaQtd;
     item.preco = item.precoUnitario * novaQtd;
     
-    // Atualiza status de produção
-    const isProducao = item.vender_zerado === 'SIM' && totalSolicitado > estoque;
-    item.isProducao = isProducao;
-    item.prazoProducao = isProducao ? (dados.produtos.find(p => p.id === item.productId)?.prazo_producao || 3) : 0;
-    item.totalSolicitado = totalSolicitado;
-    
+    // Recalcular produção
+    recalcularProducao();
     atualizarCarrinhoManual();
 }
 
 function removerDoCarrinhoManual(index) {
     carrinhoManual.splice(index, 1);
+    recalcularProducao();
     atualizarCarrinhoManual();
 }
 
@@ -2700,32 +2765,14 @@ function visualizarPedidoManual() {
     const container = document.getElementById('visItensContainer');
     let total = 0;
     
-    // Agrupar por produto para mostrar status
-    const grupos = {};
-    carrinhoManual.forEach(item => {
-        if (!grupos[item.productId]) {
-            grupos[item.productId] = {
-                nome: item.nome,
-                total: 0,
-                estoque: item.estoque,
-                vender_zerado: item.vender_zerado,
-                prazoProducao: item.prazoProducao,
-                itens: []
-            };
-        }
-        grupos[item.productId].total += item.quantidade;
-        grupos[item.productId].itens.push(item);
-    });
-    
     container.innerHTML = carrinhoManual.map(item => {
         const subtotal = item.preco || 0;
         total += subtotal;
-        const grupo = grupos[item.productId];
-        const isProducao = grupo && grupo.total > grupo.estoque && grupo.vender_zerado === 'SIM';
-        const prazo = grupo && isProducao ? grupo.prazoProducao : 0;
+        const nomeExibicao = item.isCustom ? `${item.nome} (personalizado)` : item.nome;
+        const isProducao = item.isProducao || false;
+        const prazo = isProducao ? item.prazoProducao : 0;
         const statusLabel = isProducao ? `🔨 Produção ${prazo}d` : '✅ Disponível';
         
-        const nomeExibicao = item.isCustom ? `${item.nome} (personalizado)` : item.nome;
         return `
             <div class="item-resumo">
                 <span>${nomeExibicao} <span style="font-size:11px;color:#888;">${statusLabel}</span></span>
@@ -2740,7 +2787,7 @@ function visualizarPedidoManual() {
 }
 
 // ============================================================
-// IMPRIMIR VISUALIZAÇÃO - REFEITA
+// IMPRIMIR VISUALIZAÇÃO
 // ============================================================
 function imprimirVisualizacaoPedido() {
     const printArea = document.getElementById('printArea');
@@ -2752,36 +2799,18 @@ function imprimirVisualizacaoPedido() {
     let itensHtml = '';
     let subtotal = 0;
     
-    // Agrupar por produto
-    const grupos = {};
-    carrinhoManual.forEach(item => {
-        if (!grupos[item.productId]) {
-            grupos[item.productId] = {
-                nome: item.nome,
-                total: 0,
-                estoque: item.estoque,
-                vender_zerado: item.vender_zerado,
-                prazoProducao: item.prazoProducao,
-                itens: []
-            };
-        }
-        grupos[item.productId].total += item.quantidade;
-        grupos[item.productId].itens.push(item);
-    });
-    
     carrinhoManual.forEach(item => {
         const preco = item.preco || 0;
         subtotal += preco;
-        const nome = (item.nome || 'Produto').substring(0, 18);
+        const nome = (item.nome || 'Produto').substring(0, 14);
         const qtd = item.quantidade || 0;
         const isCustom = item.isCustom ? '*' : '';
-        const grupo = grupos[item.productId];
-        const isProducao = grupo && grupo.total > grupo.estoque && grupo.vender_zerado === 'SIM';
-        const producaoLabel = isProducao ? ' 🔨' : '';
+        const isProducao = item.isProducao ? ' 🔨' : '';
+        const prazo = item.isProducao ? ` ${item.prazoProducao}d` : '';
         
         itensHtml += `
             <div class="print-item">
-                <span class="nome">${qtd}x ${nome}${isCustom}${producaoLabel}</span>
+                <span class="nome">${qtd}x ${nome}${isCustom}${isProducao}${prazo}</span>
                 <span class="valor">R$ ${preco.toFixed(2)}</span>
             </div>
         `;
@@ -2793,20 +2822,20 @@ function imprimirVisualizacaoPedido() {
     printArea.innerHTML = `
         <div class="print-header">
             <h2>EMBALAGENS EXPRESS</h2>
-            <p>Praça Santuário São Geraldo, 46 - BH/MG</p>
-            <p>CEP: 31050-650 | Tel: (31) 3487-5905</p>
+            <p>Pç Santuário S Geraldo,46 - BH/MG</p>
+            <p>CEP:31050-650 | Tel:(31)3487-5905</p>
             <div class="hr"></div>
             <p><strong>ORÇAMENTO - VISUALIZAÇÃO</strong></p>
             <div class="print-info"><span>${data}</span></div>
-            <div class="print-info"><span>Cliente: ${clienteNome.substring(0, 20)}</span></div>
+            <div class="print-info"><span>Cliente: ${clienteNome.substring(0, 18)}</span></div>
             ${clienteTelefone ? `<div class="print-info"><span>Tel: ${clienteTelefone}</span></div>` : ''}
-            ${clienteEmail ? `<div class="print-info"><span>Email: ${clienteEmail.substring(0, 22)}</span></div>` : ''}
+            ${clienteEmail ? `<div class="print-info"><span>Email: ${clienteEmail.substring(0, 20)}</span></div>` : ''}
             <div class="print-info"><span>Pag: ${pagamento}</span></div>
             <div class="hr"></div>
         </div>
         
-        <div style="margin:2px 0;">
-            <div style="font-weight:bold;border-bottom:1px solid #000;padding-bottom:1px;margin-bottom:1px;display:flex;justify-content:space-between;font-size:9px;">
+        <div style="margin:1px 0;">
+            <div style="font-weight:bold;border-bottom:1px solid #000;padding-bottom:0.5px;margin-bottom:0.5px;display:flex;justify-content:space-between;font-size:8px;">
                 <span>ITEM</span>
                 <span>VALOR</span>
             </div>
@@ -2873,23 +2902,11 @@ async function finalizarPedidoManual() {
     
     const total = carrinhoManual.reduce((sum, item) => sum + (item.preco || 0), 0);
     
-    // Calcular status de produção por produto
-    const grupos = {};
-    carrinhoManual.forEach(item => {
-        if (!grupos[item.productId]) {
-            grupos[item.productId] = {
-                total: 0,
-                estoque: item.estoque,
-                vender_zerado: item.vender_zerado,
-                prazoProducao: item.prazoProducao
-            };
-        }
-        grupos[item.productId].total += item.quantidade;
-    });
+    // Recalcular produção para garantir status correto
+    recalcularProducao();
     
     const itensPedido = carrinhoManual.map(item => {
-        const grupo = grupos[item.productId];
-        const isProducao = grupo && grupo.total > grupo.estoque && grupo.vender_zerado === 'SIM';
+        const isProducao = item.isProducao || false;
         return {
             nome: item.isCustom ? `${item.nome} (personalizado)` : item.nome,
             quantidade: item.quantidade,
@@ -2930,8 +2947,7 @@ async function finalizarPedidoManual() {
         // Só baixa estoque dos itens que NÃO são produção
         const atualizacoes = carrinhoManual
             .filter(item => {
-                const grupo = grupos[item.productId];
-                const isProducao = grupo && grupo.total > grupo.estoque && grupo.vender_zerado === 'SIM';
+                const isProducao = item.isProducao || false;
                 return !isProducao && item.vender_zerado !== 'SIM';
             })
             .map(item => {
@@ -3006,11 +3022,3 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </body>
 </html>
-
-
-nao funcionou os calculos de estoque,  um item tem 20 unidades,  adicionar +10 duas vezes e deu 20 unidades depois adicionar mais  50 unidades personalizadas, e o pedido ficou com 70 no total,  como é o mesmo item os dois produtos deveriam ficar com estoque (Prazo produção x dias ) e não disponivel como ficou,  
-
-e outra coisa se o produto é vende zerado então ele aceita vender mais do que tem no estoque, com a mesma regra de  (Prazo de x dias de produção) e claro nao deve mexer no estoque ja que vamos produzir o produto. 
-
-e esses dados, de  Dinsponivel, Prazo produtção etc, deve aparecer no pedido e na impressão tambem.
-a impresão agora nao esta contando tanto, melhorou muito, mas ainda esta cortando um pouco no canto direito, então a mudança foi boa mas ainda nao foi o suficeinte, basta agora ajustar mais um pouco para garantir que nao vai cortar.
