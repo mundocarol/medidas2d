@@ -303,27 +303,40 @@
         }
 
         .product-image-wrapper {
-            width: 100%;
-            height: 180px;
-            background: linear-gradient(135deg, #e0e0e0, #f0f0f0);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-            overflow: hidden;
-            position: relative;
-        }
+    width: 100%;
+    height: 180px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
 
-        .product-image-wrapper:hover {
-            background: linear-gradient(135deg, #d0d0d0, #e8e8e8);
-        }
+       .product-image-wrapper:hover {
+    background: #1a3a5c;  /* <-- MUDE para o azul do site */
+}
 
-        .product-image-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .product-image-wrapper {
+    width: 100%;
+    height: 180px;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    padding: 0px;
+}
+
+.product-image-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: scale-down;   /* <-- ESSA É A CHAVE! */
+    background: white;
+}
 
         .product-image-wrapper .placeholder-icon {
             font-size: 48px;
@@ -1754,10 +1767,11 @@
                 flex-shrink: 0;
             }
             .product-image-wrapper img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
+    width: 100%;
+    height: 100%;
+    object-fit: contain;  /* <-- MUDE DE 'cover' PARA 'contain' */
+    background: white;
+}
             .product-info {
                 padding: 10px 12px 12px;
                 display: flex;
@@ -6066,40 +6080,48 @@ function abrirMeusPedidos() {
         // INICIALIZAR
         // ============================================================
         function init() {
-            if (!PRODUCTS_DATA.categories || PRODUCTS_DATA.categories.length === 0) {
-                console.warn('⚠️ Nenhuma categoria encontrada');
-                const grid = document.getElementById('categoriesGrid');
-                if (grid) {
-                    const loading = document.getElementById('loadingIndicator');
-                    if (!loading) {
-                        grid.innerHTML = `
-                            <div style="grid-column:1/-1;text-align:center;padding:40px;color:#999;">
-                                <i class="fas fa-database" style="font-size:48px;display:block;margin-bottom:10px;"></i>
-                                <p>Nenhum produto encontrado</p>
-                                <p style="font-size:12px;color:#bbb;">Verifique sua planilha ou tente novamente</p>
-                            </div>
-                        `;
-                    }
-                }
-                carregarCarrinho();
-                atalhoAdmin();
-                controlarHistoricoNavegacao();
-                atualizarBadge();
-                verificarSessao();
-                inicializando = false;
-                return;
+    if (!PRODUCTS_DATA.categories || PRODUCTS_DATA.categories.length === 0) {
+        console.warn('⚠️ Nenhuma categoria encontrada');
+        const grid = document.getElementById('categoriesGrid');
+        if (grid) {
+            const loading = document.getElementById('loadingIndicator');
+            if (!loading) {
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1;text-align:center;padding:40px;color:#999;">
+                        <i class="fas fa-database" style="font-size:48px;display:block;margin-bottom:10px;"></i>
+                        <p>Nenhum produto encontrado</p>
+                        <p style="font-size:12px;color:#bbb;">Verifique sua planilha ou tente novamente</p>
+                    </div>
+                `;
             }
-            
-            renderizarCategorias();
-            carregarCarrinho();
-            atalhoAdmin();
-            controlarHistoricoNavegacao();
-            atualizarBadge();
-            verificarSessao();
-            showHome();
-            inicializando = false;
         }
-
+        carregarCarrinho();
+        atalhoAdmin();
+        controlarHistoricoNavegacao();
+        atualizarBadge();
+        verificarSessao();
+        inicializando = false;
+        
+        // ⭐ NOVO: Restaurar estado após carregar
+        restaurarEstadoNavegacao();
+        return;
+    }
+    
+    renderizarCategorias();
+    carregarCarrinho();
+    atalhoAdmin();
+    controlarHistoricoNavegacao();
+    atualizarBadge();
+    verificarSessao();
+    
+    // ⭐ NOVO: Restaurar estado após carregar
+    const restaurou = restaurarEstadoNavegacao();
+    if (!restaurou) {
+        showHome();
+    }
+    
+    inicializando = false;
+}
         function salvarEstadoNavegacao(pagina) {
             try {
                 if (!pagina) {
@@ -6118,28 +6140,44 @@ function abrirMeusPedidos() {
         }
 
         function restaurarEstadoNavegacao() {
-            try {
-                const saved = localStorage.getItem('estadoNavegacao');
-                if (!saved) return false;
-                const estado = JSON.parse(saved);
-                if (estado.pagina === 'home') return false;
-                if (estado.pagina === 'categoria' && estado.currentCategoryId) {
-                    const category = PRODUCTS_DATA.categories.find(c => c.id === estado.currentCategoryId);
-                    if (!category) return false;
-                    currentCategory = category;
-                    currentProducts = category.products;
-                    document.getElementById('categoriesSection').style.display = 'none';
-                    document.getElementById('productsSection').style.display = 'block';
-                    document.getElementById('categoryTitle').textContent = category.name;
-                    document.getElementById('productCount').textContent = `${category.products.length} produtos`;
-                    renderizarProdutos();
-                    return true;
-                }
-                return false;
-            } catch (e) {
+    try {
+        const saved = localStorage.getItem('estadoNavegacao');
+        if (!saved) return false;
+        const estado = JSON.parse(saved);
+        
+        // Verificar se o estado é recente (menos de 1 hora)
+        const agora = Date.now();
+        if (agora - estado.timestamp > 3600000) {
+            localStorage.removeItem('estadoNavegacao');
+            return false;
+        }
+        
+        if (estado.pagina === 'home') {
+            showHome();
+            return true;
+        }
+        
+        if (estado.pagina === 'categoria' && estado.currentCategoryId) {
+            const category = PRODUCTS_DATA.categories.find(c => c.id === estado.currentCategoryId);
+            if (!category) {
+                showHome();
                 return false;
             }
+            currentCategory = category;
+            currentProducts = category.products;
+            document.getElementById('categoriesSection').style.display = 'none';
+            document.getElementById('productsSection').style.display = 'block';
+            document.getElementById('categoryTitle').textContent = category.name;
+            document.getElementById('productCount').textContent = `${category.products.length} produtos`;
+            renderizarProdutos();
+            return true;
         }
+        
+        return false;
+    } catch (e) {
+        return false;
+    }
+}
 
         function controlarHistoricoNavegacao() {
             window.addEventListener('popstate', function(event) {
@@ -6188,9 +6226,37 @@ function abrirMeusPedidos() {
         if (carrinho.length > 0) {
             document.getElementById('freteCarrinhoContainer').style.display = 'block';
         }
+
+        // Salvar estado antes de recarregar a página
+window.addEventListener('beforeunload', function() {
+    // Determinar página atual
+    const isHome = document.getElementById('categoriesSection').style.display !== 'none';
+    const isProducts = document.getElementById('productsSection').style.display !== 'none';
+    
+    let pagina = 'home';
+    let currentCategoryId = null;
+    
+    if (isProducts && currentCategory) {
+        pagina = 'categoria';
+        currentCategoryId = currentCategory.id;
+    } else if (isHome) {
+        pagina = 'home';
+    }
+    
+    const estado = {
+        pagina: pagina,
+        currentCategoryId: currentCategoryId,
+        currentCategoryName: currentCategory ? currentCategory.name : null,
+        timestamp: Date.now()
+    };
+    
+    try {
+        localStorage.setItem('estadoNavegacao', JSON.stringify(estado));
+    } catch (e) {}
+});
+
     </script>
 </body>
 </html>
 
 
-nesse codigo quero ajustar a imagems do produto esta cortando a imagem, quero que a imagem apareça completa, usando a mesma area que ja tem no site paa a imagem, so ajustar a imagem denrtro dessa area para ficar bonito, mantendoo fundo branco, dessa area da imagem.
