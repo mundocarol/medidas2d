@@ -56,11 +56,54 @@
             align-items: center;
         }
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+       /* SUBSTITUA TODO O .logo atual por isso: */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 200px; /* ← NOVO: controla o tamanho no PC */
+    width: 100%;
+}
+
+/* ADICIONE isso para a IMAGEM dentro da logo: */
+.logo img {
+    width: 100%;
+    height: auto;
+    max-width: 300px; /* ← Tamanho da imagem no PC */
+    display: block;
+}
+
+/* MANTENHA isso (não precisa mudar): */
+.logo span {
+    color: white;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* MANTENHA isso (não precisa mudar): */
+.logo a { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    text-decoration: none; 
+    cursor: pointer; 
+}
+
+/* ADICIONE isso NO FINAL do seu CSS para MOBILE: */
+@media (max-width: 768px) {
+    .logo {
+        max-width: 140px; /* ← Tamanho menor no celular */
+    }
+    
+    .logo img {
+        max-width: 120px; /* ← Imagem menor no celular */
+    }
+    
+    .logo span {
+        font-size: 16px; /* ← Opcional: texto menor no celular */
+    }
+}
 
         .logo span {
             color: white;
