@@ -69,7 +69,7 @@
 .logo img {
     width: 100%;
     height: auto;
-    max-width: 300px; /* ← Tamanho da imagem no PC */
+    max-width: 300px; /* ← Tamanho da imagem no PC  ESSE AQUI EDITA CORRETO*/
     display: block;
 }
 
@@ -97,7 +97,7 @@
     }
     
     .logo img {
-        max-width: 120px; /* ← Imagem menor no celular */
+        max-width: 180px; /* ← Imagem menor no celular ESSE AQUI EDITA CORRETO */
     }
     
     .logo span {
@@ -249,25 +249,49 @@
             box-shadow: var(--shadow-hover);
         }
 
-        .category-card .category-image-wrapper {
-            width: 100%;
-            height: 150px;
-            overflow: hidden;
-            border-radius: var(--radius);
-            background: #f0f4f8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-        }
+        /* ===== CATEGORIAS - IMAGENS SEMPRE QUADRADAS E SEM CORTE ===== */
+.category-card .category-image-wrapper {
+    width: 100%;
+    aspect-ratio: 1/1; /* ← FORÇA SER QUADRADA EM QUALQUER TELA */
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: #f0f4f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    position: relative;
+}
+
+.category-card .category-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* ← NUNCA CORTA A IMAGEM! */
+    display: block;
+    background: #FFFFFF; /* Fundo para espaços vazios */
+}
+
+/* Para garantir no mobile */
+@media (max-width: 768px) {
+    .category-card .category-image-wrapper {
+        aspect-ratio: 1/1; /* Mantém quadrada */
+    }
+    
+    .category-card .category-image-wrapper img {
+        object-fit: contain; /* Sem corte */
+    }
+}
+
+/* Para telas muito pequenas */
+@media (max-width: 480px) {
+    .category-card .category-image-wrapper {
+        aspect-ratio: 1/1;
+    }
+}
 
         .category-card:hover .category-image-wrapper { transform: scale(1.03); }
 
-        .category-card .category-image-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+       
 
         .category-card .category-image-wrapper .placeholder-icon {
             font-size: 48px;
