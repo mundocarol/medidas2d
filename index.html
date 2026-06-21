@@ -4179,54 +4179,68 @@ function fecharAtendimento() {
         // MODAL PRODUTO
         // ============================================================
         function abrirModalProduto(productId) {
-            const product = encontrarProduto(productId);
-            if (!product) return;
-            modalProductId = productId;
-            carouselIndex = 0;
-            document.getElementById('modalProductName').textContent = product.name;
-            document.getElementById('modalProductCodigo').innerHTML = `<span>Código: ${product.codigo || '---'}</span>`;
-            document.getElementById('modalProductDescription').textContent = product.description;
-            const container = document.getElementById('carouselContainer');
-            container.innerHTML = '';
-            if (product.images && product.images.length > 0) {
-                product.images.forEach(img => {
-                    const imgEl = document.createElement('img');
-                    imgEl.src = img;
-                    imgEl.alt = product.name;
-                    container.appendChild(imgEl);
-                });
-            } else {
-                container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#999;font-size:48px;">📦</div>';
+    const product = encontrarProduto(productId);
+    if (!product) return;
+    modalProductId = productId;
+    carouselIndex = 0;
+    document.getElementById('modalProductName').textContent = product.name;
+    document.getElementById('modalProductCodigo').innerHTML = `<span>Código: ${product.codigo || '---'}</span>`;
+    document.getElementById('modalProductDescription').textContent = product.description;
+    
+    const container = document.getElementById('carouselContainer');
+    container.innerHTML = '';
+    
+    // 🔥 CORREÇÃO AQUI - Verifica imagens
+    if (product.images && product.images.length > 0) {
+        product.images.forEach(img => {
+            let imagemUrl = img;
+            if (!imagemUrl.startsWith('http://') && !imagemUrl.startsWith('https://')) {
+                if (imagemUrl.startsWith('//')) {
+                    imagemUrl = 'https:' + imagemUrl;
+                }
             }
-            const pricesDiv = document.getElementById('modalPrices');
-            pricesDiv.innerHTML = '';
-            product.quantities.forEach(qty => {
-                const item = document.createElement('div');
-                item.className = 'price-item';
-                item.innerHTML = `<span class="quantity">${qty.qty} unidades</span><span class="price">R$ ${qty.price.toFixed(2)}</span>`;
-                pricesDiv.appendChild(item);
-            });
-            const specsDiv = document.getElementById('modalSpecs');
-            const estaEsgotado = !product.vender_zerado && product.stock <= 0;
-            const mostrarPrazo = product.vender_zerado && product.stock <= 0;
-            specsDiv.innerHTML = `
-                <h4>📋 Medidas dos Pacotes</h4>
-                ${product.quantities.map((qty) => `
-                    <div class="spec-item">
-                        <span class="label">${qty.qty} unidades</span>
-                        <span class="value">Peso: ${qty.weight || 'N/A'} | Dimensões: ${qty.dimensions || 'N/A'}</span>
-                    </div>
-                `).join('')}
-                <div class="spec-item" style="margin-top:8px;border-top:2px solid #eee;padding-top:8px;">
-                    <span class="label">📦 Estoque</span>
-                    <span class="value">${estaEsgotado ? 'ESGOTADO' : (mostrarPrazo ? 'Sob encomenda' : (product.stock > 0 ? `${product.stock} unidades` : 'Sob encomenda'))}</span>
-                </div>
-                ${mostrarPrazo ? `<div class="spec-item"><span class="label">⏱️ Prazo de produção</span><span class="value">${product.productionDays || 7} dias úteis</span></div>` : ''}
-                <div class="spec-item"><span class="label">🏷️ Código</span><span class="value">${product.codigo || '---'}</span></div>
-                ${product.ncm ? `<div class="spec-item"><span class="label">📋 NCM</span><span class="value">${product.ncm}</span></div>` : ''}
-            `;
-            document.getElementById('productModal').style.display = 'block';
-        }
+            const imgEl = document.createElement('img');
+            imgEl.src = imagemUrl;
+            imgEl.alt = product.name;
+            imgEl.onerror = function() {
+                this.style.display = 'none';
+            };
+            container.appendChild(imgEl);
+        });
+    } else {
+        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#999;font-size:48px;">📦</div>';
+    }
+    
+    const pricesDiv = document.getElementById('modalPrices');
+    pricesDiv.innerHTML = '';
+    product.quantities.forEach(qty => {
+        const item = document.createElement('div');
+        item.className = 'price-item';
+        item.innerHTML = `<span class="quantity">${qty.qty} unidades</span><span class="price">R$ ${qty.price.toFixed(2)}</span>`;
+        pricesDiv.appendChild(item);
+    });
+    
+    const specsDiv = document.getElementById('modalSpecs');
+    const estaEsgotado = !product.vender_zerado && product.stock <= 0;
+    const mostrarPrazo = product.vender_zerado && product.stock <= 0;
+    specsDiv.innerHTML = `
+        <h4>📋 Medidas dos Pacotes</h4>
+        ${product.quantities.map((qty) => `
+            <div class="spec-item">
+                <span class="label">${qty.qty} unidades</span>
+                <span class="value">Peso: ${qty.weight || 'N/A'} | Dimensões: ${qty.dimensions || 'N/A'}</span>
+            </div>
+        `).join('')}
+        <div class="spec-item" style="margin-top:8px;border-top:2px solid #eee;padding-top:8px;">
+            <span class="label">📦 Estoque</span>
+            <span class="value">${estaEsgotado ? 'ESGOTADO' : (mostrarPrazo ? 'Sob encomenda' : (product.stock > 0 ? `${product.stock} unidades` : 'Sob encomenda'))}</span>
+        </div>
+        ${mostrarPrazo ? `<div class="spec-item"><span class="label">⏱️ Prazo de produção</span><span class="value">${product.productionDays || 7} dias úteis</span></div>` : ''}
+        <div class="spec-item"><span class="label">🏷️ Código</span><span class="value">${product.codigo || '---'}</span></div>
+        ${product.ncm ? `<div class="spec-item"><span class="label">📋 NCM</span><span class="value">${product.ncm}</span></div>` : ''}
+    `;
+    document.getElementById('productModal').style.display = 'block';
+}
 
         function moverCarousel(direction) {
             const container = document.getElementById('carouselContainer');
@@ -4312,72 +4326,97 @@ function fecharAtendimento() {
         }
 
         function renderizarProdutos() {
-            const grid = document.getElementById('productsGrid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            currentProducts.forEach(product => {
-                const estaEsgotado = !product.vender_zerado && product.stock <= 0;
-                const podeVender = product.vender_zerado || product.stock > 0;
-                const mostrarPrazo = product.vender_zerado && product.stock <= 0;
-                const card = document.createElement('div');
-                card.className = 'product-card' + (estaEsgotado ? ' esgotado' : '');
-                card.id = `product-${product.id}`;
-                const imgDiv = document.createElement('div');
-                imgDiv.className = 'product-image-wrapper';
-                if (product.images && product.images.length > 0) {
-                    imgDiv.innerHTML = `<img src="${product.images[0]}" alt="${product.name}">`;
+    const grid = document.getElementById('productsGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    
+    currentProducts.forEach(product => {
+        const estaEsgotado = !product.vender_zerado && product.stock <= 0;
+        const podeVender = product.vender_zerado || product.stock > 0;
+        const mostrarPrazo = product.vender_zerado && product.stock <= 0;
+        
+        const card = document.createElement('div');
+        card.className = 'product-card' + (estaEsgotado ? ' esgotado' : '');
+        card.id = `product-${product.id}`;
+        
+        const imgDiv = document.createElement('div');
+        imgDiv.className = 'product-image-wrapper';
+        
+        // 🔥 CORREÇÃO AQUI: Verifica se há imagens e se são válidas
+        let imagemUrl = '';
+        if (product.images && product.images.length > 0) {
+            // Pega a primeira imagem
+            imagemUrl = product.images[0];
+            // Se a imagem não começar com http, tenta adicionar
+            if (!imagemUrl.startsWith('http://') && !imagemUrl.startsWith('https://')) {
+                // Pode ser que venha sem protocolo
+                if (imagemUrl.startsWith('//')) {
+                    imagemUrl = 'https:' + imagemUrl;
                 } else {
-                    imgDiv.innerHTML = `<span class="placeholder-icon">📦</span>`;
+                    // Se for um link relativo, tenta construir
+                    imagemUrl = imagemUrl;
                 }
-                if (estaEsgotado) {
-                    imgDiv.innerHTML += `<span class="product-badge">ESGOTADO</span>`;
-                }
-                imgDiv.onclick = () => abrirModalProduto(product.id);
-                const infoDiv = document.createElement('div');
-                infoDiv.className = 'product-info';
-                let quantityHTML = '';
-                product.quantities.forEach(qtyOption => {
-                    const desabilitado = estaEsgotado;
-                    quantityHTML += `
-                        <div class="quantity-option" data-product-id="${product.id}" data-qty-step="${qtyOption.qty}">
-                            <label>+${qtyOption.qty}</label>
-                            <div class="quantity-control">
-                                <button onclick="alterarQuantidade(${product.id}, ${qtyOption.qty}, -1)" ${desabilitado ? 'disabled' : ''}>−</button>
-                                <span class="quantity-value" id="qty-${product.id}-${qtyOption.qty}">0</span>
-                                <button onclick="alterarQuantidade(${product.id}, ${qtyOption.qty}, 1)" ${desabilitado ? 'disabled' : ''}>+</button>
-                            </div>
-                            <span class="price-per-unit">R$ ${(qtyOption.price / qtyOption.qty).toFixed(2)}</span>
-                        </div>
-                    `;
-                });
-                let stockInfo = '';
-                if (estaEsgotado) {
-                    stockInfo = `<div class="stock-info esgotado"><i class="fas fa-times-circle"></i> Produto esgotado</div>`;
-                } else if (mostrarPrazo) {
-                    stockInfo = `<div class="stock-info production"><i class="fas fa-clock"></i> Produção: ${product.productionDays || 7} dias úteis</div>`;
-                } else if (product.stock > 0 && product.stock < 10) {
-                    stockInfo = `<div class="stock-info" style="color:#f39c12;"><i class="fas fa-exclamation-triangle"></i> Últimas ${product.stock} unidades</div>`;
-                } else if (product.stock > 0) {
-                    stockInfo = `<div class="stock-info available"><i class="fas fa-box"></i> ${product.stock} unidades em estoque</div>`;
-                }
-                infoDiv.innerHTML = `
-                    <h4>${product.name}</h4>
-                    <div class="product-codigo"><span>Código: ${product.codigo || '---'}</span></div>
-                    <p class="product-description">${product.description}</p>
-                    <div class="product-actions">
-                        <div class="quantity-selector">${quantityHTML}</div>
-                        <div class="price-display" id="priceDisplay-${product.id}">Selecione uma quantidade</div>
-                        <button class="btn-add-product" onclick="adicionarProduto(${product.id})" ${!podeVender ? 'disabled' : ''}>
-                            <i class="fas fa-cart-plus"></i> ${estaEsgotado ? 'Esgotado' : 'Adicionar'}
-                        </button>
-                        ${stockInfo}
-                    </div>
-                `;
-                card.appendChild(imgDiv);
-                card.appendChild(infoDiv);
-                grid.appendChild(card);
-            });
+            }
+            
+            imgDiv.innerHTML = `<img src="${imagemUrl}" alt="${product.name}" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\\'placeholder-icon\\'>📦</span>';">`;
+        } else {
+            imgDiv.innerHTML = `<span class="placeholder-icon">📦</span>`;
         }
+        
+        if (estaEsgotado) {
+            imgDiv.innerHTML += `<span class="product-badge">ESGOTADO</span>`;
+        }
+        imgDiv.onclick = () => abrirModalProduto(product.id);
+        
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'product-info';
+        
+        let quantityHTML = '';
+        product.quantities.forEach(qtyOption => {
+            const desabilitado = estaEsgotado;
+            quantityHTML += `
+                <div class="quantity-option" data-product-id="${product.id}" data-qty-step="${qtyOption.qty}">
+                    <label>+${qtyOption.qty}</label>
+                    <div class="quantity-control">
+                        <button onclick="alterarQuantidade(${product.id}, ${qtyOption.qty}, -1)" ${desabilitado ? 'disabled' : ''}>−</button>
+                        <span class="quantity-value" id="qty-${product.id}-${qtyOption.qty}">0</span>
+                        <button onclick="alterarQuantidade(${product.id}, ${qtyOption.qty}, 1)" ${desabilitado ? 'disabled' : ''}>+</button>
+                    </div>
+                    <span class="price-per-unit">R$ ${(qtyOption.price / qtyOption.qty).toFixed(2)}</span>
+                </div>
+            `;
+        });
+        
+        let stockInfo = '';
+        if (estaEsgotado) {
+            stockInfo = `<div class="stock-info esgotado"><i class="fas fa-times-circle"></i> Produto esgotado</div>`;
+        } else if (mostrarPrazo) {
+            stockInfo = `<div class="stock-info production"><i class="fas fa-clock"></i> Produção: ${product.productionDays || 7} dias úteis</div>`;
+        } else if (product.stock > 0 && product.stock < 10) {
+            stockInfo = `<div class="stock-info" style="color:#f39c12;"><i class="fas fa-exclamation-triangle"></i> Últimas ${product.stock} unidades</div>`;
+        } else if (product.stock > 0) {
+            stockInfo = `<div class="stock-info available"><i class="fas fa-box"></i> ${product.stock} unidades em estoque</div>`;
+        }
+        
+        infoDiv.innerHTML = `
+            <h4>${product.name}</h4>
+            <div class="product-codigo"><span>Código: ${product.codigo || '---'}</span></div>
+            <p class="product-description">${product.description}</p>
+            <div class="product-actions">
+                <div class="quantity-selector">${quantityHTML}</div>
+                <div class="price-display" id="priceDisplay-${product.id}">Selecione uma quantidade</div>
+                <button class="btn-add-product" onclick="adicionarProduto(${product.id})" ${!podeVender ? 'disabled' : ''}>
+                    <i class="fas fa-cart-plus"></i> ${estaEsgotado ? 'Esgotado' : 'Adicionar'}
+                </button>
+                ${stockInfo}
+            </div>
+        `;
+        
+        card.appendChild(imgDiv);
+        card.appendChild(infoDiv);
+        grid.appendChild(card);
+    });
+}
 
         // ============================================================
         // FUNÇÕES DE BUSCA
@@ -6019,129 +6058,178 @@ function abrirMeusPedidos() {
         // ============================================================
         // CARREGAR DADOS DA PLANILHA
         // ============================================================
-        async function carregarDadosPlanilha() {
-            if (carregando) return;
-            carregando = true;
+       async function carregarDadosPlanilha() {
+    if (carregando) return;
+    carregando = true;
 
-            try {
-                mostrarLoading(true);
-                console.log('🔄 Buscando dados da planilha...');
-                const response = await fetch(API_URL);
-                
-                if (!response.ok) {
-                    throw new Error(`Erro HTTP: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('📊 Dados recebidos da planilha:', data);
-                
-                if (!data.produtos || !data.categorias) {
-                    throw new Error('Estrutura de dados inválida');
-                }
-                
-                const produtosStr = data.produtos.map(p => {
-                    const novoP = {};
-                    for (const key in p) {
-                        novoP[key] = String(p[key] || '').trim();
-                    }
-                    return novoP;
-                });
-                
-                const categoriasStr = data.categorias.map(c => {
-                    const novoC = {};
-                    for (const key in c) {
-                        novoC[key] = String(c[key] || '').trim();
-                    }
-                    return novoC;
-                });
-                
-                PRODUCTS_DATA.categories = categoriasStr.map(cat => {
-                    const produtosDaCategoria = produtosStr.filter(p => p.categoria === cat.nome);
-                    return {
-                        id: parseInt(cat.id) || 0,
-                        name: cat.nome || 'Categoria sem nome',
-                        description: cat.descricao || '',
-                        image: cat.imagem || '',
-                        products: produtosDaCategoria
-                            .filter(p => (p.produto_ativado || '').toUpperCase() === 'SIM')
-                            .map(p => {
-                                const qtyList = p.quantidades ? p.quantidades.split(',').map(q => parseInt(q.trim())).filter(q => !isNaN(q) && q > 0) : [];
-                                const precoMap = {};
-                                if (p.preco_venda) {
-                                    p.preco_venda.split(';').forEach(item => {
-                                        const parts = item.trim().split(':');
-                                        if (parts.length === 2) {
-                                            precoMap[parseInt(parts[0])] = parseFloat(parts[1]) || 0;
-                                        }
-                                    });
-                                }
-                                const pesoMap = {};
-                                if (p.pesos_medidas) {
-                                    p.pesos_medidas.split(';').forEach(item => {
-                                        const parts = item.trim().split(':');
-                                        if (parts.length === 2) {
-                                            pesoMap[parseInt(parts[0])] = parts[1] || '';
-                                        }
-                                    });
-                                }
-                                const quantities = qtyList.map(qty => {
-                                    let dimensions = '';
-                                    let weight = '';
-                                    const pesoInfo = pesoMap[qty] || '';
-                                    if (pesoInfo) {
-                                        const pesoParts = pesoInfo.split('-');
-                                        if (pesoParts.length === 2) {
-                                            weight = pesoParts[0] || '';
-                                            dimensions = pesoParts[1] || '';
-                                        } else {
-                                            weight = pesoInfo;
-                                        }
-                                    }
-                                    return {
-                                        qty: qty,
-                                        price: precoMap[qty] || 0,
-                                        weight: weight || '',
-                                        dimensions: dimensions || ''
-                                    };
-                                });
-                                const images = p.imagens_carousel ? p.imagens_carousel.split(',').map(img => img.trim()).filter(img => img) : [];
-                                const venderZerado = (p.vender_zerado || '').toUpperCase() === 'SIM';
-                                return {
-                                    id: parseInt(p.id) || 0,
-                                    name: p.nome || 'Produto sem nome',
-                                    description: p.descricao || '',
-                                    images: images,
-                                    quantities: quantities,
-                                    stock: parseInt(p.estoque) || 0,
-                                    productionDays: parseInt(p.prazo_producao) || 0,
-                                    weight: parseFloat(p.peso_unitario) || 0,
-                                    height: 0,
-                                    width: 0,
-                                    length: 0,
-                                    codigo: p.codigo_produto || '',
-                                    ncm: p.ncm || '',
-                                    ativado: (p.produto_ativado || '').toUpperCase() === 'SIM',
-                                    vender_zerado: venderZerado
-                                };
-                            })
-                    };
-                });
-                
-                dadosCarregados = true;
-                mostrarLoading(false);
-                init();
-                
-            } catch (error) {
-                console.error('❌ Erro ao carregar dados:', error);
-                mostrarLoading(false);
-                if (!dadosCarregados || PRODUCTS_DATA.categories.length === 0) {
-                    alert('⚠️ Não foi possível carregar os produtos. Verifique sua conexão.');
-                }
-                init();
-            } finally {
-                carregando = false;
-            }
+    try {
+        mostrarLoading(true);
+        console.log('🔄 Buscando dados da planilha...');
+        const response = await fetch(API_URL);
+        
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status}`);
         }
+        
+        const data = await response.json();
+        console.log('📊 Dados recebidos da planilha:', data);
+        
+        if (!data.produtos || !data.categorias) {
+            throw new Error('Estrutura de dados inválida');
+        }
+        
+        const produtosStr = data.produtos.map(p => {
+            const novoP = {};
+            for (const key in p) {
+                novoP[key] = String(p[key] || '').trim();
+            }
+            return novoP;
+        });
+        
+        const categoriasStr = data.categorias.map(c => {
+            const novoC = {};
+            for (const key in c) {
+                novoC[key] = String(c[key] || '').trim();
+            }
+            return novoC;
+        });
+        
+        PRODUCTS_DATA.categories = categoriasStr.map(cat => {
+            const produtosDaCategoria = produtosStr.filter(p => p.categoria === cat.nome);
+            return {
+                id: parseInt(cat.id) || 0,
+                name: cat.nome || 'Categoria sem nome',
+                description: cat.descricao || '',
+                image: cat.imagem || '',
+                products: produtosDaCategoria
+                    .filter(p => (p.produto_ativado || '').toUpperCase() === 'SIM')
+                    .map(p => {
+                        // === QUANTIDADES ===
+                        const qtyList = p.quantidades ? p.quantidades.split(',').map(q => parseInt(q.trim())).filter(q => !isNaN(q) && q > 0) : [];
+                        
+                        // === PREÇOS ===
+                        const precoMap = {};
+                        if (p.preco_venda) {
+                            p.preco_venda.split(';').forEach(item => {
+                                const parts = item.trim().split(':');
+                                if (parts.length === 2) {
+                                    precoMap[parseInt(parts[0])] = parseFloat(parts[1]) || 0;
+                                }
+                            });
+                        }
+                        
+                        // === PESOS E MEDIDAS ===
+                        const pesoMap = {};
+                        if (p.pesos_medidas) {
+                            p.pesos_medidas.split(';').forEach(item => {
+                                const parts = item.trim().split(':');
+                                if (parts.length === 2) {
+                                    pesoMap[parseInt(parts[0])] = parts[1] || '';
+                                }
+                            });
+                        }
+                        
+                        // === QUANTITIES ARRAY ===
+                        const quantities = qtyList.map(qty => {
+                            let dimensions = '';
+                            let weight = '';
+                            const pesoInfo = pesoMap[qty] || '';
+                            if (pesoInfo) {
+                                const pesoParts = pesoInfo.split('-');
+                                if (pesoParts.length === 2) {
+                                    weight = pesoParts[0] || '';
+                                    dimensions = pesoParts[1] || '';
+                                } else {
+                                    weight = pesoInfo;
+                                }
+                            }
+                            return {
+                                qty: qty,
+                                price: precoMap[qty] || 0,
+                                weight: weight || '',
+                                dimensions: dimensions || ''
+                            };
+                        });
+                        
+                        // 🔥🔥🔥 CORREÇÃO DAS IMAGENS - Coluna E e F 🔥🔥🔥
+                        let images = [];
+                        
+                        // 1. Tenta carregar da coluna F (imagens_carousel)
+                        if (p.imagens_carousel) {
+                            images = p.imagens_carousel.split(',').map(img => img.trim()).filter(img => img && img.length > 0);
+                        }
+                        
+                        // 2. Se não tiver, tenta da coluna E (imagem_principal)
+                        if (images.length === 0 && p.imagem_principal) {
+                            const img = p.imagem_principal.trim();
+                            if (img && img.length > 0) {
+                                images = [img];
+                            }
+                        }
+                        
+                        // 3. Se ainda não tiver, tenta outros nomes comuns
+                        if (images.length === 0 && p.imagem) {
+                            const img = p.imagem.trim();
+                            if (img && img.length > 0) {
+                                images = [img];
+                            }
+                        }
+                        if (images.length === 0 && p.foto) {
+                            const img = p.foto.trim();
+                            if (img && img.length > 0) {
+                                images = [img];
+                            }
+                        }
+                        if (images.length === 0 && p.imagens) {
+                            images = p.imagens.split(',').map(img => img.trim()).filter(img => img && img.length > 0);
+                        }
+                        
+                        // 4. Se ainda não tiver imagem, usa a imagem da categoria como fallback
+                        if (images.length === 0 && cat.imagem) {
+                            images = [cat.imagem];
+                        }
+                        
+                        // 🔥 LOG PARA DEBUG - Veja no console
+                        console.log(`📸 ${p.nome} - Imagens encontradas:`, images);
+                        
+                        const venderZerado = (p.vender_zerado || '').toUpperCase() === 'SIM';
+                        
+                        return {
+                            id: parseInt(p.id) || 0,
+                            name: p.nome || 'Produto sem nome',
+                            description: p.descricao || '',
+                            images: images,
+                            quantities: quantities,
+                            stock: parseInt(p.estoque) || 0,
+                            productionDays: parseInt(p.prazo_producao) || 0,
+                            weight: parseFloat(p.peso_unitario) || 0,
+                            height: 0,
+                            width: 0,
+                            length: 0,
+                            codigo: p.codigo_produto || '',
+                            ncm: p.ncm || '',
+                            ativado: (p.produto_ativado || '').toUpperCase() === 'SIM',
+                            vender_zerado: venderZerado
+                        };
+                    })
+            };
+        });
+        
+        dadosCarregados = true;
+        mostrarLoading(false);
+        init();
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar dados:', error);
+        mostrarLoading(false);
+        if (!dadosCarregados || PRODUCTS_DATA.categories.length === 0) {
+            alert('⚠️ Não foi possível carregar os produtos. Verifique sua conexão.');
+        }
+        init();
+    } finally {
+        carregando = false;
+    }
+}
 
         // ============================================================
         // INICIALIZAR
@@ -6324,7 +6412,6 @@ window.addEventListener('beforeunload', function() {
 
     </script>
 </body>
-    site criado by hcdtech
 </html>
 
 
