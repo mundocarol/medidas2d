@@ -2478,7 +2478,7 @@
             <div class="videos-grid" id="videosGrid">
                 <!-- Adicione os links dos vídeos aqui -->
                 <div class="video-wrapper">
-                    <iframe src="youtube.com/watch?v=caJcK4Ja-po&time_continue=3&source_ve_path=NzY3NTg&embeds_referring_euri=https%3A%2F%2Fwww.mcembalagens.com.br%2F" allowfullscreen></iframe>
+                    <iframe src="https://www.youtube.com/watch?v=caJcK4Ja-po&t=21s" allowfullscreen></iframe>
                 </div>
               <!--  <div class="video-wrapper">
                     <iframe src="https://www.youtube.com/embed/SEU_VIDEO_2" allowfullscreen></iframe>
@@ -5570,41 +5570,106 @@
         }
 
         // ============================================================
-        // PAGAMENTOS VIA WHATSAPP
-        // ============================================================
-        function solicitarLinkPagamento() {
-            const mensagem = `*💳 SOLICITAÇÃO DE LINK DE PAGAMENTO*%0A%0A` +
-                `*Cliente:* ${usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente'}%0A` +
-                `*Email:* ${usuarioLogado?.email || checkoutState.clienteData?.email || ''}%0A` +
-                `*Telefone:* ${usuarioLogado?.telefone || checkoutState.clienteData?.telefone || ''}%0A` +
-                `*Valor total:* R$ ${carrinho.reduce((sum, item) => sum + item.price, 0).toFixed(2)}%0A` +
-                `*Pedido:* #${pedidoDataEnvio?.numeroPedido || 'Aguardando'}`;
-            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
-            fecharModal('pagamentoModal');
-        }
+// PAGAMENTOS VIA WHATSAPP - CORRIGIDO
+// ============================================================
+function solicitarLinkPagamento() {
+    // Buscar o número do pedido do localStorage ou do estado
+    let numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
+    let valorTotal = '0,00';
+    
+    // Tentar pegar do carrinho
+    if (carrinho.length > 0) {
+        valorTotal = carrinho.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
+    }
+    
+    // Tentar pegar do pedidoDataEnvio
+    if (pedidoDataEnvio?.total) {
+        valorTotal = pedidoDataEnvio.total.toFixed(2);
+    }
+    
+    // Tentar pegar do checkoutState
+    if (checkoutState?.freteSelecionado) {
+        const freteValor = checkoutState.freteSelecionado.valor || 0;
+        const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
+        valorTotal = (totalProdutos + freteValor).toFixed(2);
+    }
+    
+    const mensagem = `*💳 SOLICITAÇÃO DE LINK DE PAGAMENTO*%0A%0A` +
+        `*Cliente:* ${usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente'}%0A` +
+        `*Email:* ${usuarioLogado?.email || checkoutState.clienteData?.email || ''}%0A` +
+        `*Telefone:* ${usuarioLogado?.telefone || checkoutState.clienteData?.telefone || ''}%0A` +
+        `*Valor total:* R$ ${valorTotal.replace('.', ',')}%0A` +
+        `*Pedido:* #${numeroPedido}%0A%0A` +
+        `Por favor, enviar link de pagamento.`;
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
+    fecharModal('pagamentoModal');
+}
 
-        function solicitarBoleto() {
-            const mensagem = `*📄 SOLICITAÇÃO DE BOLETO*%0A%0A` +
-                `*Cliente:* ${usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente'}%0A` +
-                `*Email:* ${usuarioLogado?.email || checkoutState.clienteData?.email || ''}%0A` +
-                `*Telefone:* ${usuarioLogado?.telefone || checkoutState.clienteData?.telefone || ''}%0A` +
-                `*Valor total:* R$ ${carrinho.reduce((sum, item) => sum + item.price, 0).toFixed(2)}%0A` +
-                `*Pedido:* #${pedidoDataEnvio?.numeroPedido || 'Aguardando'}`;
-            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
-            fecharModal('pagamentoModal');
-        }
+function solicitarBoleto() {
+    // Buscar o número do pedido do localStorage ou do estado
+    let numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
+    let valorTotal = '0,00';
+    
+    // Tentar pegar do carrinho
+    if (carrinho.length > 0) {
+        valorTotal = carrinho.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
+    }
+    
+    // Tentar pegar do pedidoDataEnvio
+    if (pedidoDataEnvio?.total) {
+        valorTotal = pedidoDataEnvio.total.toFixed(2);
+    }
+    
+    // Tentar pegar do checkoutState
+    if (checkoutState?.freteSelecionado) {
+        const freteValor = checkoutState.freteSelecionado.valor || 0;
+        const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
+        valorTotal = (totalProdutos + freteValor).toFixed(2);
+    }
+    
+    const mensagem = `*📄 SOLICITAÇÃO DE BOLETO*%0A%0A` +
+        `*Cliente:* ${usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente'}%0A` +
+        `*Email:* ${usuarioLogado?.email || checkoutState.clienteData?.email || ''}%0A` +
+        `*Telefone:* ${usuarioLogado?.telefone || checkoutState.clienteData?.telefone || ''}%0A` +
+        `*Valor total:* R$ ${valorTotal.replace('.', ',')}%0A` +
+        `*Pedido:* #${numeroPedido}%0A%0A` +
+        `Por favor, gerar boleto para pagamento.`;
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
+    fecharModal('pagamentoModal');
+}
 
-        function enviarComprovantePix() {
-            const mensagem = `*✅ COMPROVANTE PIX*%0A%0A` +
-                `*Cliente:* ${usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente'}%0A` +
-                `*Email:* ${usuarioLogado?.email || checkoutState.clienteData?.email || ''}%0A` +
-                `*Telefone:* ${usuarioLogado?.telefone || checkoutState.clienteData?.telefone || ''}%0A` +
-                `*Pedido:* #${pedidoDataEnvio?.numeroPedido || 'Aguardando'}%0A` +
-                `*Valor:* R$ ${carrinho.reduce((sum, item) => sum + item.price, 0).toFixed(2)}%0A%0A` +
-                `Envio o comprovante em anexo.`;
-            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
-            fecharModal('pagamentoModal');
-        }
+function enviarComprovantePix() {
+    // Buscar o número do pedido do localStorage ou do estado
+    let numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
+    let valorTotal = '0,00';
+    
+    // Tentar pegar do carrinho
+    if (carrinho.length > 0) {
+        valorTotal = carrinho.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
+    }
+    
+    // Tentar pegar do pedidoDataEnvio
+    if (pedidoDataEnvio?.total) {
+        valorTotal = pedidoDataEnvio.total.toFixed(2);
+    }
+    
+    // Tentar pegar do checkoutState
+    if (checkoutState?.freteSelecionado) {
+        const freteValor = checkoutState.freteSelecionado.valor || 0;
+        const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
+        valorTotal = (totalProdutos + freteValor).toFixed(2);
+    }
+    
+    const mensagem = `*✅ COMPROVANTE PIX ENVIADO*%0A%0A` +
+        `*Cliente:* ${usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente'}%0A` +
+        `*Email:* ${usuarioLogado?.email || checkoutState.clienteData?.email || ''}%0A` +
+        `*Telefone:* ${usuarioLogado?.telefone || checkoutState.clienteData?.telefone || ''}%0A` +
+        `*Pedido:* #${numeroPedido}%0A` +
+        `*Valor:* R$ ${valorTotal.replace('.', ',')}%0A%0A` +
+        `Envio o comprovante em anexo. Por favor, confirmar o pagamento.`;
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
+    fecharModal('pagamentoModal');
+}
 
         function copiarPix() {
             const codigo = document.getElementById('pixCodigo').textContent;
@@ -5616,20 +5681,40 @@
         }
 
         function abrirPagamento() {
-            fecharModal('confirmacaoModal');
-            document.getElementById('pagamentoModal').style.display = 'block';
-            const metodo = checkoutState.pagamentoSelecionado || 'PIX';
-            document.getElementById('pagamentoPIX').style.display = 'none';
-            document.getElementById('pagamentoCartao').style.display = 'none';
-            document.getElementById('pagamentoBoleto').style.display = 'none';
-            if (metodo === 'PIX') {
-                document.getElementById('pagamentoPIX').style.display = 'block';
-            } else if (metodo === 'Cartão') {
-                document.getElementById('pagamentoCartao').style.display = 'block';
-            } else if (metodo === 'Boleto') {
-                document.getElementById('pagamentoBoleto').style.display = 'block';
-            }
-        }
+    fecharModal('confirmacaoModal');
+    document.getElementById('pagamentoModal').style.display = 'block';
+    const metodo = checkoutState.pagamentoSelecionado || 'PIX';
+    document.getElementById('pagamentoPIX').style.display = 'none';
+    document.getElementById('pagamentoCartao').style.display = 'none';
+    document.getElementById('pagamentoBoleto').style.display = 'none';
+    if (metodo === 'PIX') {
+        document.getElementById('pagamentoPIX').style.display = 'block';
+    } else if (metodo === 'Cartão') {
+        document.getElementById('pagamentoCartao').style.display = 'block';
+    } else if (metodo === 'Boleto') {
+        document.getElementById('pagamentoBoleto').style.display = 'block';
+    }
+    
+    // Mostrar número do pedido no modal de pagamento
+    const numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
+    const valorTotal = pedidoDataEnvio?.total || carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
+    
+    // Atualizar o título do modal com o número do pedido
+    const tituloPagamento = document.querySelector('#pagamentoModal h2');
+    if (tituloPagamento) {
+        tituloPagamento.textContent = `💳 Pagamento - Pedido #${numeroPedido}`;
+    }
+    
+    // Adicionar informação de valor se não existir
+    const pixArea = document.querySelector('.pagamento-pix-area');
+    if (pixArea && !pixArea.querySelector('.valor-pedido')) {
+        const valorInfo = document.createElement('p');
+        valorInfo.className = 'valor-pedido';
+        valorInfo.style.cssText = 'font-weight:700;color:var(--primary-blue);font-size:18px;margin:10px 0;';
+        valorInfo.textContent = `💰 Valor total: R$ ${Number(valorTotal).toFixed(2).replace('.', ',')}`;
+        pixArea.insertBefore(valorInfo, pixArea.querySelector('.codigo'));
+    }
+}
 
         // ============================================================
         // CHECKOUT - FUNÇÕES PRINCIPAIS
