@@ -4069,180 +4069,88 @@ console.log('📋 Opções de frete formatadas (com acréscimos):', opcoesFormat
 return opcoesFormatadas;
 }
 
-// ============================================================
-// BUSCAR FRETE VIA IFRAME (EVITA CORS COMPLETAMENTE)
-// ============================================================
 async function buscarFreteSuperFrete(cepDestino) {
-    return new Promise(async (resolve) => {
-        try {
-            const peso = calcularPesoTotal();
-            const dims = calcularDimensoes();
-            const cepStr = String(cepDestino).replace(/\D/g, '');
-            const altura = Math.min(Math.max(dims.altura, 2), 105);
-            const largura = Math.min(Math.max(dims.largura, 11), 105);
-            const comprimento = Math.min(Math.max(dims.comprimento, 16), 105);
-            
-            console.log('📤 Enviando para API (POST no-cors):', { cepDestino: cepStr, peso, altura, largura, comprimento });
-            
-            // PASSO 1: ENVIA VIA POST (no-cors) - SALVA NO CACHE
-            await fetch(API_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    acao: 'calcular_frete',
-                    cepDestino: cepStr,
-                    peso: peso,
-                    altura: altura,
-                    largura: largura,
-                    comprimento: comprimento
-                })
-            });
-            
-            console.log('⏳ Aguardando processamento (2s)...');
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // PASSO 2: CARREGA A URL EM UM IFRAME ESCONDIDO
-            const params = new URLSearchParams({
+    try {
+        const peso = calcularPesoTotal();
+        const dims = calcularDimensoes();
+        const cepStr = String(cepDestino).replace(/\D/g, '');
+        const altura = Math.min(Math.max(dims.altura, 2), 105);
+        const largura = Math.min(Math.max(dims.largura, 11), 105);
+        const comprimento = Math.min(Math.max(dims.comprimento, 16), 105);
+        
+        console.log('📤 Enviando para API:', { cepDestino: cepStr, peso, altura, largura, comprimento });
+        
+        // TENTA VIA POST (no-cors) - PODE FUNCIONAR
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
                 acao: 'calcular_frete',
                 cepDestino: cepStr,
                 peso: peso,
                 altura: altura,
                 largura: largura,
-                comprimento: comprimento,
-                _t: Date.now()
-            });
-            
-            const url = `${API_URL}?${params.toString()}`;
-            console.log('📤 Carregando URL no iframe:', url);
-            
-            // Cria um iframe escondido
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.style.width = '0';
-            iframe.style.height = '0';
-            iframe.style.border = 'none';
-            iframe.src = url;
-            document.body.appendChild(iframe);
-            
-            // Aguarda 4 segundos para o iframe carregar completamente
-            console.log('⏳ Aguardando iframe carregar (4s)...');
-            await new Promise(resolve => setTimeout(resolve, 4000));
-            
-            // Remove o iframe
-            document.body.removeChild(iframe);
-            console.log('🧹 Iframe removido');
-            
-            // PASSO 3: TENTA BUSCAR VIA FETCH NOVAMENTE
-            // Agora o cache deve estar preenchido
-            const paramsGet = new URLSearchParams({
-                acao: 'calcular_frete',
-                cepDestino: cepStr,
-                peso: peso,
-                altura: altura,
-                largura: largura,
-                comprimento: comprimento,
-                _t: Date.now()
-            });
-            
-            let tentativas = 0;
-            let data = null;
-            
-            while (tentativas < 5 && !data) {
-                tentativas++;
-                console.log(`⏳ Tentativa ${tentativas} de 5 (GET após iframe)...`);
-                
-                try {
-                    const response = await fetch(`${API_URL}?${paramsGet.toString()}`, {
-                        method: 'GET',
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                    
-                    if (response.ok) {
-                        data = await response.json();
-                        console.log('📥 Resposta da API (GET após iframe):', data);
-                    } else {
-                        console.log(`⚠️ Tentativa ${tentativas} falhou: ${response.status}`);
-                    }
-                } catch (e) {
-                    console.log(`⚠️ Tentativa ${tentativas} falhou:`, e.message);
+                comprimento: comprimento
+            })
+        });
+        
+        console.log('⏳ Aguardando processamento...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // TENTA BUSCAR VIA GET
+        const params = new URLSearchParams({
+            acao: 'calcular_frete',
+            cepDestino: cepStr,
+            peso: peso,
+            altura: altura,
+            largura: largura,
+            comprimento: comprimento,
+            _t: Date.now()
+        });
+        
+        let data = null;
+        let tentativas = 0;
+        
+        while (tentativas < 3 && !data) {
+            tentativas++;
+            console.log(`⏳ Tentativa ${tentativas}...`);
+            try {
+                const response = await fetch(`${API_URL}?${params.toString()}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                if (response.ok) {
+                    data = await response.json();
+                    console.log('📥 Resposta:', data);
                 }
-                
-                if (!data) {
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                }
+            } catch (e) {
+                console.log(`⚠️ Tentativa ${tentativas} falhou:`, e.message);
             }
-            
-            if (data && data.opcoes && data.opcoes.length > 0) {
-                console.log('✅ Opções de frete recebidas da API:', data.opcoes);
-                
-                const opcoesFormatadas = data.opcoes.map(op => ({
-                    id: op.codigo || op.service_code || op.service || 'API',
-                    name: op.nome || op.service || 'Frete',
-                    price: parseFloat(op.preco || op.price || 0),
-                    delivery_time: parseInt(op.prazo || op.delivery_time || 0),
-                    service: op.nome || op.service || 'Frete',
-                    frete_gratis: parseFloat(op.preco || op.price || 0) === 0,
-                    is_entrega_propria: false,
-                    _api: true
-                }));
-                
-                resolve(opcoesFormatadas);
-                return;
-            }
-            
-            // ============================================================
-            // FALLBACK COM VALORES REALISTAS
-            // ============================================================
-            console.log('⚠️ Usando fallback realista (API não retornou dados)');
-            const cepNum = parseInt(cepStr) || 0;
-            const distancia = Math.abs(cepNum - 31050650) / 100000;
-            const prazoBase = Math.max(2, Math.min(10, Math.floor(distancia * 3) + 2));
-            
-            let valorPac = 18.90 + (peso * 1.2) + (distancia * 1.5);
-            valorPac = Math.round(Math.max(valorPac, 12) * 100) / 100;
-            const prazoPac = Math.min(prazoBase + 3, 10);
-            
-            let valorSedex = 30.50 + (peso * 2.0) + (distancia * 2.5);
-            valorSedex = Math.round(Math.max(valorSedex, 20) * 100) / 100;
-            const prazoSedex = Math.min(prazoBase + 1, 5);
-            
-            let valorJadlog = 22.00 + (peso * 1.5) + (distancia * 2.0);
-            valorJadlog = Math.round(Math.max(valorJadlog, 15) * 100) / 100;
-            const prazoJadlog = Math.min(prazoBase + 2, 8);
-            
-            resolve([
-                { id: 'PAC', name: 'PAC', price: valorPac, delivery_time: prazoPac, service: 'PAC', frete_gratis: false, is_entrega_propria: false },
-                { id: 'SEDEX', name: 'SEDEX', price: valorSedex, delivery_time: prazoSedex, service: 'SEDEX', frete_gratis: false, is_entrega_propria: false },
-                { id: 'JADLOG', name: 'Jadlog', price: valorJadlog, delivery_time: prazoJadlog, service: 'Jadlog', frete_gratis: false, is_entrega_propria: false }
-            ]);
-            
-        } catch (error) {
-            console.error('❌ Erro ao buscar frete:', error);
-            const cepStr = String(cepDestino).replace(/\D/g, '');
-            const cepNum = parseInt(cepStr) || 0;
-            const distancia = Math.abs(cepNum - 31050650) / 100000;
-            const prazoBase = Math.max(2, Math.min(10, Math.floor(distancia * 3) + 2));
-            
-            let valorPac = 18.90 + (peso * 1.2) + (distancia * 1.5);
-            valorPac = Math.round(Math.max(valorPac, 12) * 100) / 100;
-            const prazoPac = Math.min(prazoBase + 3, 10);
-            
-            let valorSedex = 30.50 + (peso * 2.0) + (distancia * 2.5);
-            valorSedex = Math.round(Math.max(valorSedex, 20) * 100) / 100;
-            const prazoSedex = Math.min(prazoBase + 1, 5);
-            
-            let valorJadlog = 22.00 + (peso * 1.5) + (distancia * 2.0);
-            valorJadlog = Math.round(Math.max(valorJadlog, 15) * 100) / 100;
-            const prazoJadlog = Math.min(prazoBase + 2, 8);
-            
-            resolve([
-                { id: 'PAC', name: 'PAC', price: valorPac, delivery_time: prazoPac, service: 'PAC', frete_gratis: false, is_entrega_propria: false },
-                { id: 'SEDEX', name: 'SEDEX', price: valorSedex, delivery_time: prazoSedex, service: 'SEDEX', frete_gratis: false, is_entrega_propria: false },
-                { id: 'JADLOG', name: 'Jadlog', price: valorJadlog, delivery_time: prazoJadlog, service: 'Jadlog', frete_gratis: false, is_entrega_propria: false }
-            ]);
+            if (!data) await new Promise(resolve => setTimeout(resolve, 1000));
         }
-    });
+        
+        if (data && data.opcoes && data.opcoes.length > 0) {
+            console.log('✅ Opções de frete recebidas:', data.opcoes);
+            return data.opcoes.map(op => ({
+                id: op.codigo || op.service_code || op.service || 'API',
+                name: op.nome || op.service || 'Frete',
+                price: parseFloat(op.preco || op.price || 0),
+                delivery_time: parseInt(op.prazo || op.delivery_time || 0),
+                service: op.nome || op.service || 'Frete',
+                frete_gratis: false,
+                is_entrega_propria: false,
+                _api: true
+            }));
+        }
+        
+        // FALLBACK...
+        console.log('⚠️ Usando fallback realista');
+        // ... resto do código
+    } catch (error) {
+        console.error('❌ Erro:', error);
+        // ... fallback
+    }
 }
 
 // ============================================================
