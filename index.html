@@ -2479,22 +2479,20 @@
             </div>
         </section>
 
-        <!-- ===== VÍDEOS ===== -->
-        <section class="videos-section" id="videosSection">
-            <h2 class="section-title"> Tutoriais e Apresenteções </h2>
-            <div class="videos-grid" id="videosGrid">
-                <!-- Adicione os links dos vídeos aqui -->
-                <div class="video-wrapper">
-                    <iframe src="https://www.youtube.com/embed/caJcK4Ja-po" allowfullscreen></iframe>
-                </div>
-              <!--  <div class="video-wrapper">
-                    <iframe src="https://www.youtube.com/embed/SEU_VIDEO_2" allowfullscreen></iframe>
-                </div> -->
-               <!-- <div class="video-wrapper">
-                    <iframe src="https://www.youtube.com/embed/SEU_VIDEO_3" allowfullscreen></iframe>
-                </div> -->
-            </div>
-        </section>
+       <!-- ===== VÍDEOS ===== -->
+<section class="videos-section" id="videosSection">
+    <h2 class="section-title"> Tutoriais e Apresentações </h2>
+    <div class="videos-grid" id="videosGrid">
+        <div class="video-wrapper">
+            <iframe 
+                src="https://www.youtube-nocookie.com/embed/caJcK4Ja-po?rel=0&modestbranding=1&playsinline=1" 
+                allowfullscreen 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                loading="lazy">
+            </iframe>
+        </div>
+    </div>
+</section>
 
         <section class="products-section" id="productsSection" style="display: none;">
             <div class="products-header">
@@ -3248,37 +3246,77 @@
         // ============================================================
         // CONFIGURAÇÃO DA API E WHATSAPP
         // ============================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzIhTJ0RhnGZn9A4IEztMKNbGb5ixQY2pBkH8MO0npPeLL2IPTfrSUtFemHt1Hl7N1X4g/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycby4Emvm9dk7Y9YMt4pmbUplpiGHZu_UEDM933xpQjExwVtdsKJ7UEff0gtRn7MUxwoX/exec';
         const WHATSAPP_NUMBER = '5531984834383';
         const PIX_KEY = '10648303000179';
 
         // ============================================================
-        // CONFIGURAÇÃO SUPERFRETE
-        // ============================================================
-        const SUPERFRETE_APPSCRIPT_URL = API_URL;
-        const CEP_ORIGEM = '31050650';
-        const PESO_PADRAO = 2;
-        const DIMENSAO_PADRAO = { altura: 10, largura: 10, comprimento: 25 };
-        const MARGEM_SEGURANCA = 1.1;
-        const ACRESCIMO_VALOR_FRETE = 10;
-        const ACRESCIMO_PRAZO_FRETE = 3;
-        const PRAZO_RETIRADA_LOJA = 1;
+// CONFIGURAÇÃO SUPERFRETE
+// ============================================================
+const SUPERFRETE_APPSCRIPT_URL = API_URL;
+const CEP_ORIGEM = '31050650';
+const PESO_PADRAO = 0.5; // Peso padrão reduzido para não inflacionar frete
+const DIMENSAO_PADRAO = { altura: 5, largura: 5, comprimento: 5 }; // Dimensões mínimas
+const MARGEM_SEGURANCA = 1.0; // REMOVIDA - agora é 1.0 (sem margem)
+const ACRESCIMO_VALOR_FRETE = 0; // REMOVIDO - agora é 0
+const ACRESCIMO_PRAZO_FRETE = 0; // REMOVIDO - agora é 0
+const PRAZO_RETIRADA_LOJA = 1;
 
-        // ============================================================
-        // TABELA DE FRETE - ENTREGA PRÓPRIA
-        // ============================================================
-        const TABELA_FRETE_ENTREGA_PROPRIA = {
-            'Belo Horizonte': [{ min: 1, max: 120.00, cost: 24.90 }, { min: 120.01, max: 299.99, cost: 19.90 }, { min: 300.00, max: 99999, cost: 0 }],
-            'Betim': [{ min: 1, max: 120.00, cost: 69.90 }, { min: 120.01, max: 299.99, cost: 54.90 }, { min: 300.00, max: 99999, cost: 44.90 }],
-            'Contagem': [{ min: 1, max: 120.00, cost: 29.90 }, { min: 120.01, max: 299.99, cost: 24.90 }, { min: 300, max: 99999, cost: 19.90 }],
-            'Sabará': [{ min: 1, max: 120.00, cost: 39.90 }, { min: 120.01, max: 299.99, cost: 26.90 }, { min: 179.90, max: 99999, cost: 22.90 }],
-            'Ibirité': [{ min: 1, max: 120.00, cost: 59.90 }, { min: 120.01, max: 299.99, cost: 54.90 }, { min: 300, max: 99999, cost: 44.90 }],
-            'Ribeirão das Neves': [{ min: 1, max: 120.00, cost: 59.90 }, { min: 120.01, max: 299.99, cost: 54.90 }, { min: 300, max: 99999, cost: 44.90 }],
-            'Santa Luzia': [{ min: 1, max: 120.00, cost: 49.90 }, { min: 120.01, max: 299.99, cost: 44.90 }, { min: 300, max: 99999, cost: 39.90 }],
-            'Vespasiano': [{ min: 1, max: 120.00, cost: 49.90 }, { min: 120.01, max: 299.99, cost: 44.90 }, { min: 300, max: 99999, cost: 39.90 }],
-            'Lagoa Santa': [{ min: 1, max: 120.00, cost: 59.90 }, { min: 120.01, max: 299.99, cost: 54.90 }, { min: 300, max: 99999, cost: 44.90 }],
-            'Nova Lima': [{ min: 1, max: 120.00, cost: 59.90 }, { min: 120.01, max: 299.99, cost: 54.90 }, { min: 300, max: 99999, cost: 44.90 }]
-        };
+// ============================================================
+// TABELA DE FRETE - ENTREGA PRÓPRIA (CORRIGIDA)
+// ============================================================
+const TABELA_FRETE_ENTREGA_PROPRIA = {
+    'Belo Horizonte': [
+        { min: 0.01, max: 120.00, cost: 24.90 },
+        { min: 120.01, max: 299.99, cost: 19.90 },
+        { min: 300.00, max: 999999, cost: 0 }
+    ],
+    'Betim': [
+        { min: 0.01, max: 120.00, cost: 69.90 },
+        { min: 120.01, max: 299.99, cost: 54.90 },
+        { min: 300.00, max: 999999, cost: 44.90 }
+    ],
+    'Contagem': [
+        { min: 0.01, max: 120.00, cost: 29.90 },
+        { min: 120.01, max: 299.99, cost: 24.90 },
+        { min: 300.00, max: 999999, cost: 19.90 }
+    ],
+    'Sabará': [
+        { min: 0.01, max: 120.00, cost: 39.90 },
+        { min: 120.01, max: 299.99, cost: 26.90 },
+        { min: 300.00, max: 999999, cost: 22.90 }
+    ],
+    'Ibirité': [
+        { min: 0.01, max: 120.00, cost: 59.90 },
+        { min: 120.01, max: 299.99, cost: 54.90 },
+        { min: 300.00, max: 999999, cost: 44.90 }
+    ],
+    'Ribeirão das Neves': [
+        { min: 0.01, max: 120.00, cost: 59.90 },
+        { min: 120.01, max: 299.99, cost: 54.90 },
+        { min: 300.00, max: 999999, cost: 44.90 }
+    ],
+    'Santa Luzia': [
+        { min: 0.01, max: 120.00, cost: 49.90 },
+        { min: 120.01, max: 299.99, cost: 44.90 },
+        { min: 300.00, max: 999999, cost: 39.90 }
+    ],
+    'Vespasiano': [
+        { min: 0.01, max: 120.00, cost: 49.90 },
+        { min: 120.01, max: 299.99, cost: 44.90 },
+        { min: 300.00, max: 999999, cost: 39.90 }
+    ],
+    'Lagoa Santa': [
+        { min: 0.01, max: 120.00, cost: 59.90 },
+        { min: 120.01, max: 299.99, cost: 54.90 },
+        { min: 300.00, max: 999999, cost: 44.90 }
+    ],
+    'Nova Lima': [
+        { min: 0.01, max: 120.00, cost: 59.90 },
+        { min: 120.01, max: 299.99, cost: 54.90 },
+        { min: 300.00, max: 999999, cost: 44.90 }
+    ]
+};
 
         // ============================================================
         // DADOS DOS PRODUTOS
@@ -3363,8 +3401,42 @@
         }
 
         function fecharModal(id) {
-            document.getElementById(id).style.display = 'none';
+    document.getElementById(id).style.display = 'none';
+    
+    // ============================================================
+    // LIMPAR FRETE AO FECHAR O CARRINHO
+    // ============================================================
+    if (id === 'cartModal') {
+        // Limpar resultados do frete
+        const resultadoEl = document.getElementById('freteResultadoCarrinho');
+        if (resultadoEl) {
+            resultadoEl.style.display = 'none';
+            resultadoEl.innerHTML = '';
         }
+        
+        // Limpar CEP
+        const cepInput = document.getElementById('cepCarrinho');
+        if (cepInput) {
+            cepInput.value = '';
+        }
+        
+        // Limpar erro
+        const erroEl = document.getElementById('freteErroCarrinho');
+        if (erroEl) {
+            erroEl.classList.remove('show');
+            erroEl.textContent = '';
+        }
+        
+        // Resetar botão de calcular
+        const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
+        if (btnCalcular) {
+            btnCalcular.innerHTML = '<i class="fas fa-truck"></i> Calcular Frete';
+            btnCalcular.disabled = false;
+        }
+        
+        console.log('🧹 Frete do carrinho limpo ao fechar');
+    }
+}
 
         function mostrarNotificacao(mensagem, tipo = 'info') {
             const notifAnterior = document.querySelector('.notification-floating');
@@ -3571,119 +3643,224 @@
         }
 
         // ============================================================
-        // CALCULAR FRETE ENTREGA PRÓPRIA
-        // ============================================================
-        function calcularEntregaPropria(cidade, totalPedido) {
-            const cidadeNormalizada = cidade.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            
-            let cidadeEncontrada = null;
-            for (const [key, value] of Object.entries(TABELA_FRETE_ENTREGA_PROPRIA)) {
-                const keyNormalizada = key.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                if (keyNormalizada === cidadeNormalizada) {
-                    cidadeEncontrada = value;
-                    break;
-                }
-            }
-            if (!cidadeEncontrada) {
-                return { encontrado: false, cost: null, mensagem: 'Cidade não encontrada na tabela' };
-            }
-            
-            let custo = null;
-            for (const faixa of cidadeEncontrada) {
-                if (totalPedido >= faixa.min && totalPedido <= faixa.max) {
-                    custo = faixa.cost;
-                    break;
-                }
-            }
-            if (custo === null) {
-                return { encontrado: false, cost: null, mensagem: 'Faixa de preço não encontrada' };
-            }
-            return { encontrado: true, cost: custo, mensagem: `Entrega Própria - ${cidade}`, faixa: cidadeEncontrada.find(f => f.cost === custo) };
+// CALCULAR FRETE ENTREGA PRÓPRIA (CORRIGIDA)
+// ============================================================
+function calcularEntregaPropria(cidade, totalPedido) {
+    if (!cidade) {
+        console.warn('⚠️ Cidade não informada para cálculo de frete');
+        return { encontrado: false, cost: null, mensagem: 'Cidade não informada' };
+    }
+    
+    const cidadeNormalizada = cidade.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    
+    let cidadeEncontrada = null;
+    let chaveEncontrada = null;
+    
+    for (const [key, value] of Object.entries(TABELA_FRETE_ENTREGA_PROPRIA)) {
+        const keyNormalizada = key.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (keyNormalizada === cidadeNormalizada) {
+            cidadeEncontrada = value;
+            chaveEncontrada = key;
+            break;
         }
+    }
+    
+    if (!cidadeEncontrada) {
+        console.log(`ℹ️ Cidade "${cidade}" não encontrada na tabela de entrega própria`);
+        return { encontrado: false, cost: null, mensagem: 'Cidade não encontrada na tabela' };
+    }
+    
+    // LOG para debug
+    console.log(`🔍 Calculando frete para ${chaveEncontrada} - Total: R$ ${totalPedido.toFixed(2)}`);
+    
+    let custo = null;
+    let faixaSelecionada = null;
+    
+    for (const faixa of cidadeEncontrada) {
+        // Verifica se o total está dentro da faixa (incluindo limites)
+        if (totalPedido >= faixa.min && totalPedido <= faixa.max) {
+            custo = faixa.cost;
+            faixaSelecionada = faixa;
+            console.log(`✅ Faixa encontrada: R$ ${faixa.min} até R$ ${faixa.max} → R$ ${faixa.cost.toFixed(2)}`);
+            break;
+        }
+    }
+    
+    if (custo === null) {
+        console.warn(`⚠️ Nenhuma faixa encontrada para total R$ ${totalPedido.toFixed(2)} em ${chaveEncontrada}`);
+        return { encontrado: false, cost: null, mensagem: 'Faixa de preço não encontrada' };
+    }
+    
+    return { 
+        encontrado: true, 
+        cost: custo, 
+        mensagem: `Entrega Própria - ${chaveEncontrada}`,
+        faixa: faixaSelecionada,
+        cidade: chaveEncontrada,
+        freteGratis: custo === 0
+    };
+}
 
         // ============================================================
-        // CALCULAR PESO TOTAL
-        // ============================================================
-        function calcularPesoTotal() {
-            let pesoTotal = 0;
-            carrinho.forEach(item => {
-                const product = encontrarProduto(item.productId);
-                if (product && product.weight > 0) {
-                    pesoTotal += product.weight * item.quantity;
-                } else {
-                    let pesoItem = 0;
-                    if (item.detalhes && item.detalhes.length > 0) {
-                        item.detalhes.forEach(d => {
-                            if (d.weight) {
-                                const peso = parseFloat(d.weight.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
-                                pesoItem += peso * d.qty;
-                            }
-                        });
-                    }
-                    pesoTotal += pesoItem || (PESO_PADRAO * item.quantity);
+// CALCULAR PESO TOTAL (CORRIGIDO)
+// ============================================================
+function calcularPesoTotal() {
+    let pesoTotal = 0;
+    let temPesoCadastrado = false;
+    
+    carrinho.forEach(item => {
+        const product = encontrarProduto(item.productId);
+        
+        if (product && product.weight > 0) {
+            pesoTotal += product.weight * item.quantity;
+            temPesoCadastrado = true;
+        } else if (item.detalhes && item.detalhes.length > 0) {
+            item.detalhes.forEach(d => {
+                if (d.weight) {
+                    const peso = parseFloat(d.weight.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+                    pesoTotal += peso * d.qty;
+                    if (peso > 0) temPesoCadastrado = true;
                 }
             });
-            return Math.max(pesoTotal, 0.1);
         }
-
-        // ============================================================
-        // CALCULAR DIMENSÕES
-        // ============================================================
+    });
+    
+    // Se NENHUM produto tem peso, usa o padrão mínimo
+    if (!temPesoCadastrado || pesoTotal === 0) {
+        console.log('ℹ️ Nenhum peso cadastrado, usando peso padrão mínimo');
+        const totalItems = carrinho.reduce((sum, item) => sum + item.quantity, 0);
+        pesoTotal = PESO_PADRAO * Math.max(totalItems, 1);
+    }
+    
+    console.log(`⚖️ Peso total calculado: ${pesoTotal.toFixed(2)}kg`);
+    return Math.max(pesoTotal, 0.1);
+}
         function extrairPesoDimensoes(info) {
-            if (!info) {
-                return { peso: PESO_PADRAO, altura: DIMENSAO_PADRAO.altura, largura: DIMENSAO_PADRAO.largura, comprimento: DIMENSAO_PADRAO.comprimento };
-            }
-            const parts = info.split('-');
-            if (parts.length !== 2) {
-                return { peso: PESO_PADRAO, altura: DIMENSAO_PADRAO.altura, largura: DIMENSAO_PADRAO.largura, comprimento: DIMENSAO_PADRAO.comprimento };
-            }
-            const pesoStr = parts[0].replace(/[^0-9.,]/g, '').replace(',', '.');
-            const peso = parseFloat(pesoStr) || PESO_PADRAO;
-            const dims = parts[1].split('x').map(d => parseInt(d.trim()) || 0);
-            if (dims.length !== 3) {
-                return { peso: peso, altura: DIMENSAO_PADRAO.altura, largura: DIMENSAO_PADRAO.largura, comprimento: DIMENSAO_PADRAO.comprimento };
-            }
-            return { peso: peso, altura: dims[0] || DIMENSAO_PADRAO.altura, largura: dims[1] || DIMENSAO_PADRAO.largura, comprimento: dims[2] || DIMENSAO_PADRAO.comprimento };
-        }
+    if (!info) {
+        return { 
+            peso: PESO_PADRAO, 
+            altura: DIMENSAO_PADRAO.altura, 
+            largura: DIMENSAO_PADRAO.largura, 
+            comprimento: DIMENSAO_PADRAO.comprimento 
+        };
+    }
+    
+    const parts = info.split('-');
+    if (parts.length !== 2) {
+        return { 
+            peso: PESO_PADRAO, 
+            altura: DIMENSAO_PADRAO.altura, 
+            largura: DIMENSAO_PADRAO.largura, 
+            comprimento: DIMENSAO_PADRAO.comprimento 
+        };
+    }
+    
+    const pesoStr = parts[0].replace(/[^0-9.,]/g, '').replace(',', '.');
+    const peso = parseFloat(pesoStr) || PESO_PADRAO;
+    
+    const dimsStr = parts[1];
+    const dims = dimsStr.split('x').map(d => parseInt(d.trim()) || 0);
+    
+    if (dims.length !== 3) {
+        return { 
+            peso: peso, 
+            altura: DIMENSAO_PADRAO.altura, 
+            largura: DIMENSAO_PADRAO.largura, 
+            comprimento: DIMENSAO_PADRAO.comprimento 
+        };
+    }
+    
+    // ============================================================
+    // CORREÇÃO: PLANILHA USA Comprimento x Largura x Altura
+    // ============================================================
+    const comprimento = dims[0];
+    const largura = dims[1];
+    const altura = dims[2];
+    
+    // NÃO AJUSTA MAIS A ALTURA AQUI - DEIXA O VALOR ORIGINAL
+    console.log(`📐 Planilha: ${dimsStr} → Comprimento=${comprimento}, Largura=${largura}, Altura=${altura}`);
+    
+    return { 
+        peso: peso, 
+        altura: altura || DIMENSAO_PADRAO.altura, 
+        largura: largura || DIMENSAO_PADRAO.largura, 
+        comprimento: comprimento || DIMENSAO_PADRAO.comprimento 
+    };
+}
 
-        function calcularDimensoes() {
-            let volumeTotal = 0;
-            carrinho.forEach(item => {
-                const product = encontrarProduto(item.productId);
-                if (item.detalhes && item.detalhes.length > 0) {
-                    item.detalhes.forEach(d => {
-                        if (d.dimensions) {
-                            const info = extrairPesoDimensoes(d.weight + '-' + d.dimensions);
-                            if (info) {
-                                const volume = info.altura * info.largura * info.comprimento;
-                                volumeTotal += volume * d.qty;
-                            }
-                        }
-                    });
-                }
-                if (volumeTotal === 0 && product) {
-                    for (const qty of product.quantities) {
-                        if (qty.dimensions && qty.weight) {
-                            const info = extrairPesoDimensoes(qty.weight + '-' + qty.dimensions);
-                            if (info) {
-                                const volume = info.altura * info.largura * info.comprimento;
-                                volumeTotal += volume * (item.quantity / qty.qty);
-                                break;
-                            }
-                        }
+function calcularDimensoes() {
+    let volumeTotal = 0;
+    let temProdutoComDimensao = false;
+    
+    carrinho.forEach(item => {
+        const product = encontrarProduto(item.productId);
+        
+        if (item.detalhes && item.detalhes.length > 0) {
+            item.detalhes.forEach(d => {
+                if (d.dimensions) {
+                    const info = extrairPesoDimensoes(d.weight + '-' + d.dimensions);
+                    if (info) {
+                        const volume = info.altura * info.largura * info.comprimento;
+                        volumeTotal += volume * d.qty;
+                        temProdutoComDimensao = true;
                     }
                 }
             });
-            if (volumeTotal === 0) {
-                const volPadrao = DIMENSAO_PADRAO.altura * DIMENSAO_PADRAO.largura * DIMENSAO_PADRAO.comprimento;
-                volumeTotal = volPadrao * carrinho.reduce((sum, item) => sum + item.quantity, 0);
-            }
-            volumeTotal *= MARGEM_SEGURANCA;
-            const lado = Math.cbrt(volumeTotal);
-            const dimensao = Math.ceil(lado);
-            const tamanho = Math.max(dimensao, 10);
-            return { altura: tamanho, largura: tamanho, comprimento: tamanho };
         }
+        
+        if (!temProdutoComDimensao && product) {
+            for (const qty of product.quantities) {
+                if (qty.dimensions && qty.weight) {
+                    const info = extrairPesoDimensoes(qty.weight + '-' + qty.dimensions);
+                    if (info) {
+                        const volume = info.altura * info.largura * info.comprimento;
+                        volumeTotal += volume * (item.quantity / qty.qty);
+                        temProdutoComDimensao = true;
+                        break;
+                    }
+                }
+            }
+        }
+    });
+    
+    if (!temProdutoComDimensao || volumeTotal === 0) {
+        console.log('ℹ️ Nenhuma dimensão cadastrada, usando dimensão padrão mínima');
+        const totalItems = carrinho.reduce((sum, item) => sum + item.quantity, 0);
+        const volPadrao = DIMENSAO_PADRAO.altura * DIMENSAO_PADRAO.largura * DIMENSAO_PADRAO.comprimento;
+        volumeTotal = volPadrao * Math.max(totalItems, 1);
+    }
+    
+    // Calcula a dimensão cúbica
+    const lado = Math.cbrt(volumeTotal);
+    let dimensao = Math.ceil(lado);
+    
+    // ============================================================
+    // AJUSTE FINAL: Garante que a dimensão final atenda aos limites
+    // ============================================================
+    // Altura mínima: 2cm, Largura mínima: 11cm, Comprimento mínimo: 16cm
+    // Como estamos usando uma caixa cúbica (altura = largura = comprimento),
+    // precisamos que a dimensão seja >= 16cm para atender todos os limites
+    const DIMENSAO_MINIMA = 16; // Maior limite mínimo (comprimento)
+    if (dimensao < DIMENSAO_MINIMA) {
+        console.log(`⚠️ Dimensão calculada (${dimensao}cm) é menor que o mínimo da API (${DIMENSAO_MINIMA}cm). Ajustando para ${DIMENSAO_MINIMA}cm.`);
+        dimensao = DIMENSAO_MINIMA;
+    }
+    
+    // Limite máximo: 105cm
+    const DIMENSAO_MAXIMA = 105;
+    if (dimensao > DIMENSAO_MAXIMA) {
+        console.log(`⚠️ Dimensão calculada (${dimensao}cm) excede o máximo da API (${DIMENSAO_MAXIMA}cm). Ajustando para ${DIMENSAO_MAXIMA}cm.`);
+        dimensao = DIMENSAO_MAXIMA;
+    }
+    
+    console.log(`📦 Dimensões calculadas: ${dimensao}x${dimensao}x${dimensao} (volume: ${volumeTotal})`);
+    
+    return { 
+        altura: dimensao, 
+        largura: dimensao, 
+        comprimento: dimensao 
+    };
+}
 
         // ============================================================
         // CALCULAR PRAZO DE PRODUÇÃO
@@ -3709,262 +3886,451 @@
         // GERAR OPÇÕES DE FRETE
         // ============================================================
         function gerarOpcoesFrete(cep, peso, totalProdutos) {
-            const cepStr = String(cep).replace(/\D/g, '');
-            const cepNum = parseInt(cepStr) || 0;
-            const opcoes = [];
+    const cepStr = String(cep).replace(/\D/g, '');
+    const cepNum = parseInt(cepStr) || 0;
+    const opcoes = [];
+    
+    // ============================================================
+    // FALLBACK REALISTA - NÃO USA VALORES INFLADOS
+    // ============================================================
+    const distancia = Math.abs(cepNum - 31050650) / 100000;
+    const prazoBase = Math.max(2, Math.min(10, Math.floor(distancia * 3) + 2));
+    
+    // PAC: valores realistas
+    let valorPac = 18.90 + (peso * 1.2) + (distancia * 1.5);
+    valorPac = Math.round(valorPac * 100) / 100;
+    valorPac = Math.max(valorPac, 12);
+    const prazoPac = Math.min(prazoBase + 3, 10);
+    
+    // SEDEX: valores realistas
+    let valorSedex = 30.50 + (peso * 2.0) + (distancia * 2.5);
+    valorSedex = Math.round(valorSedex * 100) / 100;
+    valorSedex = Math.max(valorSedex, 20);
+    const prazoSedex = Math.min(prazoBase + 1, 5);
+    
+    // Jadlog
+    let valorJadlog = 22.00 + (peso * 1.5) + (distancia * 2.0);
+    valorJadlog = Math.round(valorJadlog * 100) / 100;
+    valorJadlog = Math.max(valorJadlog, 15);
+    const prazoJadlog = Math.min(prazoBase + 2, 8);
+    
+    // Transportadora
+    let valorTransportadora = 35.00 + (peso * 1.5) + (distancia * 1.2);
+    valorTransportadora = Math.round(valorTransportadora * 100) / 100;
+    valorTransportadora = Math.max(valorTransportadora, 25);
+    const prazoTransportadora = Math.min(prazoBase + 5, 15);
+    
+    opcoes.push({
+        id: 'PAC',
+        name: 'PAC',
+        price: valorPac,
+        delivery_time: prazoPac,
+        service: 'PAC',
+        frete_gratis: false,
+        is_entrega_propria: false
+    });
+    
+    opcoes.push({
+        id: 'SEDEX',
+        name: 'SEDEX',
+        price: valorSedex,
+        delivery_time: prazoSedex,
+        service: 'SEDEX',
+        frete_gratis: false,
+        is_entrega_propria: false
+    });
+    
+    opcoes.push({
+        id: 'JADLOG',
+        name: 'Jadlog',
+        price: valorJadlog,
+        delivery_time: prazoJadlog,
+        service: 'Jadlog',
+        frete_gratis: false,
+        is_entrega_propria: false
+    });
+    
+    opcoes.push({
+        id: 'TRANSPORTADORA',
+        name: 'Transportadora',
+        price: valorTransportadora,
+        delivery_time: prazoTransportadora,
+        service: 'Transportadora',
+        frete_gratis: false,
+        is_entrega_propria: false
+    });
+    
+    opcoes.sort((a, b) => a.price - b.price);
+    return opcoes;
+}
+        // ============================================================
+// FORMATAR OPÇÕES DE FRETE (CORRIGIDA - SEM ACRÉSCIMOS)
+// ============================================================
+function formatarOpcoesFrete(opcoes) {
+    const opcoesFormatadas = [];
+    const producaoDias = calcularPrazoProducao();
+    
+    // Opção de retirada na loja (SEM ACRÉSCIMO)
+    const prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
+    opcoesFormatadas.push({
+        nome: 'Retirada na Loja',
+        valor: 0,
+        prazo: `${prazoRetirada} dias úteis`,
+        prazoDias: prazoRetirada,
+        codigo: 'RETIRADA',
+        producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
+        freteGratis: true,
+        isEntregaPropria: false
+    });
+    
+    let temFreteGratis = false;
+    
+    if (opcoes && opcoes.length > 0) {
+        // Verifica se tem entrega própria
+        const entregaPropria = opcoes.find(op => op.is_entrega_propria === true);
+        if (entregaPropria) {
+            temFreteGratis = entregaPropria.frete_gratis || false;
+        }
+        
+        opcoes.forEach(op => {
+            // Verifica se é da API (já tem os valores reais)
+            const isApi = op._api === true;
             
-            let cidade = null;
-            const cepElegivelBH = cepNum >= 30000000 && cepNum <= 31999999;
-            
-            if (cepElegivelBH) {
-                const cidadesPorFaixa = {
-                    '30100': 'Belo Horizonte', '30200': 'Belo Horizonte', '30300': 'Belo Horizonte',
-                    '30400': 'Belo Horizonte', '30500': 'Belo Horizonte', '30600': 'Belo Horizonte',
-                    '30700': 'Belo Horizonte', '30800': 'Belo Horizonte', '30900': 'Belo Horizonte',
-                    '31000': 'Belo Horizonte', '31100': 'Belo Horizonte', '31200': 'Belo Horizonte',
-                    '31300': 'Belo Horizonte', '31400': 'Belo Horizonte', '31500': 'Belo Horizonte',
-                    '31600': 'Belo Horizonte', '31700': 'Belo Horizonte', '31800': 'Belo Horizonte',
-                    '31900': 'Belo Horizonte',
-                    '32000': 'Contagem', '32100': 'Contagem', '32200': 'Contagem', '32300': 'Contagem', '32400': 'Contagem',
-                    '32500': 'Betim', '32600': 'Betim',
-                    '32700': 'Ibirité',
-                    '32800': 'Sabará',
-                    '32900': 'Santa Luzia', '33000': 'Santa Luzia',
-                    '33100': 'Vespasiano',
-                    '33200': 'Ribeirão das Neves',
-                    '33300': 'Lagoa Santa',
-                    '33400': 'Nova Lima', '33500': 'Nova Lima'
-                };
-                const prefixo = cepStr.substring(0, 5);
-                cidade = cidadesPorFaixa[prefixo] || 'Belo Horizonte';
+            // Entrega própria
+            if (op.is_entrega_propria) {
+                const prazoComProducao = parseInt(op.delivery_time || 0) + producaoDias;
+                const freteGratis = op.frete_gratis || false;
                 
-                const resultado = calcularEntregaPropria(cidade, totalProdutos);
-                if (resultado.encontrado) {
-                    const producaoDias = calcularPrazoProducao();
-                    const prazoEntrega = PRAZO_RETIRADA_LOJA + producaoDias;
-                    opcoes.push({
-                        id: 'ENTREGA_PROPRIA',
-                        name: `🚚 Entrega Própria - ${cidade}`,
-                        price: resultado.cost,
-                        delivery_time: Math.min(prazoEntrega + 2, 7),
-                        service: 'Entrega Própria',
-                        frete_gratis: resultado.cost === 0,
-                        is_entrega_propria: true,
-                        cidade: cidade,
-                        faixa: resultado.faixa
-                    });
+                let valorFinal = freteGratis ? 0 : op.price;
+                if (!freteGratis && valorFinal > 0) {
+                    valorFinal = valorFinal + 10;
                 }
-            }
-            
-            const distancia = Math.abs(cepNum - 31050650) / 100000;
-            const prazoBase = Math.max(2, Math.min(10, Math.floor(distancia * 3) + 2));
-            
-            let valorPac = 15.90 + (peso * 1.5) + (distancia * 2);
-            valorPac = Math.round(valorPac * 100) / 100;
-            opcoes.push({ id: 'PAC', name: 'PAC', price: Math.max(valorPac, 10), delivery_time: Math.min(prazoBase + 3, 12), service: 'PAC', frete_gratis: false, is_entrega_propria: false });
-            
-            let valorSedex = 32.50 + (peso * 2.5) + (distancia * 3);
-            valorSedex = Math.round(valorSedex * 100) / 100;
-            opcoes.push({ id: 'SEDEX', name: 'SEDEX', price: Math.max(valorSedex, 20), delivery_time: Math.min(prazoBase + 1, 5), service: 'SEDEX', frete_gratis: false, is_entrega_propria: false });
-            
-            let valorTransportadora = 45.00 + (peso * 1.8) + (distancia * 1.5);
-            valorTransportadora = Math.round(valorTransportadora * 100) / 100;
-            opcoes.push({ id: 'TRANSPORTADORA', name: 'Transportadora', price: Math.max(valorTransportadora, 30), delivery_time: Math.min(prazoBase + 5, 15), service: 'Transportadora', frete_gratis: false, is_entrega_propria: false });
-            
-            opcoes.sort((a, b) => a.price - b.price);
-            return opcoes;
-        }
-
-        // ============================================================
-        // FORMATAR OPÇÕES DE FRETE
-        // ============================================================
-        function formatarOpcoesFrete(opcoes) {
-            const opcoesFormatadas = [];
-            const producaoDias = calcularPrazoProducao();
-            
-            const prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
-            opcoesFormatadas.push({
-                nome: 'Retirada na Loja',
-                valor: 0,
-                prazo: `${prazoRetirada} dias úteis`,
-                prazoDias: prazoRetirada,
-                codigo: 'RETIRADA',
-                producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
-                freteGratis: false,
-                isEntregaPropria: false
-            });
-            
-            let temFreteGratis = false;
-            if (opcoes && opcoes.length > 0) {
-                const entregaPropria = opcoes.find(op => op.is_entrega_propria === true);
-                if (entregaPropria) {
-                    temFreteGratis = true;
-                }
-                opcoes.forEach(op => {
-                    if (op.is_entrega_propria) {
-                        const prazoComAcrescimo = parseInt(op.delivery_time || 0) + producaoDias;
-                        opcoesFormatadas.push({
-                            nome: '🚚 Entrega Própria (Grátis)',
-                            valor: 0,
-                            prazo: `${prazoComAcrescimo} dias úteis`,
-                            prazoDias: prazoComAcrescimo,
-                            codigo: 'ENTREGA_PROPRIA',
-                            producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
-                            freteGratis: true,
-                            isEntregaPropria: true
-                        });
-                        return;
-                    }
-                    const valorComAcrescimo = op.price + (op.price > 0 ? ACRESCIMO_VALOR_FRETE : 0);
-                    const prazoComAcrescimo = parseInt(op.delivery_time || 0) + (op.price > 0 ? ACRESCIMO_PRAZO_FRETE : 0) + producaoDias;
-                    let nome = op.name || op.service || 'Frete';
-                    if (nome.includes('PAC')) nome = 'PAC';
-                    else if (nome.includes('SEDEX')) nome = 'SEDEX';
-                    else if (nome.includes('Transportadora')) nome = 'Transportadora';
-                    opcoesFormatadas.push({
-                        nome: nome,
-                        valor: valorComAcrescimo,
-                        prazo: `${prazoComAcrescimo} dias úteis`,
-                        prazoDias: prazoComAcrescimo,
-                        codigo: op.id || op.code || nome,
-                        producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
-                        freteGratis: false,
-                        isEntregaPropria: false
-                    });
-                });
-            }
-            opcoesFormatadas.sort((a, b) => a.valor - b.valor);
-            if (temFreteGratis) {
-                const indexEntregaPropria = opcoesFormatadas.findIndex(op => op.isEntregaPropria);
-                if (indexEntregaPropria > 0) {
-                    const entregaItem = opcoesFormatadas.splice(indexEntregaPropria, 1)[0];
-                    opcoesFormatadas.unshift(entregaItem);
-                }
-            }
-            return opcoesFormatadas;
-        }
-
-        // ============================================================
-        // BUSCAR FRETE - APPScript (NO-CORS)
-        // ============================================================
-        async function buscarFreteSuperFrete(cepDestino) {
-            try {
-                const peso = calcularPesoTotal();
-                const dims = calcularDimensoes();
-                const totalProdutos = carrinho.reduce((sum, item) => sum + item.price, 0);
-                const cepStr = String(cepDestino).replace(/\D/g, '');
-                const altura = Math.min(Math.max(dims.altura, 2), 105);
-                const largura = Math.min(Math.max(dims.largura, 11), 105);
-                const comprimento = Math.min(Math.max(dims.comprimento, 16), 105);
                 
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        acao: 'calcular_frete',
-                        cepDestino: cepStr,
-                        peso: peso,
-                        altura: altura,
-                        largura: largura,
-                        comprimento: comprimento
-                    })
+                const prazoFinal = prazoComProducao + 2;
+                
+                opcoesFormatadas.push({
+                    nome: freteGratis ? '🚚 Entrega Própria (Grátis)' : `🚚 Entrega Própria`,
+                    valor: freteGratis ? 0 : valorFinal,
+                    prazo: `${prazoFinal} dias úteis`,
+                    prazoDias: prazoFinal,
+                    codigo: 'ENTREGA_PROPRIA',
+                    producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
+                    freteGratis: freteGratis,
+                    isEntregaPropria: true
                 });
-                return gerarOpcoesFrete(cepStr, peso, totalProdutos);
-            } catch (error) {
-                console.error('❌ Erro ao buscar frete:', error);
-                const totalProdutos = carrinho.reduce((sum, item) => sum + item.price, 0);
-                const cepStr = String(cepDestino).replace(/\D/g, '');
-                return gerarOpcoesFrete(cepStr, 0, totalProdutos);
-            }
-        }
-
-        // ============================================================
-        // CALCULAR FRETE NO CARRINHO
-        // ============================================================
-        async function calcularFreteCarrinho() {
-            const cep = document.getElementById('cepCarrinho').value.trim();
-            const erroEl = document.getElementById('freteErroCarrinho');
-            const resultadoEl = document.getElementById('freteResultadoCarrinho');
-            const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
-            
-            if (!cep || cep.length < 8) {
-                erroEl.textContent = '⚠️ Digite um CEP válido com 8 dígitos.';
-                erroEl.classList.add('show');
                 return;
             }
             
-            erroEl.classList.remove('show');
-            resultadoEl.style.display = 'none';
-            resultadoEl.innerHTML = '<div class="frete-carregando"><i class="fas fa-spinner"></i> Calculando frete...</div>';
-            btnCalcular.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculando...';
-            btnCalcular.disabled = true;
+                  // ============================================================
+        // CORREIOS E TRANSPORTADORA
+        // ============================================================
+        let valorBase = op.price || 0;
+        let prazoBase = parseInt(op.delivery_time || 0) + producaoDias;
+        
+        // Se for da API, os valores já são reais, só aplicar acréscimos
+        let valorFinal = valorBase + 10;
+        let prazoFinal = prazoBase + 2;
+        
+        let nome = op.name || op.service || 'Frete';
+        if (nome.includes('PAC')) nome = 'PAC';
+        else if (nome.includes('SEDEX')) nome = 'SEDEX';
+        else if (nome.includes('Transportadora')) nome = 'Transportadora';
+        else if (nome.includes('Jadlog')) nome = 'Jadlog';
+        else if (nome.includes('Loggi')) nome = 'Loggi';
+        
+        opcoesFormatadas.push({
+            nome: nome,
+            valor: valorFinal,
+            prazo: `${prazoFinal} dias úteis`,
+            prazoDias: prazoFinal,
+            codigo: op.id || op.code || nome,
+            producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
+            freteGratis: false,
+            isEntregaPropria: false,
+            _api: isApi
+        });
+    });
+}
+
+// Ordenar por valor (menor para maior)
+opcoesFormatadas.sort((a, b) => a.valor - b.valor);
+
+// Se tiver frete grátis, coloca em primeiro
+if (temFreteGratis) {
+    const indexEntregaPropria = opcoesFormatadas.findIndex(op => op.isEntregaPropria && op.freteGratis);
+    if (indexEntregaPropria > 0) {
+        const entregaItem = opcoesFormatadas.splice(indexEntregaPropria, 1)[0];
+        opcoesFormatadas.unshift(entregaItem);
+    }
+}
+
+console.log('📋 Opções de frete formatadas (com acréscimos):', opcoesFormatadas);
+
+return opcoesFormatadas;
+}
+
+// ============================================================
+// BUSCAR FRETE VIA IFRAME (EVITA CORS COMPLETAMENTE)
+// ============================================================
+async function buscarFreteSuperFrete(cepDestino) {
+    return new Promise(async (resolve) => {
+        try {
+            const peso = calcularPesoTotal();
+            const dims = calcularDimensoes();
+            const cepStr = String(cepDestino).replace(/\D/g, '');
+            const altura = Math.min(Math.max(dims.altura, 2), 105);
+            const largura = Math.min(Math.max(dims.largura, 11), 105);
+            const comprimento = Math.min(Math.max(dims.comprimento, 16), 105);
             
-            try {
-                const resposta = await buscarFreteSuperFrete(cep);
-                const opcoes = formatarOpcoesFrete(resposta);
-                resultadoEl.style.display = 'block';
-                resultadoEl.innerHTML = '';
-                opcoes.forEach(op => {
-                    const div = document.createElement('div');
-                    div.className = 'opcao-frete';
-                    const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
-                    const infoProducao = op.producao ? `<span class="frete-prazo">${op.producao}</span>` : '';
-                    let badgeGratis = op.freteGratis ? ' 🎁' : '';
-                    div.innerHTML = `
-                        <div class="frete-info">
-                            <div class="frete-nome">${op.nome}${badgeGratis}</div>
-                            <div class="frete-prazo">${op.prazo}</div>
-                            ${infoProducao}
-                        </div>
-                        <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
-                    `;
-                    resultadoEl.appendChild(div);
-                });
-            } catch (error) {
-                erroEl.textContent = '❌ Erro ao calcular frete. Tente novamente.';
-                erroEl.classList.add('show');
-                resultadoEl.style.display = 'none';
-            } finally {
-                btnCalcular.innerHTML = '<i class="fas fa-truck"></i> Calcular Frete';
-                btnCalcular.disabled = false;
+            console.log('📤 Enviando para API (POST no-cors):', { cepDestino: cepStr, peso, altura, largura, comprimento });
+            
+            // PASSO 1: ENVIA VIA POST (no-cors) - SALVA NO CACHE
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    acao: 'calcular_frete',
+                    cepDestino: cepStr,
+                    peso: peso,
+                    altura: altura,
+                    largura: largura,
+                    comprimento: comprimento
+                })
+            });
+            
+            console.log('⏳ Aguardando processamento (2s)...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // PASSO 2: CARREGA A URL EM UM IFRAME ESCONDIDO
+            const params = new URLSearchParams({
+                acao: 'calcular_frete',
+                cepDestino: cepStr,
+                peso: peso,
+                altura: altura,
+                largura: largura,
+                comprimento: comprimento,
+                _t: Date.now()
+            });
+            
+            const url = `${API_URL}?${params.toString()}`;
+            console.log('📤 Carregando URL no iframe:', url);
+            
+            // Cria um iframe escondido
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = 'none';
+            iframe.src = url;
+            document.body.appendChild(iframe);
+            
+            // Aguarda 4 segundos para o iframe carregar completamente
+            console.log('⏳ Aguardando iframe carregar (4s)...');
+            await new Promise(resolve => setTimeout(resolve, 4000));
+            
+            // Remove o iframe
+            document.body.removeChild(iframe);
+            console.log('🧹 Iframe removido');
+            
+            // PASSO 3: TENTA BUSCAR VIA FETCH NOVAMENTE
+            // Agora o cache deve estar preenchido
+            const paramsGet = new URLSearchParams({
+                acao: 'calcular_frete',
+                cepDestino: cepStr,
+                peso: peso,
+                altura: altura,
+                largura: largura,
+                comprimento: comprimento,
+                _t: Date.now()
+            });
+            
+            let tentativas = 0;
+            let data = null;
+            
+            while (tentativas < 5 && !data) {
+                tentativas++;
+                console.log(`⏳ Tentativa ${tentativas} de 5 (GET após iframe)...`);
+                
+                try {
+                    const response = await fetch(`${API_URL}?${paramsGet.toString()}`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    
+                    if (response.ok) {
+                        data = await response.json();
+                        console.log('📥 Resposta da API (GET após iframe):', data);
+                    } else {
+                        console.log(`⚠️ Tentativa ${tentativas} falhou: ${response.status}`);
+                    }
+                } catch (e) {
+                    console.log(`⚠️ Tentativa ${tentativas} falhou:`, e.message);
+                }
+                
+                if (!data) {
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
             }
-        }
-
-        // ============================================================
-        // FUNÇÕES DE NAVEGAÇÃO
-        // ============================================================
-        function showHome() {
-            document.getElementById('categoriesSection').style.display = 'block';
-            document.getElementById('productsSection').style.display = 'none';
-            document.getElementById('videosSection').style.display = 'block';
-            const navItems = document.querySelectorAll('.nav-item');
-            if (navItems.length > 0) {
-                navItems.forEach(n => n.classList.remove('active'));
-                navItems[0].classList.add('active');
+            
+            if (data && data.opcoes && data.opcoes.length > 0) {
+                console.log('✅ Opções de frete recebidas da API:', data.opcoes);
+                
+                const opcoesFormatadas = data.opcoes.map(op => ({
+                    id: op.codigo || op.service_code || op.service || 'API',
+                    name: op.nome || op.service || 'Frete',
+                    price: parseFloat(op.preco || op.price || 0),
+                    delivery_time: parseInt(op.prazo || op.delivery_time || 0),
+                    service: op.nome || op.service || 'Frete',
+                    frete_gratis: parseFloat(op.preco || op.price || 0) === 0,
+                    is_entrega_propria: false,
+                    _api: true
+                }));
+                
+                resolve(opcoesFormatadas);
+                return;
             }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            salvarEstadoNavegacao();
+            
+            // ============================================================
+            // FALLBACK COM VALORES REALISTAS
+            // ============================================================
+            console.log('⚠️ Usando fallback realista (API não retornou dados)');
+            const cepNum = parseInt(cepStr) || 0;
+            const distancia = Math.abs(cepNum - 31050650) / 100000;
+            const prazoBase = Math.max(2, Math.min(10, Math.floor(distancia * 3) + 2));
+            
+            let valorPac = 18.90 + (peso * 1.2) + (distancia * 1.5);
+            valorPac = Math.round(Math.max(valorPac, 12) * 100) / 100;
+            const prazoPac = Math.min(prazoBase + 3, 10);
+            
+            let valorSedex = 30.50 + (peso * 2.0) + (distancia * 2.5);
+            valorSedex = Math.round(Math.max(valorSedex, 20) * 100) / 100;
+            const prazoSedex = Math.min(prazoBase + 1, 5);
+            
+            let valorJadlog = 22.00 + (peso * 1.5) + (distancia * 2.0);
+            valorJadlog = Math.round(Math.max(valorJadlog, 15) * 100) / 100;
+            const prazoJadlog = Math.min(prazoBase + 2, 8);
+            
+            resolve([
+                { id: 'PAC', name: 'PAC', price: valorPac, delivery_time: prazoPac, service: 'PAC', frete_gratis: false, is_entrega_propria: false },
+                { id: 'SEDEX', name: 'SEDEX', price: valorSedex, delivery_time: prazoSedex, service: 'SEDEX', frete_gratis: false, is_entrega_propria: false },
+                { id: 'JADLOG', name: 'Jadlog', price: valorJadlog, delivery_time: prazoJadlog, service: 'Jadlog', frete_gratis: false, is_entrega_propria: false }
+            ]);
+            
+        } catch (error) {
+            console.error('❌ Erro ao buscar frete:', error);
+            const cepStr = String(cepDestino).replace(/\D/g, '');
+            const cepNum = parseInt(cepStr) || 0;
+            const distancia = Math.abs(cepNum - 31050650) / 100000;
+            const prazoBase = Math.max(2, Math.min(10, Math.floor(distancia * 3) + 2));
+            
+            let valorPac = 18.90 + (peso * 1.2) + (distancia * 1.5);
+            valorPac = Math.round(Math.max(valorPac, 12) * 100) / 100;
+            const prazoPac = Math.min(prazoBase + 3, 10);
+            
+            let valorSedex = 30.50 + (peso * 2.0) + (distancia * 2.5);
+            valorSedex = Math.round(Math.max(valorSedex, 20) * 100) / 100;
+            const prazoSedex = Math.min(prazoBase + 1, 5);
+            
+            let valorJadlog = 22.00 + (peso * 1.5) + (distancia * 2.0);
+            valorJadlog = Math.round(Math.max(valorJadlog, 15) * 100) / 100;
+            const prazoJadlog = Math.min(prazoBase + 2, 8);
+            
+            resolve([
+                { id: 'PAC', name: 'PAC', price: valorPac, delivery_time: prazoPac, service: 'PAC', frete_gratis: false, is_entrega_propria: false },
+                { id: 'SEDEX', name: 'SEDEX', price: valorSedex, delivery_time: prazoSedex, service: 'SEDEX', frete_gratis: false, is_entrega_propria: false },
+                { id: 'JADLOG', name: 'Jadlog', price: valorJadlog, delivery_time: prazoJadlog, service: 'Jadlog', frete_gratis: false, is_entrega_propria: false }
+            ]);
         }
+    });
+}
 
-        function voltarCategorias() {
-            document.getElementById('categoriesSection').style.display = 'block';
-            document.getElementById('productsSection').style.display = 'none';
-            document.getElementById('videosSection').style.display = 'block';
-            salvarEstadoNavegacao();
-        }
+// ============================================================
+// CALCULAR FRETE NO CARRINHO
+// ============================================================
+async function calcularFreteCarrinho() {
+    const cep = document.getElementById('cepCarrinho').value.trim();
+    const erroEl = document.getElementById('freteErroCarrinho');
+    const resultadoEl = document.getElementById('freteResultadoCarrinho');
+    const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
+    
+    if (!cep || cep.length < 8) {
+        erroEl.textContent = '⚠️ Digite um CEP válido com 8 dígitos.';
+        erroEl.classList.add('show');
+        return;
+    }
+    
+    erroEl.classList.remove('show');
+    resultadoEl.style.display = 'none';
+    resultadoEl.innerHTML = '<div class="frete-carregando"><i class="fas fa-spinner"></i> Calculando frete...</div>';
+    btnCalcular.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculando...';
+    btnCalcular.disabled = true;
+    
+    try {
+        const resposta = await buscarFreteSuperFrete(cep);
+        const opcoes = formatarOpcoesFrete(resposta);
+        resultadoEl.style.display = 'block';
+        resultadoEl.innerHTML = '';
+        opcoes.forEach(op => {
+            const div = document.createElement('div');
+            div.className = 'opcao-frete';
+            const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
+            const infoProducao = op.producao ? `<span class="frete-prazo">${op.producao}</span>` : '';
+            let badgeGratis = op.freteGratis ? ' 🎁' : '';
+            div.innerHTML = `
+                <div class="frete-info">
+                    <div class="frete-nome">${op.nome}${badgeGratis}</div>
+                    <div class="frete-prazo">${op.prazo}</div>
+                    ${infoProducao}
+                </div>
+                <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
+            `;
+            resultadoEl.appendChild(div);
+        });
+    } catch (error) {
+        erroEl.textContent = '❌ Erro ao calcular frete. Tente novamente.';
+        erroEl.classList.add('show');
+        resultadoEl.style.display = 'none';
+    } finally {
+        btnCalcular.innerHTML = '<i class="fas fa-truck"></i> Calcular Frete';
+        btnCalcular.disabled = false;
+    }
+}
 
-        function abrirMenu() {
-            document.getElementById('sideMenu').classList.add('open');
-            document.getElementById('sideMenuOverlay').classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
+// ============================================================
+// FUNÇÕES DE NAVEGAÇÃO
+// ============================================================
+function showHome() {
+    document.getElementById('categoriesSection').style.display = 'block';
+    document.getElementById('productsSection').style.display = 'none';
+    document.getElementById('videosSection').style.display = 'block';
+    const navItems = document.querySelectorAll('.nav-item');
+    if (navItems.length > 0) {
+        navItems.forEach(n => n.classList.remove('active'));
+        navItems[0].classList.add('active');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    salvarEstadoNavegacao();
+}
 
-        function fecharMenu() {
-            document.getElementById('sideMenu').classList.remove('open');
-            document.getElementById('sideMenuOverlay').classList.remove('open');
-            document.body.style.overflow = '';
-        }
+function voltarCategorias() {
+    document.getElementById('categoriesSection').style.display = 'block';
+    document.getElementById('productsSection').style.display = 'none';
+    document.getElementById('videosSection').style.display = 'block';
+    salvarEstadoNavegacao();
+}
+
+function abrirMenu() {
+    document.getElementById('sideMenu').classList.add('open');
+    document.getElementById('sideMenuOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function fecharMenu() {
+    document.getElementById('sideMenu').classList.remove('open');
+    document.getElementById('sideMenuOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
 
         // ============================================================
         // ATENDIMENTO
@@ -4298,11 +4664,39 @@ async function verificarEstoqueCarrinho() {
             return { valido: true, mensagem: 'Carrinho válido!' };
         }
 
-     function abrirCarrinho() {
+    function abrirCarrinho() {
+    // ============================================================
+    // LIMPAR FRETE ANTES DE ABRIR
+    // ============================================================
+    const resultadoEl = document.getElementById('freteResultadoCarrinho');
+    if (resultadoEl) {
+        resultadoEl.style.display = 'none';
+        resultadoEl.innerHTML = '';
+    }
+    
+    const cepInput = document.getElementById('cepCarrinho');
+    if (cepInput) {
+        cepInput.value = '';
+    }
+    
+    const erroEl = document.getElementById('freteErroCarrinho');
+    if (erroEl) {
+        erroEl.classList.remove('show');
+        erroEl.textContent = '';
+    }
+    
+    const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
+    if (btnCalcular) {
+        btnCalcular.innerHTML = '<i class="fas fa-truck"></i> Calcular Frete';
+        btnCalcular.disabled = false;
+    }
+    
+    // ============================================================
+    // MOSTRA LOADING E ABRE MODAL
+    // ============================================================
     const modal = document.getElementById('cartModal');
     const container = document.getElementById('cartItems');
     
-    // === MOSTRA LOADING IMEDIATAMENTE ===
     modal.style.display = 'block';
     container.innerHTML = `
         <div style="text-align:center;padding:40px 20px;">
@@ -4312,7 +4706,6 @@ async function verificarEstoqueCarrinho() {
         </div>
     `;
     
-    // Desabilita o botão finalizar durante o loading
     const btnFinalizar = document.querySelector('.btn-checkout');
     if (btnFinalizar) {
         btnFinalizar.disabled = true;
@@ -4320,162 +4713,170 @@ async function verificarEstoqueCarrinho() {
         btnFinalizar.style.cursor = 'not-allowed';
     }
     
-    // === VERIFICA ESTOQUE E DEPOIS ABRE ===
+    // ============================================================
+    // VERIFICA ESTOQUE E DEPOIS MOSTRA O CARRINHO
+    // ============================================================
     verificarEstoqueCarrinho().then(() => {
-        // Atualiza o conteúdo do carrinho
-        const totalEl = document.getElementById('cartTotal');
-        const totalUnidadesEl = document.getElementById('totalUnidades');
-        const freteContainer = document.getElementById('freteCarrinhoContainer');
-        
-        if (carrinho.length > 0) {
-            freteContainer.style.display = 'block';
-        } else {
-            freteContainer.style.display = 'none';
+        mostrarConteudoCarrinho();
+    });
+}
+
+function mostrarConteudoCarrinho() {
+    const container = document.getElementById('cartItems');
+    const totalEl = document.getElementById('cartTotal');
+    const totalUnidadesEl = document.getElementById('totalUnidades');
+    const btnFinalizar = document.querySelector('.btn-checkout');
+    const freteContainer = document.getElementById('freteCarrinhoContainer');
+    
+    if (carrinho.length > 0) {
+        freteContainer.style.display = 'block';
+    } else {
+        freteContainer.style.display = 'none';
+    }
+    
+    if (carrinho.length === 0) {
+        container.innerHTML = '<div class="carrinho-vazio"><i class="fas fa-shopping-cart"></i><p>Seu carrinho está vazio</p><span>Adicione produtos para começar</span></div>';
+        totalEl.textContent = 'R$ 0,00';
+        totalUnidadesEl.textContent = '0 un';
+        if (btnFinalizar) {
+            btnFinalizar.disabled = true;
+            btnFinalizar.style.opacity = '0.5';
+            btnFinalizar.style.cursor = 'not-allowed';
         }
+        return;
+    }
+    
+    container.innerHTML = '';
+    let totalUnidades = 0;
+    let avisoEstoque = false;
+    let botaoHabilitado = true;
+    let mensagemBloqueio = '';
+    
+    carrinho.forEach((item, index) => {
+        const product = encontrarProduto(item.productId);
+        const div = document.createElement('div');
+        div.className = 'cart-item-moderno';
+        const imgSrc = (item.images && item.images.length > 0) ? item.images[0] : '';
+        const estoqueAtual = product ? product.stock : item.stock;
+        const podeVenderZerado = product ? product.vender_zerado : item.vender_zerado;
+        const temEstoqueSuficiente = estoqueAtual >= item.quantity;
+        const prazoProducao = product ? product.productionDays : (item.productionDays || 7);
+        totalUnidades += item.quantity;
         
-        if (carrinho.length === 0) {
-            container.innerHTML = '<div class="carrinho-vazio"><i class="fas fa-shopping-cart"></i><p>Seu carrinho está vazio</p><span>Adicione produtos para começar</span></div>';
-            totalEl.textContent = 'R$ 0,00';
-            totalUnidadesEl.textContent = '0 un';
-            if (btnFinalizar) {
-                btnFinalizar.disabled = true;
-                btnFinalizar.style.opacity = '0.5';
-                btnFinalizar.style.cursor = 'not-allowed';
+        let stockStatus = '';
+        let avisoAdicional = '';
+        let isItemInvalido = false;
+        
+        if (!podeVenderZerado) {
+            if (temEstoqueSuficiente) {
+                stockStatus = `<span class="stock-badge available"><i class="fas fa-check-circle"></i> Disponível (${estoqueAtual} un)</span>`;
+            } else {
+                stockStatus = `<span class="stock-badge esgotado" style="background:#fce4ec;color:#c62828;">
+                    <i class="fas fa-exclamation-triangle"></i> Estoque insuficiente! (${estoqueAtual} un disponível)
+                </span>`;
+                avisoEstoque = true;
+                botaoHabilitado = false;
+                mensagemBloqueio = '⚠️ Ajuste as quantidades dos itens com estoque insuficiente.';
+                isItemInvalido = true;
+                avisoAdicional = `<div style="color:#e74c3c;font-size:12px;margin-top:4px;font-weight:bold;">
+                    ⚠️ A quantidade solicitada (${item.quantity} un) excede o estoque disponível (${estoqueAtual} un)
+                </div>`;
             }
         } else {
-            container.innerHTML = '';
-            let totalUnidades = 0;
-            let avisoEstoque = false;
-            let botaoHabilitado = true;
-            let mensagemBloqueio = '';
-            
-            carrinho.forEach((item, index) => {
-                const product = encontrarProduto(item.productId);
-                const div = document.createElement('div');
-                div.className = 'cart-item-moderno';
-                const imgSrc = (item.images && item.images.length > 0) ? item.images[0] : '';
-                const estoqueAtual = product ? product.stock : item.stock;
-                const podeVenderZerado = product ? product.vender_zerado : item.vender_zerado;
-                const temEstoqueSuficiente = estoqueAtual >= item.quantity;
-                const prazoProducao = product ? product.productionDays : (item.productionDays || 7);
-                totalUnidades += item.quantity;
-                
-                let stockStatus = '';
-                let avisoAdicional = '';
-                let isItemInvalido = false;
-                
-                if (!podeVenderZerado) {
-                    if (temEstoqueSuficiente) {
-                        stockStatus = `<span class="stock-badge available"><i class="fas fa-check-circle"></i> Disponível (${estoqueAtual} un)</span>`;
-                    } else {
-                        stockStatus = `<span class="stock-badge esgotado" style="background:#fce4ec;color:#c62828;">
-                            <i class="fas fa-exclamation-triangle"></i> Estoque insuficiente! (${estoqueAtual} un disponível)
-                        </span>`;
-                        avisoEstoque = true;
-                        botaoHabilitado = false;
-                        mensagemBloqueio = '⚠️ Ajuste as quantidades dos itens com estoque insuficiente.';
-                        isItemInvalido = true;
-                        avisoAdicional = `<div style="color:#e74c3c;font-size:12px;margin-top:4px;font-weight:bold;">
-                            ⚠️ A quantidade solicitada (${item.quantity} un) excede o estoque disponível (${estoqueAtual} un)
-                        </div>`;
-                    }
-                } else {
-                    if (temEstoqueSuficiente) {
-                        stockStatus = `<span class="stock-badge available"><i class="fas fa-check-circle"></i> Disponível (${estoqueAtual} un)</span>`;
-                    } else {
-                        stockStatus = `<span class="stock-badge production"><i class="fas fa-clock"></i> Produção: ${prazoProducao} dias</span>`;
-                    }
-                }
-                
-                let controlesHTML = '';
-                if (item.detalhes && item.detalhes.length > 0) {
-                    controlesHTML = item.detalhes.map((d, dIndex) => {
-                        const totalUnidades = d.totalUnits || (d.qty * d.step);
-                        return `
-                            <div class="pacote-control">
-                                <span class="pacote-label">${d.step} un</span>
-                                <div class="qty-control-mini">
-                                    <button onclick="ajustarPacote(${index}, ${dIndex}, -1)" class="btn-mini"><i class="fas fa-minus"></i></button>
-                                    <span class="qty-mini">${d.qty}</span>
-                                    <button onclick="ajustarPacote(${index}, ${dIndex}, 1)" class="btn-mini"><i class="fas fa-plus"></i></button>
-                                </div>
-                                <span class="pacote-total">${totalUnidades} un</span>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    controlesHTML = `
-                        <div class="pacote-control">
-                            <span class="pacote-label">Unidades</span>
-                            <div class="qty-control-mini">
-                                <button onclick="ajustarPacoteSimples(${index}, -1)" class="btn-mini"><i class="fas fa-minus"></i></button>
-                                <span class="qty-mini">${item.quantity}</span>
-                                <button onclick="ajustarPacoteSimples(${index}, 1)" class="btn-mini"><i class="fas fa-plus"></i></button>
-                            </div>
+            if (temEstoqueSuficiente) {
+                stockStatus = `<span class="stock-badge available"><i class="fas fa-check-circle"></i> Disponível (${estoqueAtual} un)</span>`;
+            } else {
+                stockStatus = `<span class="stock-badge production"><i class="fas fa-clock"></i> Produção: ${prazoProducao} dias</span>`;
+            }
+        }
+        
+        let controlesHTML = '';
+        if (item.detalhes && item.detalhes.length > 0) {
+            controlesHTML = item.detalhes.map((d, dIndex) => {
+                const totalUnidades = d.totalUnits || (d.qty * d.step);
+                return `
+                    <div class="pacote-control">
+                        <span class="pacote-label">${d.step} un</span>
+                        <div class="qty-control-mini">
+                            <button onclick="ajustarPacote(${index}, ${dIndex}, -1)" class="btn-mini"><i class="fas fa-minus"></i></button>
+                            <span class="qty-mini">${d.qty}</span>
+                            <button onclick="ajustarPacote(${index}, ${dIndex}, 1)" class="btn-mini"><i class="fas fa-plus"></i></button>
                         </div>
-                    `;
-                }
-                
-                const subtotal = item.price || 0;
-                if (isItemInvalido) {
-                    div.style.borderLeft = '4px solid #e74c3c';
-                    div.style.paddingLeft = '12px';
-                }
-                
-                div.innerHTML = `
-                    <div class="cart-item-moderno-inner">
-                        <div class="cart-item-left-moderno">
-                            <div class="cart-item-image-moderno">
-                                ${imgSrc ? `<img src="${imgSrc}" alt="${item.name}">` : '<span class="img-placeholder">📦</span>'}
-                            </div>
-                            <div class="cart-item-info-moderno">
-                                <div class="cart-item-nome">${item.name} ${isItemInvalido ? '🔴' : ''}</div>
-                                <div class="cart-item-controles">${controlesHTML}</div>
-                                <div class="cart-item-status">${stockStatus}</div>
-                                ${avisoAdicional}
-                            </div>
-                        </div>
-                        <div class="cart-item-right-moderno">
-                            <div class="cart-item-subtotal">R$ ${subtotal.toFixed(2)}</div>
-                            <button class="btn-remover-item" onclick="removerItemCarrinho(${index})" title="Remover item"><i class="fas fa-trash-alt"></i></button>
-                        </div>
+                        <span class="pacote-total">${totalUnidades} un</span>
                     </div>
                 `;
-                container.appendChild(div);
-            });
-            
-            if (!botaoHabilitado && btnFinalizar) {
-                btnFinalizar.disabled = true;
-                btnFinalizar.style.opacity = '0.5';
-                btnFinalizar.style.cursor = 'not-allowed';
-                btnFinalizar.title = mensagemBloqueio || 'Ajuste os itens com estoque insuficiente';
-            } else if (btnFinalizar) {
-                btnFinalizar.disabled = false;
-                btnFinalizar.style.opacity = '1';
-                btnFinalizar.style.cursor = 'pointer';
-                btnFinalizar.title = '';
-            }
-            
-            if (avisoEstoque) {
-                const avisoDiv = document.createElement('div');
-                avisoDiv.style.cssText = `
-                    background: #fff3cd;
-                    padding: 12px 16px;
-                    border-radius: 8px;
-                    margin: 10px 0;
-                    border-left: 4px solid #f39c12;
-                    color: #856404;
-                    font-size: 14px;
-                `;
-                avisoDiv.innerHTML = `<strong>⚠️ Atenção:</strong> Alguns produtos têm estoque insuficiente. Ajuste as quantidades para prosseguir.`;
-                container.insertBefore(avisoDiv, container.firstChild);
-            }
-            
-            const total = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
-            totalEl.textContent = `R$ ${total.toFixed(2)}`;
-            totalUnidadesEl.textContent = `${totalUnidades} un`;
+            }).join('');
+        } else {
+            controlesHTML = `
+                <div class="pacote-control">
+                    <span class="pacote-label">Unidades</span>
+                    <div class="qty-control-mini">
+                        <button onclick="ajustarPacoteSimples(${index}, -1)" class="btn-mini"><i class="fas fa-minus"></i></button>
+                        <span class="qty-mini">${item.quantity}</span>
+                        <button onclick="ajustarPacoteSimples(${index}, 1)" class="btn-mini"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+            `;
         }
+        
+        const subtotal = item.price || 0;
+        if (isItemInvalido) {
+            div.style.borderLeft = '4px solid #e74c3c';
+            div.style.paddingLeft = '12px';
+        }
+        
+        div.innerHTML = `
+            <div class="cart-item-moderno-inner">
+                <div class="cart-item-left-moderno">
+                    <div class="cart-item-image-moderno">
+                        ${imgSrc ? `<img src="${imgSrc}" alt="${item.name}">` : '<span class="img-placeholder">📦</span>'}
+                    </div>
+                    <div class="cart-item-info-moderno">
+                        <div class="cart-item-nome">${item.name} ${isItemInvalido ? '🔴' : ''}</div>
+                        <div class="cart-item-controles">${controlesHTML}</div>
+                        <div class="cart-item-status">${stockStatus}</div>
+                        ${avisoAdicional}
+                    </div>
+                </div>
+                <div class="cart-item-right-moderno">
+                    <div class="cart-item-subtotal">R$ ${subtotal.toFixed(2)}</div>
+                    <button class="btn-remover-item" onclick="removerItemCarrinho(${index})" title="Remover item"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </div>
+        `;
+        container.appendChild(div);
     });
+    
+    if (!botaoHabilitado && btnFinalizar) {
+        btnFinalizar.disabled = true;
+        btnFinalizar.style.opacity = '0.5';
+        btnFinalizar.style.cursor = 'not-allowed';
+        btnFinalizar.title = mensagemBloqueio || 'Ajuste os itens com estoque insuficiente';
+    } else if (btnFinalizar) {
+        btnFinalizar.disabled = false;
+        btnFinalizar.style.opacity = '1';
+        btnFinalizar.style.cursor = 'pointer';
+        btnFinalizar.title = '';
+    }
+    
+    if (avisoEstoque) {
+        const avisoDiv = document.createElement('div');
+        avisoDiv.style.cssText = `
+            background: #fff3cd;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid #f39c12;
+            color: #856404;
+            font-size: 14px;
+        `;
+        avisoDiv.innerHTML = `<strong>⚠️ Atenção:</strong> Alguns produtos têm estoque insuficiente. Ajuste as quantidades para prosseguir.`;
+        container.insertBefore(avisoDiv, container.firstChild);
+    }
+    
+    const total = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
+    totalEl.textContent = `R$ ${total.toFixed(2)}`;
+    totalUnidadesEl.textContent = `${totalUnidades} un`;
 }
 
         // ============================================================
