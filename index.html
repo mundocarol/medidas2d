@@ -2401,6 +2401,13 @@
             margin: 15px 0;
             text-align: center;
         }
+
+/* ===== ANIMAÇÃO SPIN ===== */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+        
     </style>
 </head>
 <body>
@@ -4291,14 +4298,33 @@ async function verificarEstoqueCarrinho() {
             return { valido: true, mensagem: 'Carrinho válido!' };
         }
 
-        function abrirCarrinho() {
-    // VERIFICAR ESTOQUE ANTES DE ABRIR
+     function abrirCarrinho() {
+    const modal = document.getElementById('cartModal');
+    const container = document.getElementById('cartItems');
+    
+    // === MOSTRA LOADING IMEDIATAMENTE ===
+    modal.style.display = 'block';
+    container.innerHTML = `
+        <div style="text-align:center;padding:40px 20px;">
+            <div style="width:50px;height:50px;border:4px solid #e0e0e0;border-top:4px solid #1a3a5c;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;"></div>
+            <p style="color:#666;font-size:16px;font-weight:600;">🔄 Atualizando estoque...</p>
+            <p style="color:#999;font-size:13px;">Verificando disponibilidade dos produtos</p>
+        </div>
+    `;
+    
+    // Desabilita o botão finalizar durante o loading
+    const btnFinalizar = document.querySelector('.btn-checkout');
+    if (btnFinalizar) {
+        btnFinalizar.disabled = true;
+        btnFinalizar.style.opacity = '0.5';
+        btnFinalizar.style.cursor = 'not-allowed';
+    }
+    
+    // === VERIFICA ESTOQUE E DEPOIS ABRE ===
     verificarEstoqueCarrinho().then(() => {
-        const modal = document.getElementById('cartModal');
-        const container = document.getElementById('cartItems');
+        // Atualiza o conteúdo do carrinho
         const totalEl = document.getElementById('cartTotal');
         const totalUnidadesEl = document.getElementById('totalUnidades');
-        const btnFinalizar = document.querySelector('.btn-checkout');
         const freteContainer = document.getElementById('freteCarrinhoContainer');
         
         if (carrinho.length > 0) {
@@ -4449,7 +4475,6 @@ async function verificarEstoqueCarrinho() {
             totalEl.textContent = `R$ ${total.toFixed(2)}`;
             totalUnidadesEl.textContent = `${totalUnidades} un`;
         }
-        modal.style.display = 'block';
     });
 }
 
@@ -5891,20 +5916,36 @@ function enviarComprovantePix() {
         // ============================================================
         // CHECKOUT - FUNÇÕES PRINCIPAIS
         // ============================================================
-        function abrirCheckout() {
+      function abrirCheckout() {
+    // Mostra loading no checkout
+    document.getElementById('checkoutPage').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    
+    // Mostra loading no conteúdo
+    document.getElementById('checkoutContent').style.display = 'none';
+    document.getElementById('checkoutLoading').style.display = 'block';
+    document.querySelector('#checkoutLoading p').textContent = '🔄 Verificando estoque...';
+    document.querySelector('#checkoutLoading .spinner').style.display = 'block';
+    
     // VERIFICAR ESTOQUE ANTES DE ABRIR CHECKOUT
     verificarEstoqueCarrinho().then(() => {
         if (carrinho.length === 0) {
             alert('Seu carrinho está vazio!');
+            fecharCheckout();
             return;
         }
         
         const validacao = verificarCarrinhoValido();
         if (!validacao.valido) {
             alert(validacao.mensagem);
+            fecharCheckout();
             abrirCarrinho();
             return;
         }
+        
+        // Esconde loading e mostra conteúdo
+        document.getElementById('checkoutLoading').style.display = 'none';
+        document.getElementById('checkoutContent').style.display = 'flex';
         
         // Resetar estado
         checkoutState.passo = 1;
@@ -5954,9 +5995,6 @@ function enviarComprovantePix() {
         // Atualizar resumo
         atualizarResumoCheckout();
         
-        // Mostrar página
-        document.getElementById('checkoutPage').style.display = 'block';
-        document.body.style.overflow = 'hidden';
         fecharModal('cartModal');
     });
 }
