@@ -4070,87 +4070,90 @@ return opcoesFormatadas;
 }
 
 // ============================================================
-// BUSCAR FRETE - USANDO google.script.run (SEM CORS)
+// BUSCAR FRETE - VIA FETCH (PARA HTML EXTERNO)
 // ============================================================
-function buscarFreteViaAppScript(cepDestino, peso, altura, largura, comprimento) {
-    return new Promise((resolve, reject) => {
-        console.log('📤 Enviando para AppScript via google.script.run...');
-        console.log(`📦 CEP: ${cepDestino}, Peso: ${peso}kg, Dim: ${altura}x${largura}x${comprimento}`);
+async function buscarFreteViaFetch(cepDestino, peso, altura, largura, comprimento) {
+    console.log('📤 Enviando para AppScript via fetch...');
+    console.log(`📦 CEP: ${cepDestino}, Peso: ${peso}kg, Dim: ${altura}x${largura}x${comprimento}`);
+    
+    try {
+        // Monta a URL com os parâmetros
+        const url = `${API_URL}?acao=proxy_frete&cepDestino=${cepDestino}&peso=${peso}&altura=${altura}&largura=${largura}&comprimento=${comprimento}&_t=${Date.now()}`;
         
-        // Usa google.script.run para chamar a função proxyFrete
-        google.script.run
-            .withSuccessHandler(function(resultado) {
-                console.log('✅ Resposta do AppScript:', resultado);
-                
-                if (resultado.success !== false) {
-                    let opcoes = [];
-                    
-                    // Verifica se tem opções
-                    if (resultado.opcoes && Array.isArray(resultado.opcoes)) {
-                        opcoes = resultado.opcoes.map(op => ({
-                            id: op.codigo || op.service_code || op.id || 'FRETE',
-                            name: op.nome || op.service || 'Frete',
-                            price: parseFloat(op.preco || op.price || 0),
-                            delivery_time: parseInt(op.prazo || op.delivery_time || 0),
-                            service: op.nome || op.service || 'Frete',
-                            frete_gratis: false,
-                            is_entrega_propria: false,
-                            _api: true,
-                            _fallback: op._fallback || false
-                        }));
-                    }
-                    
-                    // Verifica se é fallback e tem valores altos
-                    const temFallback = opcoes.some(op => op._fallback === true);
-                    const valoresAltos = opcoes.some(op => op.price > 100);
-                    
-                    if (temFallback || valoresAltos) {
-                        console.warn('⚠️ Usando valores de fallback do AppScript');
-                    } else {
-                        console.log('✅ Valores REAIS da SuperFrete!');
-                    }
-                    
-                    resolve(opcoes);
-                } else {
-                    console.warn('⚠️ AppScript retornou erro:', resultado.error);
-                    // Tenta usar o fallback do AppScript
-                    if (resultado.opcoes && Array.isArray(resultado.opcoes)) {
-                        resolve(resultado.opcoes.map(op => ({
-                            id: op.codigo || 'FALLBACK',
-                            name: op.nome || 'Frete',
-                            price: parseFloat(op.preco || 0),
-                            delivery_time: parseInt(op.prazo || 0),
-                            service: op.nome || 'Frete',
-                            _fallback: true
-                        })));
-                    } else {
-                        reject(new Error(resultado.error || 'Erro ao calcular frete'));
-                    }
-                }
-            })
-            .withFailureHandler(function(error) {
-                console.error('❌ Erro no google.script.run:', error);
-                reject(error);
-            })
-            .proxyFrete(
-                cepDestino,
-                peso,
-                altura,
-                largura,
-                comprimento
-            );
-    });
+        console.log('📤 URL:', url);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
+        }
+        
+        const resultado = await response.json();
+        console.log('✅ Resposta do AppScript:', resultado);
+        
+        if (resultado.success !== false) {
+            let opcoes = [];
+            
+            if (resultado.opcoes && Array.isArray(resultado.opcoes)) {
+                opcoes = resultado.opcoes.map(op => ({
+                    id: op.codigo || op.service_code || op.id || 'FRETE',
+                    name: op.nome || op.service || 'Frete',
+                    price: parseFloat(op.preco || op.price || 0),
+                    delivery_time: parseInt(op.prazo || op.delivery_time || 0),
+                    service: op.nome || op.service || 'Frete',
+                    frete_gratis: false,
+                    is_entrega_propria: false,
+                    _api: true,
+                    _fallback: op._fallback || false
+                }));
+            }
+            
+            // Verifica se é fallback
+            const temFallback = opcoes.some(op => op._fallback === true);
+            const valoresAltos = opcoes.some(op => op.price > 100);
+            
+            if (temFallback || valoresAltos) {
+                console.warn('⚠️ Usando valores de fallback do AppScript');
+            } else {
+                console.log('✅ Valores REAIS da SuperFrete!');
+            }
+            
+            return opcoes;
+        } else {
+            console.warn('⚠️ AppScript retornou erro:', resultado.error);
+            if (resultado.opcoes && Array.isArray(resultado.opcoes)) {
+                return resultado.opcoes.map(op => ({
+                    id: op.codigo || 'FALLBACK',
+                    name: op.nome || 'Frete',
+                    price: parseFloat(op.preco || 0),
+                    delivery_time: parseInt(op.prazo || 0),
+                    service: op.nome || 'Frete',
+                    _fallback: true
+                }));
+            }
+            throw new Error(resultado.error || 'Erro ao calcular frete');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro no fetch:', error);
+        throw error;
+    }
 }
 
 // ============================================================
-// CALCULAR FRETE NO CARRINHO (CORRIGIDO)
+// CALCULAR FRETE NO CARRINHO (USANDO FETCH)
 // ============================================================
 async function calcularFreteCarrinho() {
     const cep = document.getElementById('cepCarrinho').value.trim();
     const erroEl = document.getElementById('freteErroCarrinho');
     const resultadoEl = document.getElementById('freteResultadoCarrinho');
     const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
-    const freteContainer = document.getElementById('freteCarrinhoContainer');
     
     if (!cep || cep.length < 8) {
         erroEl.textContent = '⚠️ Digite um CEP válido com 8 dígitos.';
@@ -4165,7 +4168,6 @@ async function calcularFreteCarrinho() {
     btnCalcular.disabled = true;
     
     try {
-        // Verifica se tem itens no carrinho
         if (carrinho.length === 0) {
             erroEl.textContent = '⚠️ Seu carrinho está vazio. Adicione produtos primeiro.';
             erroEl.classList.add('show');
@@ -4173,15 +4175,14 @@ async function calcularFreteCarrinho() {
             return;
         }
         
-        // Calcular peso total
         const peso = calcularPesoTotal();
         const dims = calcularDimensoes();
         
         console.log('📦 Calculando frete para CEP:', cep);
         console.log(`⚖️ Peso: ${peso}kg, Dim: ${dims.altura}x${dims.largura}x${dims.comprimento}`);
         
-        // Buscar frete via AppScript
-        const opcoes = await buscarFreteViaAppScript(
+        // Buscar frete via fetch
+        const opcoes = await buscarFreteViaFetch(
             cep,
             peso,
             dims.altura,
@@ -4191,7 +4192,6 @@ async function calcularFreteCarrinho() {
         
         console.log('📋 Opções recebidas:', opcoes);
         
-        // Verifica se tem opções
         if (!opcoes || opcoes.length === 0) {
             erroEl.textContent = '⚠️ Nenhuma opção de frete disponível para este CEP.';
             erroEl.classList.add('show');
@@ -4199,15 +4199,11 @@ async function calcularFreteCarrinho() {
             return;
         }
         
-        // Formatar opções
         const opcoesFormatadas = formatarOpcoesFrete(opcoes);
         console.log('📋 Opções formatadas:', opcoesFormatadas);
         
-        // Exibir resultados
         resultadoEl.style.display = 'block';
         resultadoEl.innerHTML = '';
-        
-        let temFreteGratis = false;
         
         opcoesFormatadas.forEach(op => {
             const div = document.createElement('div');
@@ -4225,11 +4221,9 @@ async function calcularFreteCarrinho() {
                 <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
             `;
             resultadoEl.appendChild(div);
-            
-            if (op.freteGratis) temFreteGratis = true;
         });
         
-        // Mostrar mensagem se for fallback
+        // Verifica se tem fallback
         const temFallback = opcoes.some(op => op._fallback === true);
         if (temFallback) {
             const aviso = document.createElement('div');
@@ -4238,7 +4232,6 @@ async function calcularFreteCarrinho() {
             resultadoEl.appendChild(aviso);
         }
         
-        // Salvar frete no estado do checkout se estiver aberto
         if (checkoutState && checkoutState.passo >= 2) {
             checkoutState.opcoesFrete = opcoesFormatadas;
             checkoutState.freteSelecionado = opcoesFormatadas[0] || null;
@@ -4258,20 +4251,18 @@ async function calcularFreteCarrinho() {
     }
 }
 
-
-
 // ============================================================
-// BUSCAR FRETE SUPERFRETE - VIA google.script.run
+// BUSCAR FRETE SUPERFRETE - VIA FETCH
 // ============================================================
 async function buscarFreteSuperFrete(cepDestino) {
     try {
         const peso = calcularPesoTotal();
         const dims = calcularDimensoes();
         
-        console.log('📤 Buscando frete via AppScript...');
+        console.log('📤 Buscando frete via fetch...');
         console.log(`📦 CEP: ${cepDestino}, Peso: ${peso}kg, Dim: ${dims.altura}x${dims.largura}x${dims.comprimento}`);
         
-        const opcoes = await buscarFreteViaAppScript(
+        const opcoes = await buscarFreteViaFetch(
             cepDestino,
             peso,
             dims.altura,
@@ -4283,13 +4274,10 @@ async function buscarFreteSuperFrete(cepDestino) {
         
     } catch (error) {
         console.error('❌ Erro ao buscar frete:', error);
-        
-        // Fallback REALISTA (não valores inventados)
         const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
         return gerarOpcoesFrete(cepDestino, 0, totalProdutos);
     }
 }
-
 
 
 // ============================================================
