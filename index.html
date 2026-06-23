@@ -6327,81 +6327,103 @@ function abrirWhatsAppAtendente(cep) {
         }
 
         // ============================================================
-        // CHECKOUT - FUNÇÕES PRINCIPAIS
-        // ============================================================
-        function abrirCheckout() {
-            document.getElementById('checkoutPage').style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            
-            document.getElementById('checkoutContent').style.display = 'none';
-            document.getElementById('checkoutLoading').style.display = 'block';
-            document.querySelector('#checkoutLoading p').textContent = '🔄 Verificando estoque...';
-            document.querySelector('#checkoutLoading .spinner').style.display = 'block';
-            
-            verificarEstoqueCarrinho().then(() => {
-                if (carrinho.length === 0) {
-                    alert('Seu carrinho está vazio!');
-                    fecharCheckout();
-                    return;
-                }
-                
-                const validacao = verificarCarrinhoValido();
-                if (!validacao.valido) {
-                    alert(validacao.mensagem);
-                    fecharCheckout();
-                    abrirCarrinho();
-                    return;
-                }
-                
-                document.getElementById('checkoutLoading').style.display = 'none';
-                document.getElementById('checkoutContent').style.display = 'flex';
-                
-                checkoutState.passo = 1;
-                checkoutState.enderecoSelecionado = null;
-                checkoutState.freteSelecionado = null;
-                checkoutState.pagamentoSelecionado = null;
-                checkoutState.clienteEncontrado = false;
-                checkoutState.clienteData = null;
-                checkoutState.emailBuscado = '';
-                checkoutState.dadosConfirmados = false;
-                checkoutState.opcoesFrete = [];
-                checkoutState.producaoDias = 0;
-                
-                document.getElementById('emailBusca').value = '';
-                document.getElementById('erroBusca').style.display = 'none';
-                document.getElementById('dadosClienteEncontrado').style.display = 'none';
-                document.getElementById('areaNovoCadastro').style.display = 'block';
-                document.getElementById('checkoutStep2').style.display = 'none';
-                document.getElementById('freteOpcoesContainer').innerHTML = '';
-                document.getElementById('checkoutCepDisplay').textContent = '_____-___';
-                document.getElementById('step1Status').textContent = '⏳ Pendente';
-                document.getElementById('step2Status').textContent = '⏳ Aguardando';
-                document.getElementById('step3Status').textContent = '🔒 Bloqueado';
-                document.getElementById('checkoutStep3Status').textContent = '🔒 Selecione o frete para liberar';
-                document.getElementById('btnFinalizarPedido').disabled = true;
-                document.getElementById('btnFinalizarPedido').style.opacity = '0.5';
-                
-                document.getElementById('stepIndicator1').style.color = 'var(--primary-blue)';
-                document.getElementById('stepIndicator1').style.fontWeight = '600';
-                document.getElementById('stepIndicator2').style.color = '#ccc';
-                document.getElementById('stepIndicator2').style.fontWeight = '400';
-                document.getElementById('stepIndicator3').style.color = '#ccc';
-                document.getElementById('stepIndicator3').style.fontWeight = '400';
-                
-                document.querySelectorAll('.pagamento-opcao-checkout').forEach(el => {
-                    el.style.borderColor = '#ddd';
-                    el.style.background = 'white';
-                    el.style.opacity = '0.5';
-                    el.style.pointerEvents = 'none';
-                });
-                
-                checkoutStepAtual = 1;
-                
-                atualizarResumoCheckout();
-                
-                fecharModal('cartModal');
-            });
+// ABRIR CHECKOUT - CORRIGIDO
+// ============================================================
+function abrirCheckout() {
+    document.getElementById('checkoutPage').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    
+    document.getElementById('checkoutContent').style.display = 'none';
+    document.getElementById('checkoutLoading').style.display = 'block';
+    document.querySelector('#checkoutLoading p').textContent = '🔄 Verificando estoque...';
+    document.querySelector('#checkoutLoading .spinner').style.display = 'block';
+    
+    verificarEstoqueCarrinho().then(function() {
+        if (carrinho.length === 0) {
+            alert('Seu carrinho está vazio!');
+            fecharCheckout();
+            return;
         }
+        
+        var validacao = verificarCarrinhoValido();
+        if (!validacao.valido) {
+            alert(validacao.mensagem);
+            fecharCheckout();
+            abrirCarrinho();
+            return;
+        }
+        
+        document.getElementById('checkoutLoading').style.display = 'none';
+        document.getElementById('checkoutContent').style.display = 'flex';
+        
+        checkoutState.passo = 1;
+        checkoutState.enderecoSelecionado = null;
+        checkoutState.freteSelecionado = null;
+        checkoutState.pagamentoSelecionado = null;
+        checkoutState.clienteEncontrado = false;
+        checkoutState.clienteData = null;
+        checkoutState.emailBuscado = '';
+        checkoutState.dadosConfirmados = false;
+        checkoutState.opcoesFrete = [];
+        checkoutState.producaoDias = 0;
+        
+        document.getElementById('emailBusca').value = '';
+        document.getElementById('erroBusca').style.display = 'none';
+        document.getElementById('dadosClienteEncontrado').style.display = 'none';
+        document.getElementById('areaNovoCadastro').style.display = 'none'; // Oculta inicialmente
+        document.getElementById('checkoutStep2').style.display = 'none';
+        document.getElementById('freteOpcoesContainer').innerHTML = '';
+        document.getElementById('checkoutCepDisplay').textContent = '_____-___';
+        document.getElementById('step1Status').textContent = '⏳ Pendente';
+        document.getElementById('step2Status').textContent = '⏳ Aguardando';
+        document.getElementById('step3Status').textContent = '🔒 Bloqueado';
+        document.getElementById('checkoutStep3Status').textContent = '🔒 Selecione o frete para liberar';
+        document.getElementById('btnFinalizarPedido').disabled = true;
+        document.getElementById('btnFinalizarPedido').style.opacity = '0.5';
+        
+        document.getElementById('stepIndicator1').style.color = 'var(--primary-blue)';
+        document.getElementById('stepIndicator1').style.fontWeight = '600';
+        document.getElementById('stepIndicator2').style.color = '#ccc';
+        document.getElementById('stepIndicator2').style.fontWeight = '400';
+        document.getElementById('stepIndicator3').style.color = '#ccc';
+        document.getElementById('stepIndicator3').style.fontWeight = '400';
+        
+        // ============================================================
+        // ADICIONAR AVISO NO PAGAMENTO
+        // ============================================================
+        var step3 = document.getElementById('checkoutStep3');
+        var avisoExistente = document.getElementById('avisoConfirmarEndereco');
+        if (!avisoExistente) {
+            var aviso = document.createElement('div');
+            aviso.id = 'avisoConfirmarEndereco';
+            aviso.style.cssText = 'background:#fde8e8;color:#721c24;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;border-left:4px solid #e74c3c;';
+            aviso.innerHTML = '<strong>⚠️ Atenção:</strong> Confirme o endereço acima para habilitar as opções de pagamento.';
+            // Insere antes do primeiro elemento dentro do step3
+            var primeiroElemento = step3.querySelector('.pagamento-opcao-checkout');
+            if (primeiroElemento) {
+                step3.insertBefore(aviso, primeiroElemento);
+            } else {
+                step3.appendChild(aviso);
+            }
+        } else {
+            avisoExistente.style.display = 'block';
+        }
+        
+        // BLOQUEAR OPÇÕES DE PAGAMENTO INICIALMENTE
+        document.querySelectorAll('.pagamento-opcao-checkout').forEach(function(el) {
+            el.style.borderColor = '#ddd';
+            el.style.background = 'white';
+            el.style.opacity = '0.5';
+            el.style.pointerEvents = 'none';
+        });
+        
+        checkoutStepAtual = 1;
+        
+        atualizarResumoCheckout();
+        
+        fecharModal('cartModal');
+    });
+}
 
         function fecharCheckout() {
             document.getElementById('checkoutPage').style.display = 'none';
@@ -6409,165 +6431,188 @@ function abrirWhatsAppAtendente(cep) {
         }
 
         // ============================================================
-        // BUSCAR CLIENTE POR EMAIL (CHECKOUT)
-        // ============================================================
-        async function buscarClientePorEmailCheckout() {
-            const email = document.getElementById('emailBusca').value.trim();
-            const erroEl = document.getElementById('erroBusca');
-            const loadingEl = document.getElementById('loadingBusca');
-            const btnBuscar = document.getElementById('btnBuscarCliente');
+// BUSCAR CLIENTE POR EMAIL (CHECKOUT) - CORRIGIDO
+// ============================================================
+async function buscarClientePorEmailCheckout() {
+    var email = document.getElementById('emailBusca').value.trim();
+    var erroEl = document.getElementById('erroBusca');
+    var loadingEl = document.getElementById('loadingBusca');
+    var btnBuscar = document.getElementById('btnBuscarCliente');
+    var areaNovoCadastro = document.getElementById('areaNovoCadastro');
+    var dadosCliente = document.getElementById('dadosClienteEncontrado');
 
-            if (!email) {
-                erroEl.textContent = '⚠️ Digite um email válido.';
-                erroEl.style.display = 'block';
-                return;
-            }
-            if (!email.includes('@') || !email.includes('.')) {
-                erroEl.textContent = '⚠️ Digite um email válido (ex: nome@email.com).';
-                erroEl.style.display = 'block';
-                return;
-            }
+    if (!email) {
+        erroEl.textContent = '⚠️ Digite um email válido.';
+        erroEl.style.display = 'block';
+        return;
+    }
+    if (email.indexOf('@') === -1 || email.indexOf('.') === -1) {
+        erroEl.textContent = '⚠️ Digite um email válido (ex: nome@email.com).';
+        erroEl.style.display = 'block';
+        return;
+    }
 
-            erroEl.style.display = 'none';
-            loadingEl.style.display = 'block';
-            btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
-            btnBuscar.disabled = true;
+    erroEl.style.display = 'none';
+    loadingEl.style.display = 'block';
+    btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
+    btnBuscar.disabled = true;
 
-            try {
-                const response = await fetch(API_URL);
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                
-                const data = await response.json();
-                const clientes = data.clientes || [];
-                const emailLower = email.toLowerCase().trim();
-                
-                const clienteEncontrado = clientes.find(c => {
-                    const cEmail = String(c.email || '').toLowerCase().trim();
-                    return cEmail === emailLower;
-                });
+    // Oculta a área de cadastro enquanto busca
+    areaNovoCadastro.style.display = 'none';
+    dadosCliente.style.display = 'none';
 
-                if (clienteEncontrado) {
-                    checkoutState.clienteEncontrado = true;
-                    checkoutState.clienteData = clienteEncontrado;
-                    checkoutState.emailBuscado = email;
-
-                    document.getElementById('clienteNomeEncontrado').textContent = camuflarNome(clienteEncontrado.nome);
-                    document.getElementById('clienteTelefoneEncontrado').textContent = camuflarTelefone(clienteEncontrado.telefone);
-                    document.getElementById('clienteEmailEncontrado').textContent = camuflarEmail(email);
-                    document.getElementById('emailConfirmado').textContent = `📧 ${email}`;
-
-                    const enderecosContainer = document.getElementById('enderecosLista');
-                    enderecosContainer.innerHTML = '';
-                    
-                    let enderecoCompleto = '';
-                    if (clienteEncontrado.endereco) enderecoCompleto += clienteEncontrado.endereco;
-                    if (clienteEncontrado.numero) enderecoCompleto += ', ' + clienteEncontrado.numero;
-                    if (clienteEncontrado.complemento) enderecoCompleto += ' - ' + clienteEncontrado.complemento;
-                    if (clienteEncontrado.bairro) enderecoCompleto += ' - ' + clienteEncontrado.bairro;
-                    if (clienteEncontrado.cidade) enderecoCompleto += ' - ' + clienteEncontrado.cidade;
-                    if (clienteEncontrado.estado) enderecoCompleto += ' - ' + clienteEncontrado.estado;
-                    if (clienteEncontrado.cep) enderecoCompleto += ', CEP ' + clienteEncontrado.cep;
-                    
-                    const enderecoCamuflado = camuflarEndereco(enderecoCompleto);
-                    
-                    const enderecoCard = document.createElement('div');
-                    enderecoCard.style.cssText = 'background:white;border:2px solid #ddd;border-radius:8px;padding:12px 15px;margin-bottom:8px;cursor:pointer;transition:all 0.3s;';
-                    enderecoCard.innerHTML = `
-                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-                            <div>
-                                <div style="font-weight:600;color:var(--primary-dark);">${enderecoCamuflado}</div>
-                                <div style="font-size:12px;color:#888;">CEP: ${clienteEncontrado.cep || 'Não informado'}</div>
-                            </div>
-                            <button class="btn-selecionar-endereco" style="background:var(--primary-blue);color:white;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap;">
-                                <i class="fas fa-check"></i> Selecionar este endereço
-                            </button>
-                        </div>
-                    `;
-                    
-                    enderecoCard.querySelector('.btn-selecionar-endereco').onclick = function(e) {
-                        e.stopPropagation();
-                        selecionarEnderecoCheckout(enderecoCompleto, clienteEncontrado.cep, clienteEncontrado);
-                    };
-                    
-                    enderecosContainer.appendChild(enderecoCard);
-                    
-                    document.getElementById('dadosClienteEncontrado').style.display = 'block';
-                    document.getElementById('areaNovoCadastro').style.display = 'none';
-                    document.getElementById('step1Status').textContent = '✅ Completo';
-                    
-                    erroEl.style.display = 'none';
-                    
-                } else {
-                    checkoutState.clienteEncontrado = false;
-                    checkoutState.clienteData = null;
-                    document.getElementById('dadosClienteEncontrado').style.display = 'none';
-                    
-                    const areaNovoCadastro = document.getElementById('areaNovoCadastro');
-                    areaNovoCadastro.style.display = 'block';
-                    areaNovoCadastro.innerHTML = `
-                        <p style="font-weight:600;color:#856404;margin:0 0 8px 0;">
-                            <i class="fas fa-exclamation-triangle"></i> Email não cadastrado
-                        </p>
-                        <p style="font-size:14px;color:#856404;margin-bottom:10px;">
-                            Para finalizar o pedido, você precisa se cadastrar.
-                        </p>
-                        <button onclick="fecharCheckout();setTimeout(abrirCadastroDiretoCheckout,300);" 
-                                style="background:var(--primary-blue);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
-                            <i class="fas fa-user-plus"></i> Fazer Cadastro
-                        </button>
-                    `;
-                    
-                    erroEl.textContent = '❌ Nenhum cliente encontrado com este email.';
-                    erroEl.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('❌ Erro ao buscar cliente:', error);
-                erroEl.textContent = '❌ Erro ao buscar dados. Tente novamente.';
-                erroEl.style.display = 'block';
-            } finally {
-                loadingEl.style.display = 'none';
-                btnBuscar.innerHTML = '<i class="fas fa-search"></i> Buscar';
-                btnBuscar.disabled = false;
+    try {
+        var response = await fetch(API_URL);
+        if (!response.ok) throw new Error('Erro HTTP: ' + response.status);
+        
+        var data = await response.json();
+        var clientes = data.clientes || [];
+        var emailLower = email.toLowerCase().trim();
+        
+        var clienteEncontrado = null;
+        for (var i = 0; i < clientes.length; i++) {
+            var cEmail = String(clientes[i].email || '').toLowerCase().trim();
+            if (cEmail === emailLower) {
+                clienteEncontrado = clientes[i];
+                break;
             }
         }
 
-        // ============================================================
-        // SELECIONAR ENDEREÇO
-        // ============================================================
-        function selecionarEnderecoCheckout(endereco, cep, cliente) {
-            const cards = document.querySelectorAll('#enderecosLista > div');
-            cards.forEach(el => {
-                el.style.borderColor = '#ddd';
-                el.style.background = 'white';
-            });
-            const card = event.currentTarget.closest('div');
-            if (card) {
-                card.style.borderColor = '#1a3a5c';
-                card.style.background = '#f0f8ff';
-            }
+        if (clienteEncontrado) {
+            checkoutState.clienteEncontrado = true;
+            checkoutState.clienteData = clienteEncontrado;
+            checkoutState.emailBuscado = email;
+
+            document.getElementById('clienteNomeEncontrado').textContent = camuflarNome(clienteEncontrado.nome);
+            document.getElementById('clienteTelefoneEncontrado').textContent = camuflarTelefone(clienteEncontrado.telefone);
+            document.getElementById('clienteEmailEncontrado').textContent = camuflarEmail(email);
+            document.getElementById('emailConfirmado').textContent = '📧 ' + email;
+
+            var enderecosContainer = document.getElementById('enderecosLista');
+            enderecosContainer.innerHTML = '';
             
-            checkoutState.enderecoSelecionado = {
-                nome: cliente.nome || 'Cliente',
-                endereco: endereco,
-                enderecoCompleto: endereco,
-                cep: cep || '',
-                telefone: cliente.telefone || '',
-                email: cliente.email || '',
-                documento: cliente.cpf || ''
+            var enderecoCompleto = '';
+            if (clienteEncontrado.endereco) enderecoCompleto += clienteEncontrado.endereco;
+            if (clienteEncontrado.numero) enderecoCompleto += ', ' + clienteEncontrado.numero;
+            if (clienteEncontrado.complemento) enderecoCompleto += ' - ' + clienteEncontrado.complemento;
+            if (clienteEncontrado.bairro) enderecoCompleto += ' - ' + clienteEncontrado.bairro;
+            if (clienteEncontrado.cidade) enderecoCompleto += ' - ' + clienteEncontrado.cidade;
+            if (clienteEncontrado.estado) enderecoCompleto += ' - ' + clienteEncontrado.estado;
+            if (clienteEncontrado.cep) enderecoCompleto += ', CEP ' + clienteEncontrado.cep;
+            
+            var enderecoCamuflado = camuflarEndereco(enderecoCompleto);
+            
+            var enderecoCard = document.createElement('div');
+            enderecoCard.style.cssText = 'background:white;border:2px solid #ddd;border-radius:8px;padding:12px 15px;margin-bottom:8px;cursor:pointer;transition:all 0.3s;';
+            enderecoCard.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                    <div>
+                        <div style="font-weight:600;color:var(--primary-dark);">${enderecoCamuflado}</div>
+                        <div style="font-size:12px;color:#888;">CEP: ${clienteEncontrado.cep || 'Não informado'}</div>
+                    </div>
+                    <button class="btn-selecionar-endereco" style="background:#27ae60;color:white;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap;">
+                        <i class="fas fa-check"></i> Confirmar este endereço
+                    </button>
+                </div>
+            `;
+            
+            enderecoCard.querySelector('.btn-selecionar-endereco').onclick = function(e) {
+                e.stopPropagation();
+                selecionarEnderecoCheckout(enderecoCompleto, clienteEncontrado.cep, clienteEncontrado);
             };
             
-            checkoutState.dadosConfirmados = true;
+            enderecosContainer.appendChild(enderecoCard);
             
-            document.getElementById('stepIndicator2').style.color = 'var(--primary-blue)';
-            document.getElementById('stepIndicator2').style.fontWeight = '600';
+            dadosCliente.style.display = 'block';
+            areaNovoCadastro.style.display = 'none';
+            document.getElementById('step1Status').textContent = '✅ Completo';
+            erroEl.style.display = 'none';
             
-            document.getElementById('checkoutStep2').style.display = 'block';
-            document.getElementById('step2Status').textContent = '⏳ Carregando...';
+        } else {
+            // SÓ MOSTRA O CADASTRO SE NÃO ENCONTROU O CLIENTE
+            checkoutState.clienteEncontrado = false;
+            checkoutState.clienteData = null;
+            dadosCliente.style.display = 'none';
             
-            carregarOpcoesFreteCheckout();
+            areaNovoCadastro.style.display = 'block';
+            areaNovoCadastro.innerHTML = `
+                <p style="font-weight:600;color:#856404;margin:0 0 8px 0;">
+                    <i class="fas fa-exclamation-triangle"></i> Email não cadastrado
+                </p>
+                <p style="font-size:14px;color:#856404;margin-bottom:10px;">
+                    Para finalizar o pedido, você precisa se cadastrar.
+                </p>
+                <button onclick="fecharCheckout();setTimeout(abrirCadastroDiretoCheckout,300);" 
+                        style="background:var(--primary-blue);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
+                    <i class="fas fa-user-plus"></i> Fazer Cadastro
+                </button>
+            `;
             
-            mostrarNotificacao('✅ Endereço selecionado! Carregando opções de frete...', 'success');
+            erroEl.textContent = '❌ Nenhum cliente encontrado com este email.';
+            erroEl.style.display = 'block';
         }
+    } catch (error) {
+        console.error('❌ Erro ao buscar cliente:', error);
+        erroEl.textContent = '❌ Erro ao buscar dados. Tente novamente.';
+        erroEl.style.display = 'block';
+    } finally {
+        loadingEl.style.display = 'none';
+        btnBuscar.innerHTML = '<i class="fas fa-search"></i> Buscar';
+        btnBuscar.disabled = false;
+    }
+}
+
+        // ============================================================
+// SELECIONAR ENDEREÇO (CHECKOUT) - CORRIGIDO
+// ============================================================
+function selecionarEnderecoCheckout(endereco, cep, cliente) {
+    var cards = document.querySelectorAll('#enderecosLista > div');
+    for (var i = 0; i < cards.length; i++) {
+        cards[i].style.borderColor = '#ddd';
+        cards[i].style.background = 'white';
+    }
+    
+    // O card atual é o que foi clicado
+    var card = event.currentTarget.closest('div');
+    if (card) {
+        card.style.borderColor = '#27ae60';
+        card.style.background = '#e8f5e9';
+    }
+    
+    checkoutState.enderecoSelecionado = {
+        nome: cliente.nome || 'Cliente',
+        endereco: endereco,
+        enderecoCompleto: endereco,
+        cep: cep || '',
+        telefone: cliente.telefone || '',
+        email: cliente.email || '',
+        documento: cliente.cpf || ''
+    };
+    
+    checkoutState.dadosConfirmados = true;
+    
+    // ATUALIZAR INDICADORES
+    document.getElementById('stepIndicator2').style.color = 'var(--primary-blue)';
+    document.getElementById('stepIndicator2').style.fontWeight = '600';
+    
+    document.getElementById('checkoutStep2').style.display = 'block';
+    document.getElementById('step2Status').textContent = '⏳ Carregando...';
+    
+    // REMOVER MENSAGEM DE AVISO DO PAGAMENTO
+    var avisoPagamento = document.getElementById('avisoConfirmarEndereco');
+    if (avisoPagamento) avisoPagamento.style.display = 'none';
+    
+    // HABILITAR OPÇÕES DE PAGAMENTO
+    document.querySelectorAll('.pagamento-opcao-checkout').forEach(function(el) {
+        el.style.opacity = '1';
+        el.style.pointerEvents = 'auto';
+    });
+    
+    carregarOpcoesFreteCheckout();
+    
+    mostrarNotificacao('✅ Endereço confirmado! Carregando opções de frete...', 'success');
+}
+
 
 // ============================================================
 // CARREGAR OPÇÕES DE FRETE (CHECKOUT)
@@ -6762,21 +6807,25 @@ async function carregarOpcoesFreteCheckout() {
 
 
         // ============================================================
-        // LIBERAR PAGAMENTO
-        // ============================================================
-        function liberarPagamento() {
-            document.querySelectorAll('.pagamento-opcao-checkout').forEach(el => {
-                el.style.opacity = '1';
-                el.style.pointerEvents = 'auto';
-            });
-            
-            document.getElementById('step3Status').textContent = '⏳ Selecione';
-            document.getElementById('checkoutStep3Status').textContent = '💳 Selecione uma forma de pagamento';
-            document.getElementById('stepIndicator3').style.color = 'var(--primary-blue)';
-            document.getElementById('stepIndicator3').style.fontWeight = '600';
-            
-            mostrarNotificacao('✅ Frete selecionado! Escolha a forma de pagamento.', 'success');
-        }
+// LIBERAR PAGAMENTO - CORRIGIDO
+// ============================================================
+function liberarPagamento() {
+    // Remover aviso de confirmação de endereço
+    var aviso = document.getElementById('avisoConfirmarEndereco');
+    if (aviso) aviso.style.display = 'none';
+    
+    document.querySelectorAll('.pagamento-opcao-checkout').forEach(function(el) {
+        el.style.opacity = '1';
+        el.style.pointerEvents = 'auto';
+    });
+    
+    document.getElementById('step3Status').textContent = '⏳ Selecione';
+    document.getElementById('checkoutStep3Status').textContent = '💳 Selecione uma forma de pagamento';
+    document.getElementById('stepIndicator3').style.color = 'var(--primary-blue)';
+    document.getElementById('stepIndicator3').style.fontWeight = '600';
+    
+    mostrarNotificacao('✅ Frete selecionado! Escolha a forma de pagamento.', 'success');
+}
 
         // ============================================================
         // SELECIONAR PAGAMENTO
@@ -6823,7 +6872,7 @@ async function carregarOpcoesFreteCheckout() {
             document.getElementById('checkoutTotalResumo').textContent = `R$ ${total.toFixed(2)}`;
         }
 
-       // ============================================================
+// ============================================================
 // ATUALIZAR RESUMO FINAL DO CHECKOUT
 // ============================================================
 function atualizarResumoFinal() {
@@ -6831,18 +6880,23 @@ function atualizarResumoFinal() {
     for (var i = 0; i < carrinho.length; i++) {
         totalProdutos += carrinho[i].price || 0;
     }
+    
     var freteValor = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.valor : 0;
     var totalFinal = totalProdutos + freteValor;
-    var prazoFrete = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.prazoTotal : 0;
+    
+    // PRAZO: usa prazoTotal que já soma envio + produção
+    var prazoTotal = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.prazoTotal : 0;
+    var prazoEnvio = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.prazoEnvio : 0;
     var prazoProducao = checkoutState.producaoDias || 0;
-    var prazoFinal = prazoFrete + prazoProducao;
     
     document.getElementById('checkoutFreteResumo').textContent = freteValor === 0 ? 'Grátis' : 'R$ ' + freteValor.toFixed(2);
     document.getElementById('checkoutTotalResumo').textContent = 'R$ ' + totalFinal.toFixed(2);
-    document.getElementById('checkoutPrazoResumo').textContent = prazoFinal + ' dias úteis';
+    document.getElementById('checkoutPrazoResumo').textContent = prazoTotal + ' dias úteis';
     document.getElementById('checkoutPrazoDetalhe').textContent = 
-        (prazoProducao > 0 ? '🔄 Produção: ' + prazoProducao + ' dias + ' : '') + '🚚 Frete: ' + prazoFrete + ' dias';
+        (prazoProducao > 0 ? '🔄 Produção: ' + prazoProducao + ' dias + ' : '') + '🚚 Envio: ' + prazoEnvio + ' dias';
 }
+
+
         // ============================================================
         // FINALIZAR PEDIDO
         // ============================================================
