@@ -2452,54 +2452,284 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+
+        /* ===== HEADER - CORRIGIDO ===== */
+.header {
+    background: var(--primary-blue);
+    padding: 10px 20px;
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* LOGO */
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 200px;
+    width: 100%;
+}
+
+.logo img {
+    width: 100%;
+    height: auto;
+    max-width: 300px;
+    display: block;
+}
+
+.logo a { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    text-decoration: none; 
+    cursor: pointer; 
+}
+
+/* HEADER ACTIONS */
+.header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.header-actions button {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    position: relative;
+}
+
+.header-actions button:hover {
+    background: rgba(255,255,255,0.15);
+    transform: scale(1.1);
+}
+
+.header-actions .btn-cart .badge {
+    position: absolute;
+    top: -4px;
+    right: -8px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    min-width: 18px;
+    text-align: center;
+    display: none;
+}
+
+/* ===== NOME DO CLIENTE - CORRIGIDO ===== */
+.cliente-nome {
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    text-align: center;
+    display: none;
+    max-width: 60px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.2;
+    margin-top: 2px;
+}
+
+.cliente-nome.show { 
+    display: block; 
+}
+
+/* ===== USER DROPDOWN - CORRIGIDO ===== */
+.user-dropdown {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0px;
+}
+
+.user-dropdown .btn-login {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+}
+
+.user-dropdown .btn-login:hover {
+    background: rgba(255,255,255,0.15);
+    transform: scale(1.1);
+}
+
+.user-dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 45px;
+    background: white;
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    border-radius: var(--radius);
+    z-index: 1001;
+    overflow: hidden;
+}
+
+.user-dropdown-content.show {
+    display: block;
+}
+
+.user-dropdown-content .dropdown-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    border-bottom: 1px solid #eee;
+    color: var(--text-dark);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-dropdown-content .dropdown-item:hover {
+    background: #f0f4f8;
+    color: var(--primary-blue);
+}
+
+.user-dropdown-content .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.user-dropdown-content .dropdown-item i {
+    width: 20px;
+    color: var(--primary-blue);
+}
+
+.user-dropdown-content .dropdown-item.sair {
+    color: var(--danger);
+}
+
+.user-dropdown-content .dropdown-item.sair i {
+    color: var(--danger);
+}
+
+.user-dropdown-content .dropdown-item.sair:hover {
+    background: #fde8e8;
+}
+
+.user-dropdown-content .dropdown-item.login-item {
+    background: var(--primary-blue);
+    color: white;
+    font-weight: 600;
+    justify-content: center;
+}
+
+.user-dropdown-content .dropdown-item.login-item:hover {
+    background: var(--secondary-blue);
+    color: white;
+}
+
+.user-dropdown-content .dropdown-item.login-item i {
+    color: white;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 768px) {
+    .header { padding: 10px 15px; }
+    .logo { max-width: 130px; }
+    .logo img { max-width: 160px; }
+    .header-actions button { font-size: 16px; width: 34px; height: 34px; padding: 5px; }
+    .cliente-nome { font-size: 9px; max-width: 50px; }
+    .user-dropdown .btn-login { font-size: 16px; width: 34px; height: 34px; padding: 5px; }
+}
+
+@media (max-width: 480px) {
+    .header { padding: 8px 10px; }
+    .logo { max-width: 100px; }
+    .logo img { max-width: 120px; }
+    .header-actions { gap: 4px; }
+    .header-actions button { font-size: 14px; width: 30px; height: 30px; padding: 4px; }
+    .cliente-nome { font-size: 8px; max-width: 40px; }
+    .user-dropdown .btn-login { font-size: 14px; width: 30px; height: 30px; padding: 4px; }
+}
+
+
     </style>
 </head>
 <body>
 
     <!-- ============================================================ -->
-    <!-- HEADER COM CARRINHO NO TOPO -->
-    <!-- ============================================================ -->
-    <header class="header">
-        <div class="header-container">
-            <div class="logo">
-                <a href="#" onclick="showHome()">
-                    <img src="https://cdn.awsli.com.br/1608/1608652/arquivos/logo-mc-2026-branca.webp" 
-                         alt="MC Embalagens BH" 
-                         id="logo-img"
-                         style="height:50px;width:auto;object-fit:contain;">
-                </a>
-            </div>
-            <div class="header-actions">
+<!-- HEADER COM CARRINHO NO TOPO -->
+<!-- ============================================================ -->
+<header class="header">
+    <div class="header-container">
+        <div class="logo">
+            <a href="#" onclick="showHome()">
+                <img src="https://cdn.awsli.com.br/1608/1608652/arquivos/logo-mc-2026-branca.webp" 
+                     alt="MC Embalagens BH" 
+                     id="logo-img"
+                     style="height:45px;width:auto;object-fit:contain;">
+            </a>
+        </div>
+        <div class="header-actions">
+            <button class="btn-search" onclick="buscarProduto()" aria-label="Buscar">
+                <i class="fas fa-search"></i>
+            </button>
+            <button class="btn-cart" onclick="abrirCarrinho()" aria-label="Carrinho">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="badge" id="cartBadgeTop">0</span>
+            </button>
+            <div class="user-dropdown">
+                <button class="btn-login" onclick="toggleUserMenu()" aria-label="Login" id="btnUserMenu">
+                    <i class="fas fa-user"></i>
+                </button>
                 <span class="cliente-nome" id="clienteNomeHeader"></span>
-                <button class="btn-search" onclick="buscarProduto()" aria-label="Buscar">
-                    <i class="fas fa-search"></i>
-                </button>
-                <button class="btn-cart" onclick="abrirCarrinho()" aria-label="Carrinho">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span class="badge" id="cartBadgeTop">0</span>
-                </button>
-                <div class="user-dropdown">
-                    <button class="btn-login" onclick="toggleUserMenu()" aria-label="Login" id="btnUserMenu">
-                        <i class="fas fa-user"></i>
-                    </button>
-                    <div class="user-dropdown-content" id="userDropdown">
-                        <div class="dropdown-item login-item" onclick="abrirLogin()">
-                            <i class="fas fa-sign-in-alt"></i> Entrar / Cadastrar
-                        </div>
-                        <div class="dropdown-item" onclick="abrirDadosPessoais()" style="display:none;">
-                            <i class="fas fa-user-circle"></i> Dados Pessoais
-                        </div>
-                        <div class="dropdown-item" onclick="abrirMeusPedidos()" style="display:none;">
-                            <i class="fas fa-box"></i> Meus Pedidos
-                        </div>
-                        <div class="dropdown-item sair" onclick="sairConta()" style="display:none;">
-                            <i class="fas fa-sign-out-alt"></i> Sair da Conta
-                        </div>
+                <div class="user-dropdown-content" id="userDropdown">
+                    <div class="dropdown-item login-item" onclick="abrirLogin()">
+                        <i class="fas fa-sign-in-alt"></i> Entrar / Cadastrar
+                    </div>
+                    <div class="dropdown-item" onclick="abrirDadosPessoais()" style="display:none;">
+                        <i class="fas fa-user-circle"></i> Dados Pessoais
+                    </div>
+                    <div class="dropdown-item" onclick="abrirMeusPedidos()" style="display:none;">
+                        <i class="fas fa-box"></i> Meus Pedidos
+                    </div>
+                    <div class="dropdown-item sair" onclick="sairConta()" style="display:none;">
+                        <i class="fas fa-sign-out-alt"></i> Sair da Conta
                     </div>
                 </div>
             </div>
         </div>
-    </header>
+    </div>
+</header>
+
 
     <!-- ============================================================ -->
     <!-- MAIN CONTENT -->
@@ -5799,16 +6029,31 @@ function abrirWhatsAppAtendente(cep) {
             }
         }
 
-        function atualizarNomeClienteHeader() {
-            const el = document.getElementById('clienteNomeHeader');
-            if (usuarioLogado && usuarioLogado.nome) {
-                el.textContent = '👤 ' + usuarioLogado.nome;
-                el.classList.add('show');
-            } else {
-                el.classList.remove('show');
-                document.getElementById('btnUserMenu').innerHTML = '<i class="fas fa-user"></i>';
-            }
+        // ============================================================
+// ATUALIZAR NOME DO CLIENTE NO HEADER
+// ============================================================
+function atualizarNomeClienteHeader() {
+    var el = document.getElementById('clienteNomeHeader');
+    var btn = document.getElementById('btnUserMenu');
+    
+    if (usuarioLogado && usuarioLogado.nome) {
+        // Pega apenas o primeiro nome
+        var nomeCompleto = usuarioLogado.nome;
+        var primeiroNome = nomeCompleto.split(' ')[0];
+        
+        // Limita a 10 caracteres
+        if (primeiroNome.length > 10) {
+            primeiroNome = primeiroNome.substring(0, 10) + '...';
         }
+        
+        el.textContent = primeiroNome;
+        el.classList.add('show');
+        btn.innerHTML = '<i class="fas fa-user-check"></i>';
+    } else {
+        el.classList.remove('show');
+        btn.innerHTML = '<i class="fas fa-user"></i>';
+    }
+}
 
         function sairConta() {
             if (confirm('Tem certeza que deseja sair da sua conta?')) {
