@@ -3686,8 +3686,7 @@ function calcularEntregaPropria(cidade, totalPedido) {
         return { encontrado: false, cost: null, mensagem: 'Cidade não informada' };
     }
     
-    const cidadeNormalizada = cidade.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    
+    var cidadeNormalizada = cidade.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     var cidadeEncontrada = null;
     var chaveEncontrada = null;
     
@@ -3735,201 +3734,252 @@ function calcularEntregaPropria(cidade, totalPedido) {
     };
 }
 
-
-        // ============================================================
-        // CALCULAR PESO TOTAL (CORRIGIDO)
-        // ============================================================
-        function calcularPesoTotal() {
-            let pesoTotal = 0;
-            let temPesoCadastrado = false;
-            
-            carrinho.forEach(item => {
-                const product = encontrarProduto(item.productId);
-                
-                if (product && product.weight > 0) {
-                    pesoTotal += product.weight * item.quantity;
-                    temPesoCadastrado = true;
-                } else if (item.detalhes && item.detalhes.length > 0) {
-                    item.detalhes.forEach(d => {
-                        if (d.weight) {
-                            const peso = parseFloat(d.weight.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
-                            pesoTotal += peso * d.qty;
-                            if (peso > 0) temPesoCadastrado = true;
-                        }
-                    });
-                }
-            });
-            
-            if (!temPesoCadastrado || pesoTotal === 0) {
-                console.log('ℹ️ Nenhum peso cadastrado, usando peso padrão mínimo');
-                const totalItems = carrinho.reduce((sum, item) => sum + item.quantity, 0);
-                pesoTotal = PESO_PADRAO * Math.max(totalItems, 1);
-            }
-            
-            console.log(`⚖️ Peso total calculado: ${pesoTotal.toFixed(2)}kg`);
-            return Math.max(pesoTotal, 0.1);
-        }
-
-        function extrairPesoDimensoes(info) {
-            if (!info) {
-                return { 
-                    peso: PESO_PADRAO, 
-                    altura: DIMENSAO_PADRAO.altura, 
-                    largura: DIMENSAO_PADRAO.largura, 
-                    comprimento: DIMENSAO_PADRAO.comprimento 
-                };
-            }
-            
-            const parts = info.split('-');
-            if (parts.length !== 2) {
-                return { 
-                    peso: PESO_PADRAO, 
-                    altura: DIMENSAO_PADRAO.altura, 
-                    largura: DIMENSAO_PADRAO.largura, 
-                    comprimento: DIMENSAO_PADRAO.comprimento 
-                };
-            }
-            
-            const pesoStr = parts[0].replace(/[^0-9.,]/g, '').replace(',', '.');
-            const peso = parseFloat(pesoStr) || PESO_PADRAO;
-            
-            const dimsStr = parts[1];
-            const dims = dimsStr.split('x').map(d => parseInt(d.trim()) || 0);
-            
-            if (dims.length !== 3) {
-                return { 
-                    peso: peso, 
-                    altura: DIMENSAO_PADRAO.altura, 
-                    largura: DIMENSAO_PADRAO.largura, 
-                    comprimento: DIMENSAO_PADRAO.comprimento 
-                };
-            }
-            
-            const comprimento = dims[0];
-            const largura = dims[1];
-            const altura = dims[2];
-            
-            console.log(`📐 Planilha: ${dimsStr} → Comprimento=${comprimento}, Largura=${largura}, Altura=${altura}`);
-            
-            return { 
-                peso: peso, 
-                altura: altura || DIMENSAO_PADRAO.altura, 
-                largura: largura || DIMENSAO_PADRAO.largura, 
-                comprimento: comprimento || DIMENSAO_PADRAO.comprimento 
-            };
-        }
-
-        function calcularDimensoes() {
-            let volumeTotal = 0;
-            let temProdutoComDimensao = false;
-            
-            carrinho.forEach(item => {
-                const product = encontrarProduto(item.productId);
-                
-                if (item.detalhes && item.detalhes.length > 0) {
-                    item.detalhes.forEach(d => {
-                        if (d.dimensions) {
-                            const info = extrairPesoDimensoes(d.weight + '-' + d.dimensions);
-                            if (info) {
-                                const volume = info.altura * info.largura * info.comprimento;
-                                volumeTotal += volume * d.qty;
-                                temProdutoComDimensao = true;
-                            }
-                        }
-                    });
-                }
-                
-                if (!temProdutoComDimensao && product) {
-                    for (const qty of product.quantities) {
-                        if (qty.dimensions && qty.weight) {
-                            const info = extrairPesoDimensoes(qty.weight + '-' + qty.dimensions);
-                            if (info) {
-                                const volume = info.altura * info.largura * info.comprimento;
-                                volumeTotal += volume * (item.quantity / qty.qty);
-                                temProdutoComDimensao = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            });
-            
-            if (!temProdutoComDimensao || volumeTotal === 0) {
-                console.log('ℹ️ Nenhuma dimensão cadastrada, usando dimensão padrão mínima');
-                const totalItems = carrinho.reduce((sum, item) => sum + item.quantity, 0);
-                const volPadrao = DIMENSAO_PADRAO.altura * DIMENSAO_PADRAO.largura * DIMENSAO_PADRAO.comprimento;
-                volumeTotal = volPadrao * Math.max(totalItems, 1);
-            }
-            
-            const lado = Math.cbrt(volumeTotal);
-            let dimensao = Math.ceil(lado);
-            
-            const DIMENSAO_MINIMA = 16;
-            if (dimensao < DIMENSAO_MINIMA) {
-                console.log(`⚠️ Dimensão calculada (${dimensao}cm) é menor que o mínimo da API (${DIMENSAO_MINIMA}cm). Ajustando para ${DIMENSAO_MINIMA}cm.`);
-                dimensao = DIMENSAO_MINIMA;
-            }
-            
-            const DIMENSAO_MAXIMA = 105;
-            if (dimensao > DIMENSAO_MAXIMA) {
-                console.log(`⚠️ Dimensão calculada (${dimensao}cm) excede o máximo da API (${DIMENSAO_MAXIMA}cm). Ajustando para ${DIMENSAO_MAXIMA}cm.`);
-                dimensao = DIMENSAO_MAXIMA;
-            }
-            
-            console.log(`📦 Dimensões calculadas: ${dimensao}x${dimensao}x${dimensao} (volume: ${volumeTotal})`);
-            
-            return { 
-                altura: dimensao, 
-                largura: dimensao, 
-                comprimento: dimensao 
-            };
-        }
-
-        // ============================================================
-        // CALCULAR PRAZO DE PRODUÇÃO
-        // ============================================================
-        function calcularPrazoProducao() {
-            let maiorPrazo = 0;
-            carrinho.forEach(item => {
-                const product = encontrarProduto(item.productId);
-                if (product) {
-                    const podeVenderZerado = product.vender_zerado === true;
-                    if (podeVenderZerado && product.stock < item.quantity) {
-                        const prazo = product.productionDays || 0;
-                        if (prazo > maiorPrazo) {
-                            maiorPrazo = prazo;
-                        }
-                    }
-                }
-            });
-            return maiorPrazo;
-        }
-
-        // ============================================================
-        // GERAR OPÇÕES DE FRETE (NÃO USA MAIS - MANTIDO PARA COMPATIBILIDADE)
-        // ============================================================
-        function gerarOpcoesFrete(cep, peso, totalProdutos) {
-            // Esta função não é mais usada para exibir ao cliente,
-            // mantida para compatibilidade com outras partes do código
-            return [];
-        }
-
-        // ============================================================
 // ============================================================
-// FORMATAR OPÇÕES DE FRETE (CARRINHO + CHECKOUT) - CORRIGIDO
+// CALCULAR PESO TOTAL
 // ============================================================
-function formatarOpcoesFrete(opcoes, isCheckout = false) {
-    const opcoesFormatadas = [];
-    const producaoDias = calcularPrazoProducao();
+function calcularPesoTotal() {
+    var pesoTotal = 0;
+    var temPesoCadastrado = false;
     
-    // ============================================================
+    for (var i = 0; i < carrinho.length; i++) {
+        var item = carrinho[i];
+        var product = encontrarProduto(item.productId);
+        
+        if (product && product.weight > 0) {
+            pesoTotal += product.weight * item.quantity;
+            temPesoCadastrado = true;
+        } else if (item.detalhes && item.detalhes.length > 0) {
+            for (var j = 0; j < item.detalhes.length; j++) {
+                var d = item.detalhes[j];
+                if (d.weight) {
+                    var peso = parseFloat(d.weight.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+                    pesoTotal += peso * d.qty;
+                    if (peso > 0) temPesoCadastrado = true;
+                }
+            }
+        }
+    }
+    
+    if (!temPesoCadastrado || pesoTotal === 0) {
+        console.log('ℹ️ Nenhum peso cadastrado, usando peso padrão mínimo');
+        var totalItems = 0;
+        for (var i = 0; i < carrinho.length; i++) {
+            totalItems += carrinho[i].quantity;
+        }
+        pesoTotal = PESO_PADRAO * Math.max(totalItems, 1);
+    }
+    
+    console.log('⚖️ Peso total calculado: ' + pesoTotal.toFixed(2) + 'kg');
+    return Math.max(pesoTotal, 0.1);
+}
+
+// ============================================================
+// EXTRAIR PESO E DIMENSÕES
+// ============================================================
+function extrairPesoDimensoes(info) {
+    if (!info) {
+        return { 
+            peso: PESO_PADRAO, 
+            altura: DIMENSAO_PADRAO.altura, 
+            largura: DIMENSAO_PADRAO.largura, 
+            comprimento: DIMENSAO_PADRAO.comprimento 
+        };
+    }
+    
+    var parts = info.split('-');
+    if (parts.length !== 2) {
+        return { 
+            peso: PESO_PADRAO, 
+            altura: DIMENSAO_PADRAO.altura, 
+            largura: DIMENSAO_PADRAO.largura, 
+            comprimento: DIMENSAO_PADRAO.comprimento 
+        };
+    }
+    
+    var pesoStr = parts[0].replace(/[^0-9.,]/g, '').replace(',', '.');
+    var peso = parseFloat(pesoStr) || PESO_PADRAO;
+    
+    var dimsStr = parts[1];
+    var dims = dimsStr.split('x').map(function(d) { return parseInt(d.trim()) || 0; });
+    
+    if (dims.length !== 3) {
+        return { 
+            peso: peso, 
+            altura: DIMENSAO_PADRAO.altura, 
+            largura: DIMENSAO_PADRAO.largura, 
+            comprimento: DIMENSAO_PADRAO.comprimento 
+        };
+    }
+    
+    var comprimento = dims[0];
+    var largura = dims[1];
+    var altura = dims[2];
+    
+    console.log('📐 Planilha: ' + dimsStr + ' → Comprimento=' + comprimento + ', Largura=' + largura + ', Altura=' + altura);
+    
+    return { 
+        peso: peso, 
+        altura: altura || DIMENSAO_PADRAO.altura, 
+        largura: largura || DIMENSAO_PADRAO.largura, 
+        comprimento: comprimento || DIMENSAO_PADRAO.comprimento 
+    };
+}
+
+// ============================================================
+// CALCULAR DIMENSÕES
+// ============================================================
+function calcularDimensoes() {
+    var volumeTotal = 0;
+    var temProdutoComDimensao = false;
+    
+    for (var i = 0; i < carrinho.length; i++) {
+        var item = carrinho[i];
+        var product = encontrarProduto(item.productId);
+        
+        if (item.detalhes && item.detalhes.length > 0) {
+            for (var j = 0; j < item.detalhes.length; j++) {
+                var d = item.detalhes[j];
+                if (d.dimensions) {
+                    var info = extrairPesoDimensoes(d.weight + '-' + d.dimensions);
+                    if (info) {
+                        var volume = info.altura * info.largura * info.comprimento;
+                        volumeTotal += volume * d.qty;
+                        temProdutoComDimensao = true;
+                    }
+                }
+            }
+        }
+        
+        if (!temProdutoComDimensao && product) {
+            for (var k = 0; k < product.quantities.length; k++) {
+                var qty = product.quantities[k];
+                if (qty.dimensions && qty.weight) {
+                    var info = extrairPesoDimensoes(qty.weight + '-' + qty.dimensions);
+                    if (info) {
+                        var volume = info.altura * info.largura * info.comprimento;
+                        volumeTotal += volume * (item.quantity / qty.qty);
+                        temProdutoComDimensao = true;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    if (!temProdutoComDimensao || volumeTotal === 0) {
+        console.log('ℹ️ Nenhuma dimensão cadastrada, usando dimensão padrão mínima');
+        var totalItems = 0;
+        for (var i = 0; i < carrinho.length; i++) {
+            totalItems += carrinho[i].quantity;
+        }
+        var volPadrao = DIMENSAO_PADRAO.altura * DIMENSAO_PADRAO.largura * DIMENSAO_PADRAO.comprimento;
+        volumeTotal = volPadrao * Math.max(totalItems, 1);
+    }
+    
+    var lado = Math.cbrt(volumeTotal);
+    var dimensao = Math.ceil(lado);
+    
+    var DIMENSAO_MINIMA = 16;
+    if (dimensao < DIMENSAO_MINIMA) {
+        console.log('⚠️ Dimensão calculada (' + dimensao + 'cm) é menor que o mínimo da API (' + DIMENSAO_MINIMA + 'cm). Ajustando para ' + DIMENSAO_MINIMA + 'cm.');
+        dimensao = DIMENSAO_MINIMA;
+    }
+    
+    var DIMENSAO_MAXIMA = 105;
+    if (dimensao > DIMENSAO_MAXIMA) {
+        console.log('⚠️ Dimensão calculada (' + dimensao + 'cm) excede o máximo da API (' + DIMENSAO_MAXIMA + 'cm). Ajustando para ' + DIMENSAO_MAXIMA + 'cm.');
+        dimensao = DIMENSAO_MAXIMA;
+    }
+    
+    console.log('📦 Dimensões calculadas: ' + dimensao + 'x' + dimensao + 'x' + dimensao + ' (volume: ' + volumeTotal + ')');
+    
+    return { 
+        altura: dimensao, 
+        largura: dimensao, 
+        comprimento: dimensao 
+    };
+}
+
+// ============================================================
+// CALCULAR PRAZO DE PRODUÇÃO
+// ============================================================
+function calcularPrazoProducao() {
+    var maiorPrazo = 0;
+    for (var i = 0; i < carrinho.length; i++) {
+        var item = carrinho[i];
+        var product = encontrarProduto(item.productId);
+        if (product) {
+            var podeVenderZerado = product.vender_zerado === true;
+            if (podeVenderZerado && product.stock < item.quantity) {
+                var prazo = product.productionDays || 0;
+                if (prazo > maiorPrazo) {
+                    maiorPrazo = prazo;
+                }
+            }
+        }
+    }
+    return maiorPrazo;
+}
+
+// ============================================================
+// GERAR OPÇÕES DE FRETE (NÃO USA MAIS - MANTIDO PARA COMPATIBILIDADE)
+// ============================================================
+function gerarOpcoesFrete(cep, peso, totalProdutos) {
+    return [];
+}
+
+// ============================================================
+// FUNÇÃO PARA OBTER CIDADE POR CEP
+// ============================================================
+function obterCidadePorCep(cep) {
+    if (!cep) return null;
+    var cepStr = String(cep).replace(/\D/g, '');
+    
+    var mapaCepCidade = {
+        '30': 'Belo Horizonte',
+        '31': 'Belo Horizonte',
+        '32': 'Belo Horizonte',
+        '326': 'Betim',
+        '325': 'Contagem',
+        '345': 'Sabará',
+        '348': 'Nova Lima',
+        '324': 'Ibirité',
+        '333': 'Ribeirão das Neves',
+        '332': 'Santa Luzia',
+        '347': 'Lagoa Santa'
+    };
+    
+    var prefixos = Object.keys(mapaCepCidade).sort(function(a, b) {
+        return b.length - a.length;
+    });
+    
+    for (var i = 0; i < prefixos.length; i++) {
+        var prefixo = prefixos[i];
+        if (cepStr.startsWith(prefixo)) {
+            console.log('📍 CEP ' + cepStr + ' → Cidade: ' + mapaCepCidade[prefixo]);
+            return mapaCepCidade[prefixo];
+        }
+    }
+    
+    console.log('📍 CEP ' + cepStr + ' → Cidade não encontrada no mapa');
+    return null;
+}
+
+// ============================================================
+// FORMATAR OPÇÕES DE FRETE (CARRINHO + CHECKOUT)
+// ============================================================
+function formatarOpcoesFrete(opcoes, isCheckout) {
+    if (isCheckout === undefined) isCheckout = false;
+    
+    var opcoesFormatadas = [];
+    var producaoDias = calcularPrazoProducao();
+    
     // 1. SEMPRE: Retirada na Loja
-    // ============================================================
-    const prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
+    var prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
     opcoesFormatadas.push({
         nome: '📦 Retirada na Loja',
         valor: 0,
-        prazo: `${prazoRetirada} dias úteis`,
+        prazo: prazoRetirada + ' dias úteis',
         prazoDias: prazoRetirada,
         prazoEnvio: PRAZO_RETIRADA_LOJA,
         prazoProducao: producaoDias,
@@ -3939,28 +3989,36 @@ function formatarOpcoesFrete(opcoes, isCheckout = false) {
         origem: 'retirada'
     });
     
-    // ============================================================
     // 2. VERIFICAR ENTREGA PRÓPRIA NA TABELA
-    // ============================================================
-    let cep = document.getElementById('cepCarrinho')?.value || 
-               checkoutState?.enderecoSelecionado?.cep || '';
-    const cidade = obterCidadePorCep(cep);
+    var cep = '';
+    var cepInput = document.getElementById('cepCarrinho');
+    if (cepInput) {
+        cep = cepInput.value;
+    }
+    if (checkoutState && checkoutState.enderecoSelecionado) {
+        cep = checkoutState.enderecoSelecionado.cep || cep;
+    }
+    
+    var cidade = obterCidadePorCep(cep);
     
     if (cidade) {
-        const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
-        const resultadoEntrega = calcularEntregaPropria(cidade, totalProdutos);
+        var totalProdutos = 0;
+        for (var i = 0; i < carrinho.length; i++) {
+            totalProdutos += carrinho[i].price || 0;
+        }
+        var resultadoEntrega = calcularEntregaPropria(cidade, totalProdutos);
         
         if (resultadoEntrega.encontrado) {
-            const valor = resultadoEntrega.cost;
-            const freteGratis = valor === 0;
-            const prazoEnvio = 3;
+            var valor = resultadoEntrega.cost;
+            var freteGratis = valor === 0;
+            var prazoEnvio = 3;
             
             opcoesFormatadas.push({
                 nome: freteGratis ? '🚚 Entrega Própria (Grátis)' : '🚚 Entrega Própria',
                 valor: valor,
                 prazoEnvio: prazoEnvio,
                 prazoProducao: producaoDias,
-                prazo: isCheckout ? `${prazoEnvio + producaoDias} dias úteis` : `${prazoEnvio} dias úteis`,
+                prazo: isCheckout ? (prazoEnvio + producaoDias) + ' dias úteis' : prazoEnvio + ' dias úteis',
                 prazoDias: prazoEnvio + producaoDias,
                 codigo: 'ENTREGA_PROPRIA',
                 freteGratis: freteGratis,
@@ -3968,60 +4026,50 @@ function formatarOpcoesFrete(opcoes, isCheckout = false) {
                 origem: 'tabela'
             });
             
-            console.log(`✅ Entrega Própria: envio ${prazoEnvio}d + produção ${producaoDias}d`);
+            console.log('✅ Entrega Própria: envio ' + prazoEnvio + 'd + produção ' + producaoDias + 'd');
         }
     }
     
-    // ============================================================
     // 3. PROCESSAR OPÇÕES DA API (SuperFrete)
-    // ============================================================
     if (opcoes && opcoes.length > 0) {
         console.log('📋 Processando opções da API:', opcoes.length);
         
-        // Usar forEach com continue não funciona, usar for normal
-        for (let i = 0; i < opcoes.length; i++) {
-            const op = opcoes[i];
+        for (var i = 0; i < opcoes.length; i++) {
+            var op = opcoes[i];
             
-            let valorBase = parseFloat(op.price || op.preco || 0);
-            let prazoBase = parseInt(op.delivery_time || op.prazo || 0);
+            var valorBase = parseFloat(op.price || op.preco || 0);
+            var prazoBase = parseInt(op.delivery_time || op.prazo || 0);
             
-            // AJUSTES: +R$12,00 no valor e +2 dias no prazo de envio
-            let valorFinal = valorBase + 12.00;
-            let prazoEnvio = prazoBase + 2;
+            var valorFinal = valorBase + 12.00;
+            var prazoEnvio = prazoBase + 2;
             
-            // Verifica se é entrega própria
-            const isEntregaPropria = 
+            var isEntregaPropria = 
                 op.is_entrega_propria === true || 
-                (op.nome && op.nome.toLowerCase().includes('entrega própria')) ||
-                (op.name && op.name.toLowerCase().includes('entrega própria')) ||
-                (op.service && op.service.toLowerCase().includes('entrega própria'));
+                (op.nome && op.nome.toLowerCase().indexOf('entrega própria') !== -1) ||
+                (op.name && op.name.toLowerCase().indexOf('entrega própria') !== -1) ||
+                (op.service && op.service.toLowerCase().indexOf('entrega própria') !== -1);
             
-            // Se for entrega própria da API, pular (já temos da tabela)
             if (isEntregaPropria) {
-                console.log('⏭️ Ignorando Entrega Própria da API (já temos da tabela)');
-                continue; // Continue é permitido dentro de for
+                console.log('⏭️ Ignorando Entrega Própria da API');
+                continue;
             }
             
-            let nome = op.nome || op.name || op.service || 'Frete';
+            var nome = op.nome || op.name || op.service || 'Frete';
             
-            // Melhorar nome dos serviços
-            if (nome.includes('PAC') || nome === 'PAC') nome = 'PAC';
-            else if (nome.includes('SEDEX') || nome === 'SEDEX') nome = 'SEDEX';
-            else if (nome.includes('Jadlog') || nome === 'Jadlog') nome = 'Jadlog';
-            else if (nome.includes('Loggi') || nome === 'Loggi') nome = 'Loggi';
-            else if (nome.includes('Transportadora')) nome = 'Transportadora';
+            if (nome.indexOf('PAC') !== -1 || nome === 'PAC') nome = 'PAC';
+            else if (nome.indexOf('SEDEX') !== -1 || nome === 'SEDEX') nome = 'SEDEX';
+            else if (nome.indexOf('Jadlog') !== -1 || nome === 'Jadlog') nome = 'Jadlog';
+            else if (nome.indexOf('Loggi') !== -1 || nome === 'Loggi') nome = 'Loggi';
+            else if (nome.indexOf('Transportadora') !== -1) nome = 'Transportadora';
             
-            // ============================================================
-            // PRAZO: No carrinho mostra separado, no checkout mostra total
-            // ============================================================
-            const prazoTotal = prazoEnvio + producaoDias;
+            var prazoTotal = prazoEnvio + producaoDias;
             
             opcoesFormatadas.push({
                 nome: nome,
                 valor: valorFinal,
                 prazoEnvio: prazoEnvio,
                 prazoProducao: producaoDias,
-                prazo: isCheckout ? `${prazoTotal} dias úteis` : `${prazoEnvio} dias úteis`,
+                prazo: isCheckout ? prazoTotal + ' dias úteis' : prazoEnvio + ' dias úteis',
                 prazoDias: prazoTotal,
                 codigo: op.id || op.codigo || op.service_code || nome,
                 freteGratis: valorFinal === 0,
@@ -4032,13 +4080,11 @@ function formatarOpcoesFrete(opcoes, isCheckout = false) {
                 _prazo_original: prazoBase
             });
             
-            console.log(`✅ ${nome}: envio ${prazoEnvio}d + produção ${producaoDias}d = ${prazoTotal}d`);
+            console.log('✅ ' + nome + ': envio ' + prazoEnvio + 'd + produção ' + producaoDias + 'd = ' + prazoTotal + 'd');
         }
     }
     
-    // ============================================================
-    // 4. Ordenar por valor (menor para maior)
-    // ============================================================
+    // 4. Ordenar por valor
     opcoesFormatadas.sort(function(a, b) {
         return a.valor - b.valor;
     });
@@ -4075,179 +4121,20 @@ function formatarOpcoesFrete(opcoes, isCheckout = false) {
     return opcoesFormatadas;
 }
 
-
 // ============================================================
-// FUNÇÃO PARA OBTER CIDADE POR CEP
-// ============================================================
-function obterCidadePorCep(cep) {
-    if (!cep) return null;
-    var cepStr = String(cep).replace(/\D/g, '');
-    
-    // Mapeamento de CEPs para cidades da região metropolitana de BH
-    var mapaCepCidade = {
-        '30': 'Belo Horizonte',
-        '31': 'Belo Horizonte',
-        '32': 'Belo Horizonte',
-        '326': 'Betim',
-        '325': 'Contagem',
-        '345': 'Sabará',
-        '348': 'Nova Lima',
-        '324': 'Ibirité',
-        '333': 'Ribeirão das Neves',
-        '332': 'Santa Luzia',
-        '347': 'Lagoa Santa'
-    };
-    
-    // Verificar correspondência (prioridade: mais específico primeiro)
-    var prefixos = Object.keys(mapaCepCidade).sort(function(a, b) {
-        return b.length - a.length;
-    });
-    
-    for (var i = 0; i < prefixos.length; i++) {
-        var prefixo = prefixos[i];
-        if (cepStr.startsWith(prefixo)) {
-            console.log('📍 CEP ' + cepStr + ' → Cidade: ' + mapaCepCidade[prefixo]);
-            return mapaCepCidade[prefixo];
-        }
-    }
-    
-    console.log('📍 CEP ' + cepStr + ' → Cidade não encontrada no mapa');
-    return null;
-}
-
-    // ============================================================
-    // 2. VERIFICAR ENTREGA PRÓPRIA NA TABELA
-    // ============================================================
-    // Pega o CEP do input ou do checkout
-    let cep = document.getElementById('cepCarrinho')?.value || 
-               checkoutState?.enderecoSelecionado?.cep || '';
-    const cidade = obterCidadePorCep(cep);
-    
-    if (cidade) {
-        const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
-        const resultadoEntrega = calcularEntregaPropria(cidade, totalProdutos);
-        
-        if (resultadoEntrega.encontrado) {
-            const valor = resultadoEntrega.cost;
-            const freteGratis = valor === 0;
-            const prazoEntrega = 3 + producaoDias; // 3 dias úteis para entrega própria
-            
-            opcoesFormatadas.push({
-                nome: freteGratis ? '🚚 Entrega Própria (Grátis)' : '🚚 Entrega Própria',
-                valor: valor,
-                prazo: `${prazoEntrega} dias úteis`,
-                prazoDias: prazoEntrega,
-                codigo: 'ENTREGA_PROPRIA',
-                producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
-                freteGratis: freteGratis,
-                isEntregaPropria: true,
-                origem: 'tabela'
-            });
-            
-            console.log(`✅ Entrega Própria adicionada: R$ ${valor} - ${prazoEntrega} dias`);
-        }
-    }
-    
-    // ============================================================
-    // 3. PROCESSAR OPÇÕES DA API (SuperFrete)
-    // ============================================================
-    if (opcoes && opcoes.length > 0) {
-        console.log('📋 Processando opções da API:', opcoes.length);
-        
-        opcoes.forEach(op => {
-            // ============================================================
-            // AJUSTES: +R$12,00 no valor e +2 dias no prazo
-            // ============================================================
-            let valorBase = parseFloat(op.price || op.preco || 0);
-            let prazoBase = parseInt(op.delivery_time || op.prazo || 0);
-            
-            // Aplicar ajustes
-            let valorFinal = valorBase + 12.00;
-            let prazoFinal = prazoBase + 2 + producaoDias;
-            
-            // Verifica se é entrega própria (para não duplicar)
-            const isEntregaPropria = 
-                op.is_entrega_propria === true || 
-                (op.nome && op.nome.toLowerCase().includes('entrega própria')) ||
-                (op.name && op.name.toLowerCase().includes('entrega própria')) ||
-                (op.service && op.service.toLowerCase().includes('entrega própria'));
-            
-            // Se for entrega própria da API, ignorar (já temos da tabela)
-            if (isEntregaPropria) {
-                console.log('⏭️ Ignorando Entrega Própria da API (já temos da tabela)');
-                return;
-            }
-            
-            let nome = op.nome || op.name || op.service || 'Frete';
-            
-            // Melhorar nome dos serviços
-            if (nome.includes('PAC') || nome === 'PAC') nome = 'PAC';
-            else if (nome.includes('SEDEX') || nome === 'SEDEX') nome = 'SEDEX';
-            else if (nome.includes('Jadlog') || nome === 'Jadlog') nome = 'Jadlog';
-            else if (nome.includes('Loggi') || nome === 'Loggi') nome = 'Loggi';
-            else if (nome.includes('Transportadora')) nome = 'Transportadora';
-            
-            // Adicionar à lista com os ajustes
-            opcoesFormatadas.push({
-                nome: nome,
-                valor: valorFinal,
-                prazo: `${prazoFinal} dias úteis`,
-                prazoDias: prazoFinal,
-                codigo: op.id || op.codigo || op.service_code || nome,
-                producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
-                freteGratis: valorFinal === 0,
-                isEntregaPropria: false,
-                origem: 'api',
-                _api: true,
-                // Guardar valores originais para debug
-                _valor_original: valorBase,
-                _prazo_original: prazoBase
-            });
-            
-            console.log(`✅ ${nome}: R$ ${valorBase} → R$ ${valorFinal} | ${prazoBase} → ${prazoFinal} dias`);
-        });
-    }
-    
-    // ============================================================
-    // 4. Ordenar por valor (menor para maior)
-    // ============================================================
-    opcoesFormatadas.sort((a, b) => a.valor - b.valor);
-    
-    // Garantir que Retirada na Loja fique em primeiro (sempre)
-    const indexRetirada = opcoesFormatadas.findIndex(op => op.codigo === 'RETIRADA');
-    if (indexRetirada > 0) {
-        const retirada = opcoesFormatadas.splice(indexRetirada, 1)[0];
-        opcoesFormatadas.unshift(retirada);
-    }
-    
-    // Se tem Entrega Própria grátis, colocar em segundo
-    const indexEntregaGratis = opcoesFormatadas.findIndex(op => 
-        op.isEntregaPropria && op.freteGratis
-    );
-    if (indexEntregaGratis > 1) {
-        const entrega = opcoesFormatadas.splice(indexEntregaGratis, 1)[0];
-        opcoesFormatadas.splice(1, 0, entrega);
-    }
-    
-    console.log('📋 Opções formatadas (TODAS com ajustes):', opcoesFormatadas);
-    return opcoesFormatadas;
-}
-        // ============================================================
 // CALCULAR FRETE NO CARRINHO (VIA PLANILHA)
 // ============================================================
 async function calcularFreteCarrinho() {
-    const cep = document.getElementById('cepCarrinho').value.trim();
-    const erroEl = document.getElementById('freteErroCarrinho');
-    const resultadoEl = document.getElementById('freteResultadoCarrinho');
-    const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
+    var cep = document.getElementById('cepCarrinho').value.trim();
+    var erroEl = document.getElementById('freteErroCarrinho');
+    var resultadoEl = document.getElementById('freteResultadoCarrinho');
+    var btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
     
-    // Limpar mensagens anteriores
     erroEl.classList.remove('show');
     resultadoEl.style.display = 'none';
     resultadoEl.innerHTML = '';
     
-    // Remover mensagem de atendente se existir
-    const atendenteExistente = document.querySelector('.frete-atendente');
+    var atendenteExistente = document.querySelector('.frete-atendente');
     if (atendenteExistente) atendenteExistente.remove();
     
     if (!cep || cep.length < 8) {
@@ -4268,14 +4155,12 @@ async function calcularFreteCarrinho() {
     btnCalcular.disabled = true;
     
     try {
-        const peso = calcularPesoTotal();
-        const dims = calcularDimensoes();
+        var peso = calcularPesoTotal();
+        var dims = calcularDimensoes();
         
         console.log('📦 Calculando frete para CEP:', cep);
-        console.log(`⚖️ Peso: ${peso}kg, Dim: ${dims.altura}x${dims.largura}x${dims.comprimento}`);
+        console.log('⚖️ Peso: ' + peso + 'kg, Dim: ' + dims.altura + 'x' + dims.largura + 'x' + dims.comprimento);
         
-        // PASSO 1: Envia para salvar na planilha (no-cors)
-        console.log('📤 Enviando para salvar na planilha...');
         await fetch(API_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -4291,54 +4176,54 @@ async function calcularFreteCarrinho() {
             })
         });
         
-        // Aguarda 3 segundos para a planilha ser atualizada
         console.log('⏳ Aguardando processamento (3s)...');
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await new Promise(function(resolve) { setTimeout(resolve, 3000); });
         
-        // PASSO 2: Busca o frete salvo via GET
         console.log('📥 Buscando frete salvo...');
-        const response = await fetch(`${API_URL}?acao=buscar_ultimo_frete&_t=${Date.now()}`);
+        var response = await fetch(API_URL + '?acao=buscar_ultimo_frete&_t=' + Date.now());
         
         if (!response.ok) {
-            throw new Error(`HTTP Error: ${response.status}`);
+            throw new Error('HTTP Error: ' + response.status);
         }
         
-        const data = await response.json();
+        var data = await response.json();
         console.log('📥 Dados do frete lidos da planilha:', data);
         
         if (data.success && data.opcoes && data.opcoes.length > 0) {
-            // Converter para o formato esperado
-            const opcoes = data.opcoes.map(op => ({
-                id: op.codigo || 'FRETE',
-                name: op.nome || 'Frete',
-                price: parseFloat(op.preco || 0),
-                delivery_time: parseInt(op.prazo || 0),
-                service: op.nome || 'Frete',
-                _api: true,
-                is_entrega_propria: op.nome && op.nome.toLowerCase().includes('entrega própria')
-            }));
+            var opcoes = data.opcoes.map(function(op) {
+                return {
+                    id: op.codigo || 'FRETE',
+                    name: op.nome || 'Frete',
+                    price: parseFloat(op.preco || 0),
+                    delivery_time: parseInt(op.prazo || 0),
+                    service: op.nome || 'Frete',
+                    _api: true,
+                    is_entrega_propria: op.nome && op.nome.toLowerCase().indexOf('entrega própria') !== -1
+                };
+            });
             
-            // FORMATAR TODAS AS OPÇÕES
-            const opcoesFormatadas = formatarOpcoesFrete(opcoes);
-            console.log('📋 Opções formatadas (TODAS):', opcoesFormatadas);
+            var opcoesFormatadas = formatarOpcoesFrete(opcoes, false);
+            console.log('📋 Opções formatadas:', opcoesFormatadas);
             
-            // MOSTRAR TODAS AS OPÇÕES
             resultadoEl.style.display = 'block';
             resultadoEl.innerHTML = '';
             
-            // Adicionar mensagem de sucesso
-            const sucessoDiv = document.createElement('div');
+            var sucessoDiv = document.createElement('div');
             sucessoDiv.className = 'frete-sucesso show';
             sucessoDiv.textContent = '✅ Frete calculado com sucesso!';
             resultadoEl.appendChild(sucessoDiv);
             
-            // Mostrar cada opção de frete
-            opcoesFormatadas.forEach(op => {
-                const div = document.createElement('div');
+            for (var i = 0; i < opcoesFormatadas.length; i++) {
+                var op = opcoesFormatadas[i];
+                var div = document.createElement('div');
                 div.className = 'opcao-frete';
-                const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
-                const infoProducao = op.producao ? `<span class="frete-prazo">${op.producao}</span>` : '';
-                let badgeGratis = op.freteGratis ? ' 🎁' : '';
+                var valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
+                var infoProducao = '';
+                var badgeGratis = op.freteGratis ? ' 🎁' : '';
+                
+                if (op.prazoProducao !== undefined && op.prazoProducao > 0) {
+                    infoProducao = '<div style="font-size:11px;color:#888;margin-top:2px;">📦 Envio: ' + op.prazoEnvio + ' dias úteis' + ' | 🔄 Produção: +' + op.prazoProducao + ' dias</div>';
+                }
                 
                 div.innerHTML = `
                     <div class="frete-info">
@@ -4346,72 +4231,46 @@ async function calcularFreteCarrinho() {
                         <div class="frete-prazo">${op.prazo}</div>
                         ${infoProducao}
                     </div>
-                    <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
+                    <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : 'R$ ' + op.valor.toFixed(2)}</div>
                 `;
                 resultadoEl.appendChild(div);
-            });
+            }
             
-            // Salvar no checkout se estiver aberto
             if (checkoutState && checkoutState.passo >= 2) {
                 checkoutState.opcoesFrete = opcoesFormatadas;
                 checkoutState.freteSelecionado = opcoesFormatadas[0] || null;
-                atualizarResumoFinal();
+                if (typeof atualizarResumoFinal === 'function') atualizarResumoFinal();
             }
             
             mostrarNotificacao('✅ Frete calculado com sucesso!', 'success');
             
         } else {
-            // Falha na API - mostrar apenas retirada na loja
             console.warn('⚠️ Nenhuma opção de frete encontrada na API');
             
-            // Mostrar apenas Retirada na Loja (sempre disponível)
-            const opcoesFallback = [];
-            const producaoDias = calcularPrazoProducao();
-            const prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
-            
-            opcoesFallback.push({
-                nome: '📦 Retirada na Loja',
-                valor: 0,
-                prazo: `${prazoRetirada} dias úteis`,
-                prazoDias: prazoRetirada,
-                codigo: 'RETIRADA',
-                producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
-                freteGratis: true,
-                isEntregaPropria: false,
-                origem: 'retirada'
-            });
+            var producaoDias = calcularPrazoProducao();
+            var prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
             
             resultadoEl.style.display = 'block';
             resultadoEl.innerHTML = '';
             
-            // Mostrar aviso
-            const avisoDiv = document.createElement('div');
+            var avisoDiv = document.createElement('div');
             avisoDiv.style.cssText = 'padding:12px 16px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;color:#856404;font-size:14px;margin-bottom:10px;';
-            avisoDiv.innerHTML = `
-                <strong>⚠️ Não foi possível carregar todos os fretes</strong>
-                <p style="margin:4px 0 0 0;font-size:13px;">A Retirada na Loja está disponível. Entre em contato para outros fretes.</p>
-            `;
+            avisoDiv.innerHTML = '<strong>⚠️ Não foi possível carregar todos os fretes</strong><p style="margin:4px 0 0 0;font-size:13px;">A Retirada na Loja está disponível. Entre em contato para outros fretes.</p>';
             resultadoEl.appendChild(avisoDiv);
             
-            // Mostrar Retirada na Loja
-            opcoesFallback.forEach(op => {
-                const div = document.createElement('div');
-                div.className = 'opcao-frete';
-                const valorClass = 'frete-valor gratis';
-                
-                div.innerHTML = `
-                    <div class="frete-info">
-                        <div class="frete-nome">${op.nome}</div>
-                        <div class="frete-prazo">${op.prazo}</div>
-                        ${op.producao ? `<span class="frete-prazo">${op.producao}</span>` : ''}
-                    </div>
-                    <div class="${valorClass}">Grátis</div>
-                `;
-                resultadoEl.appendChild(div);
-            });
+            var div = document.createElement('div');
+            div.className = 'opcao-frete';
+            div.innerHTML = `
+                <div class="frete-info">
+                    <div class="frete-nome">📦 Retirada na Loja</div>
+                    <div class="frete-prazo">${prazoRetirada} dias úteis</div>
+                    ${producaoDias > 0 ? '<div style="font-size:11px;color:#888;margin-top:2px;">🔄 Produção: +' + producaoDias + ' dias</div>' : ''}
+                </div>
+                <div class="frete-valor gratis">Grátis</div>
+            `;
+            resultadoEl.appendChild(div);
             
-            // Botão para atendente
-            const btnAtendente = document.createElement('button');
+            var btnAtendente = document.createElement('button');
             btnAtendente.style.cssText = 'margin-top:10px;background:#25D366;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;width:100%;';
             btnAtendente.innerHTML = '<i class="fab fa-whatsapp"></i> Falar com Atendente';
             btnAtendente.onclick = function() { abrirWhatsAppAtendente(cep); };
@@ -4423,7 +4282,6 @@ async function calcularFreteCarrinho() {
     } catch (error) {
         console.error('❌ Erro ao calcular frete:', error);
         
-        // Mostrar erro com opção de atendente
         resultadoEl.style.display = 'block';
         resultadoEl.innerHTML = `
             <div style="padding:15px 18px;background:#fde8e8;border-radius:8px;border-left:4px solid #e74c3c;color:#721c24;font-size:14px;">
@@ -4457,47 +4315,46 @@ async function calcularFreteCarrinho() {
         btnCalcular.disabled = false;
     }
 }
-        // ============================================================
-        // FUNÇÃO PARA MOSTRAR MENSAGEM DE ATENDENTE
-        // ============================================================
-        function mostrarMensagemAtendente(cep) {
-            const resultadoEl = document.getElementById('freteResultadoCarrinho');
-            resultadoEl.style.display = 'block';
-            
-            // Remover mensagem anterior se existir
-            const atendenteExistente = document.querySelector('.frete-atendente');
-            if (atendenteExistente) atendenteExistente.remove();
-            
-            const mensagemDiv = document.createElement('div');
-            mensagemDiv.className = 'frete-atendente show';
-            mensagemDiv.innerHTML = `
-                <strong>⚠️ Não foi possível calcular o frete automaticamente</strong>
-                <p style="margin:8px 0 4px 0;font-size:13px;color:#856404;">
-                    Para sua comodidade, <strong>Retirada na Loja</strong> está disponível.
-                </p>
-                <p style="margin:4px 0 8px 0;font-size:13px;color:#856404;">
-                    Para calcular o frete para outras cidades, entre em contato com nosso atendente:
-                </p>
-                <button class="btn-whatsapp-atendente" onclick="abrirWhatsAppAtendente('${cep}')">
-                    <i class="fab fa-whatsapp"></i> Falar com Atendente
-                </button>
-            `;
-            resultadoEl.appendChild(mensagemDiv);
-        }
 
-        // ============================================================
-        // FUNÇÃO PARA ABRIR WHATSAPP DO ATENDENTE
-        // ============================================================
-        function abrirWhatsAppAtendente(cep) {
-            const cepInfo = cep || document.getElementById('cepCarrinho').value || 'Não informado';
-            const mensagem = encodeURIComponent(
-                'Olá! Gostaria de ajuda para calcular o frete do meu pedido.\n\n' +
-                'Meu CEP é: ' + cepInfo + '\n' +
-                'Aguardo seu retorno para finalizar a compra. Obrigado!'
-            );
-            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
-        }
+// ============================================================
+// FUNÇÃO PARA MOSTRAR MENSAGEM DE ATENDENTE
+// ============================================================
+function mostrarMensagemAtendente(cep) {
+    var resultadoEl = document.getElementById('freteResultadoCarrinho');
+    resultadoEl.style.display = 'block';
+    
+    var atendenteExistente = document.querySelector('.frete-atendente');
+    if (atendenteExistente) atendenteExistente.remove();
+    
+    var mensagemDiv = document.createElement('div');
+    mensagemDiv.className = 'frete-atendente show';
+    mensagemDiv.innerHTML = `
+        <strong>⚠️ Não foi possível calcular o frete automaticamente</strong>
+        <p style="margin:8px 0 4px 0;font-size:13px;color:#856404;">
+            Para sua comodidade, <strong>Retirada na Loja</strong> está disponível.
+        </p>
+        <p style="margin:4px 0 8px 0;font-size:13px;color:#856404;">
+            Para calcular o frete para outras cidades, entre em contato com nosso atendente:
+        </p>
+        <button class="btn-whatsapp-atendente" onclick="abrirWhatsAppAtendente('${cep}')">
+            <i class="fab fa-whatsapp"></i> Falar com Atendente
+        </button>
+    `;
+    resultadoEl.appendChild(mensagemDiv);
+}
 
+// ============================================================
+// FUNÇÃO PARA ABRIR WHATSAPP DO ATENDENTE
+// ============================================================
+function abrirWhatsAppAtendente(cep) {
+    var cepInfo = cep || document.getElementById('cepCarrinho').value || 'Não informado';
+    var mensagem = encodeURIComponent(
+        'Olá! Gostaria de ajuda para calcular o frete do meu pedido.\n\n' +
+        'Meu CEP é: ' + cepInfo + '\n' +
+        'Aguardo seu retorno para finalizar a compra. Obrigado!'
+    );
+    window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + mensagem, '_blank');
+}
         // ============================================================
         // FUNÇÕES DE NAVEGAÇÃO
         // ============================================================
