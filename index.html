@@ -3975,7 +3975,7 @@ function formatarOpcoesFrete(opcoes, isCheckout) {
     var opcoesFormatadas = [];
     var producaoDias = calcularPrazoProducao();
     
-    // 1. Retirada na Loja (sempre 1 dia + produção)
+    // 1. Retirada na Loja (sempre 1 dia + produção) - SEM ÍCONE
     var prazoRetirada = 1 + producaoDias;
     opcoesFormatadas.push({
         nome: 'Retirada na Loja',
@@ -4093,10 +4093,13 @@ function formatarOpcoesFrete(opcoes, isCheckout) {
 }
 
 
+// ============================================================
+// CALCULAR FRETE NO CARRINHO (COM TENTATIVAS)
+// ============================================================
+// Variável global para controlar tentativas
+var tentativasFrete = 0;
+var maxTentativasFrete = 2;
 
-// ============================================================
-// CALCULAR FRETE NO CARRINHO
-// ============================================================
 async function calcularFreteCarrinho() {
     var cep = document.getElementById('cepCarrinho').value.trim();
     var erroEl = document.getElementById('freteErroCarrinho');
@@ -4107,8 +4110,11 @@ async function calcularFreteCarrinho() {
     resultadoEl.style.display = 'none';
     resultadoEl.innerHTML = '';
     
+    // Remover mensagens antigas
     var atendenteExistente = document.querySelector('.frete-atendente');
     if (atendenteExistente) atendenteExistente.remove();
+    var tentarBtn = document.querySelector('.btn-tentar-novamente-frete');
+    if (tentarBtn) tentarBtn.remove();
     
     if (!cep || cep.length < 8) {
         erroEl.textContent = '⚠️ Digite um CEP válido com 8 dígitos.';
@@ -4122,7 +4128,10 @@ async function calcularFreteCarrinho() {
         return;
     }
     
-    resultadoEl.innerHTML = '<div class="frete-carregando"><i class="fas fa-spinner fa-spin"></i> Calculando frete...</div>';
+    // Incrementa tentativa
+    tentativasFrete++;
+    
+    resultadoEl.innerHTML = '<div class="frete-carregando"><i class="fas fa-spinner fa-spin"></i> Calculando frete... (Tentativa ' + tentativasFrete + ' de ' + maxTentativasFrete + ')</div>';
     btnCalcular.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculando...';
     btnCalcular.disabled = true;
     
@@ -4162,6 +4171,9 @@ async function calcularFreteCarrinho() {
         console.log('📥 Dados do frete lidos da planilha:', data);
         
         if (data.success && data.opcoes && data.opcoes.length > 0) {
+            // SUCESSO - RESETA TENTATIVAS
+            tentativasFrete = 0;
+            
             var opcoes = data.opcoes.map(function(op) {
                 return {
                     id: op.codigo || 'FRETE',
@@ -4218,73 +4230,117 @@ async function calcularFreteCarrinho() {
             mostrarNotificacao('✅ Frete calculado com sucesso!', 'success');
             
         } else {
-            console.warn('⚠️ Nenhuma opção de frete encontrada na API');
-            
-            var producaoDias = calcularPrazoProducao();
-            var prazoRetirada = 1 + producaoDias;
-            
-            resultadoEl.style.display = 'block';
-            resultadoEl.innerHTML = '';
-            
-            var avisoDiv = document.createElement('div');
-            avisoDiv.style.cssText = 'padding:12px 16px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;color:#856404;font-size:14px;margin-bottom:10px;';
-            avisoDiv.innerHTML = '<strong>⚠️ Não foi possível carregar todos os fretes</strong><p style="margin:4px 0 0 0;font-size:13px;">A Retirada na Loja está disponível. Entre em contato para outros fretes.</p>';
-            resultadoEl.appendChild(avisoDiv);
-            
-            var div = document.createElement('div');
-            div.className = 'opcao-frete';
-            var infoPrazos = '';
-            if (producaoDias > 0) {
-                infoPrazos = 'Envio: 1 dia + ' + producaoDias + ' dias produção';
+            // FALHA - VERIFICA TENTATIVAS
+            if (tentativasFrete >= maxTentativasFrete) {
+                // MÁXIMO DE TENTATIVAS - MOSTRA ATENDENTE
+                resultadoEl.style.display = 'block';
+                resultadoEl.innerHTML = '';
+                
+                var avisoDiv = document.createElement('div');
+                avisoDiv.style.cssText = 'padding:12px 16px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;color:#856404;font-size:14px;margin-bottom:10px;';
+                avisoDiv.innerHTML = '<strong>⚠️ Falha persistente ao calcular o frete</strong><p style="margin:4px 0 0 0;font-size:13px;">Já tentamos ' + maxTentativasFrete + ' vezes. Entre em contato com nosso atendente.</p>';
+                resultadoEl.appendChild(avisoDiv);
+                
+                // Mostrar apenas Retirada na Loja
+                var producaoDias = calcularPrazoProducao();
+                var prazoRetirada = 1 + producaoDias;
+                
+                var div = document.createElement('div');
+                div.className = 'opcao-frete';
+                var infoPrazos = '';
+                if (producaoDias > 0) {
+                    infoPrazos = 'Envio: 1 dia + ' + producaoDias + ' dias produção';
+                } else {
+                    infoPrazos = 'Envio: 1 dia';
+                }
+                div.innerHTML = `
+                    <div class="frete-info">
+                        <div class="frete-nome">Retirada na Loja</div>
+                        <div class="frete-prazo">${infoPrazos}</div>
+                    </div>
+                    <div class="frete-valor gratis">Grátis</div>
+                `;
+                resultadoEl.appendChild(div);
+                
+                var btnAtendente = document.createElement('button');
+                btnAtendente.style.cssText = 'margin-top:10px;background:#25D366;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;width:100%;';
+                btnAtendente.innerHTML = '<i class="fab fa-whatsapp"></i> Falar com Atendente';
+                btnAtendente.onclick = function() { abrirWhatsAppAtendente(cep); };
+                resultadoEl.appendChild(btnAtendente);
+                
+                mostrarNotificacao('⚠️ Falha persistente. Fale com nosso atendente.', 'error');
+                
             } else {
-                infoPrazos = 'Envio: 1 dia';
+                // MOSTRA BOTÃO TENTAR NOVAMENTE
+                resultadoEl.style.display = 'block';
+                resultadoEl.innerHTML = '';
+                
+                var erroDiv = document.createElement('div');
+                erroDiv.style.cssText = 'padding:12px 16px;background:#fde8e8;border-radius:8px;border-left:4px solid #e74c3c;color:#721c24;font-size:14px;margin-bottom:10px;';
+                erroDiv.innerHTML = '<strong>❌ Falha ao calcular o frete</strong><p style="margin:4px 0 0 0;font-size:13px;">Tentativa ' + tentativasFrete + ' de ' + maxTentativasFrete + '. Tente novamente.</p>';
+                resultadoEl.appendChild(erroDiv);
+                
+                var btnTentar = document.createElement('button');
+                btnTentar.className = 'btn-tentar-novamente-frete';
+                btnTentar.style.cssText = 'margin-top:10px;background:var(--primary-blue);color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;width:100%;';
+                btnTentar.innerHTML = '<i class="fas fa-redo"></i> Tentar Novamente';
+                btnTentar.onclick = function() { 
+                    tentativasFrete--; // Decrementa para não contar como tentativa extra
+                    calcularFreteCarrinho(); 
+                };
+                resultadoEl.appendChild(btnTentar);
+                
+                mostrarNotificacao('⚠️ Falha ao calcular. Tente novamente.', 'warning');
             }
-            div.innerHTML = `
-                <div class="frete-info">
-                    <div class="frete-nome">Retirada na Loja</div>
-                    <div class="frete-prazo">${infoPrazos}</div>
-                </div>
-                <div class="frete-valor gratis">Grátis</div>
-            `;
-            resultadoEl.appendChild(div);
-            
-            var btnAtendente = document.createElement('button');
-            btnAtendente.style.cssText = 'margin-top:10px;background:#25D366;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;width:100%;';
-            btnAtendente.innerHTML = '<i class="fab fa-whatsapp"></i> Falar com Atendente';
-            btnAtendente.onclick = function() { abrirWhatsAppAtendente(cep); };
-            resultadoEl.appendChild(btnAtendente);
-            
-            mostrarNotificacao('⚠️ Apenas Retirada na Loja disponível. Fale com nosso atendente.', 'warning');
         }
         
     } catch (error) {
         console.error('❌ Erro ao calcular frete:', error);
         
-        resultadoEl.style.display = 'block';
-        resultadoEl.innerHTML = `
-            <div style="padding:15px 18px;background:#fde8e8;border-radius:8px;border-left:4px solid #e74c3c;color:#721c24;font-size:14px;">
-                <strong>❌ Erro ao calcular frete</strong>
-                <p style="margin:8px 0 4px 0;font-size:13px;">Não foi possível calcular os fretes no momento.</p>
-                <p style="margin:4px 0 8px 0;font-size:13px;">Entre em contato com nosso atendente:</p>
-                <button onclick="abrirWhatsAppAtendente('${cep}')" style="
-                    display: inline-block;
-                    margin-top: 10px;
-                    background: #25D366;
-                    color: white;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    text-decoration: none;
-                    transition: all 0.3s;
-                    width: 100%;
-                ">
-                    <i class="fab fa-whatsapp"></i> Falar com Atendente
+        // ERRO - VERIFICA TENTATIVAS
+        if (tentativasFrete >= maxTentativasFrete) {
+            resultadoEl.style.display = 'block';
+            resultadoEl.innerHTML = `
+                <div style="padding:15px 18px;background:#fde8e8;border-radius:8px;border-left:4px solid #e74c3c;color:#721c24;font-size:14px;">
+                    <strong>❌ Falha persistente ao calcular o frete</strong>
+                    <p style="margin:8px 0 4px 0;font-size:13px;">Já tentamos ${maxTentativasFrete} vezes. Entre em contato com nosso atendente.</p>
+                    <button onclick="abrirWhatsAppAtendente('${cep}')" style="
+                        margin-top: 10px;
+                        background: #25D366;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        width: 100%;
+                    ">
+                        <i class="fab fa-whatsapp"></i> Falar com Atendente
+                    </button>
+                </div>
+            `;
+            mostrarNotificacao('⚠️ Falha persistente. Fale com nosso atendente.', 'error');
+        } else {
+            resultadoEl.style.display = 'block';
+            resultadoEl.innerHTML = `
+                <div style="padding:12px 16px;background:#fde8e8;border-radius:8px;border-left:4px solid #e74c3c;color:#721c24;font-size:14px;margin-bottom:10px;">
+                    <strong>❌ Erro ao calcular frete</strong>
+                    <p style="margin:4px 0 0 0;font-size:13px;">Tentativa ${tentativasFrete} de ${maxTentativasFrete}. Tente novamente.</p>
+                </div>
+                <button class="btn-tentar-novamente-frete" style="margin-top:10px;background:var(--primary-blue);color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;width:100%;">
+                    <i class="fas fa-redo"></i> Tentar Novamente
                 </button>
-            </div>
-        `;
-        mostrarNotificacao('⚠️ Falha na comunicação. Fale com nosso atendente.', 'error');
+            `;
+            // Adiciona evento ao botão
+            var btnTentar = document.querySelector('.btn-tentar-novamente-frete');
+            if (btnTentar) {
+                btnTentar.onclick = function() { 
+                    tentativasFrete--; 
+                    calcularFreteCarrinho(); 
+                };
+            }
+            mostrarNotificacao('⚠️ Erro ao calcular. Tente novamente.', 'warning');
+        }
     } finally {
         if (resultadoEl.innerHTML && resultadoEl.children.length > 0) {
             resultadoEl.style.display = 'block';
@@ -4293,6 +4349,9 @@ async function calcularFreteCarrinho() {
         btnCalcular.disabled = false;
     }
 }
+
+
+
 // ============================================================
 // FUNÇÃO PARA MOSTRAR MENSAGEM DE ATENDENTE
 // ============================================================
@@ -6615,7 +6674,7 @@ function selecionarEnderecoCheckout(endereco, cep, cliente) {
 
 
 // ============================================================
-// CARREGAR OPÇÕES DE FRETE (CHECKOUT)
+// CARREGAR OPÇÕES DE FRETE (CHECKOUT) - SEM ÍCONES
 // ============================================================
 async function carregarOpcoesFreteCheckout() {
     var container = document.getElementById('freteOpcoesContainer');
@@ -6695,11 +6754,12 @@ async function carregarOpcoesFreteCheckout() {
                         }
                     }
                     
+                    // SEM ÍCONES E SEM CAIXAS
                     div.innerHTML = `
                         <div>
                             <div class="frete-nome">${op.nome}${badgeGratis}</div>
                             <div>
-                                <span class="frete-prazo">📦 ${infoPrazos}</span>
+                                <span class="frete-prazo">${infoPrazos}</span>
                             </div>
                         </div>
                         <div class="frete-valor ${valorClass}">${op.valor === 0 ? 'Grátis' : 'R$ ' + op.valor.toFixed(2)}</div>
@@ -6743,7 +6803,7 @@ async function carregarOpcoesFreteCheckout() {
             
             var infoPrazos = '';
             if (producaoDias > 0) {
-                infoPrazos = prazoRetirada + ' dias (1 envio + ' + producaoDias + ' produção)';
+                infoPrazos = prazoRetirada + ' dias (' + 1 + ' envio + ' + producaoDias + ' produção)';
             } else {
                 infoPrazos = prazoRetirada + ' dias';
             }
@@ -6757,7 +6817,7 @@ async function carregarOpcoesFreteCheckout() {
                     <div>
                         <div class="frete-nome">Retirada na Loja</div>
                         <div>
-                            <span class="frete-prazo">📦 ${infoPrazos}</span>
+                            <span class="frete-prazo">${infoPrazos}</span>
                         </div>
                     </div>
                     <div class="frete-valor gratis">Grátis</div>
@@ -6803,7 +6863,6 @@ async function carregarOpcoesFreteCheckout() {
         `;
     }
 }
-
 
 
         // ============================================================
@@ -6884,18 +6943,20 @@ function atualizarResumoFinal() {
     var freteValor = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.valor : 0;
     var totalFinal = totalProdutos + freteValor;
     
-    // PRAZO: usa prazoTotal que já soma envio + produção
+    // NOME DO FRETE SELECIONADO
+    var nomeFrete = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.nome : '--';
+    
+    // PRAZO
     var prazoTotal = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.prazoTotal : 0;
     var prazoEnvio = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.prazoEnvio : 0;
     var prazoProducao = checkoutState.producaoDias || 0;
     
-    document.getElementById('checkoutFreteResumo').textContent = freteValor === 0 ? 'Grátis' : 'R$ ' + freteValor.toFixed(2);
+    document.getElementById('checkoutFreteResumo').textContent = freteValor === 0 ? 'Grátis (' + nomeFrete + ')' : 'R$ ' + freteValor.toFixed(2) + ' (' + nomeFrete + ')';
     document.getElementById('checkoutTotalResumo').textContent = 'R$ ' + totalFinal.toFixed(2);
     document.getElementById('checkoutPrazoResumo').textContent = prazoTotal + ' dias úteis';
     document.getElementById('checkoutPrazoDetalhe').textContent = 
         (prazoProducao > 0 ? '🔄 Produção: ' + prazoProducao + ' dias + ' : '') + '🚚 Envio: ' + prazoEnvio + ' dias';
 }
-
 
         // ============================================================
         // FINALIZAR PEDIDO
