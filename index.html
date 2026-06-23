@@ -3914,9 +3914,9 @@ function calcularEntregaPropria(cidade, totalPedido) {
 
         // ============================================================
 // ============================================================
-// FORMATAR OPÇÕES DE FRETE (COM AJUSTES DE PRAZO E VALOR)
+// FORMATAR OPÇÕES DE FRETE (CARRINHO + CHECKOUT)
 // ============================================================
-function formatarOpcoesFrete(opcoes) {
+function formatarOpcoesFrete(opcoes, isCheckout = false) {
     const opcoesFormatadas = [];
     const producaoDias = calcularPrazoProducao();
     
@@ -3929,13 +3929,131 @@ function formatarOpcoesFrete(opcoes) {
         valor: 0,
         prazo: `${prazoRetirada} dias úteis`,
         prazoDias: prazoRetirada,
+        prazoEnvio: PRAZO_RETIRADA_LOJA,
+        prazoProducao: producaoDias,
         codigo: 'RETIRADA',
-        producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
         freteGratis: true,
         isEntregaPropria: false,
         origem: 'retirada'
     });
     
+    // ============================================================
+    // 2. VERIFICAR ENTREGA PRÓPRIA NA TABELA
+    // ============================================================
+    let cep = document.getElementById('cepCarrinho')?.value || 
+               checkoutState?.enderecoSelecionado?.cep || '';
+    const cidade = obterCidadePorCep(cep);
+    
+    if (cidade) {
+        const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
+        const resultadoEntrega = calcularEntregaPropria(cidade, totalProdutos);
+        
+        if (resultadoEntrega.encontrado) {
+            const valor = resultadoEntrega.cost;
+            const freteGratis = valor === 0;
+            const prazoEnvio = 3; // 3 dias para entrega própria
+            
+            opcoesFormatadas.push({
+                nome: freteGratis ? '🚚 Entrega Própria (Grátis)' : '🚚 Entrega Própria',
+                valor: valor,
+                prazoEnvio: prazoEnvio,
+                prazoProducao: producaoDias,
+                prazo: isCheckout ? `${prazoEnvio + producaoDias} dias úteis` : `${prazoEnvio} dias úteis`,
+                prazoDias: prazoEnvio + producaoDias,
+                codigo: 'ENTREGA_PROPRIA',
+                freteGratis: freteGratis,
+                isEntregaPropria: true,
+                origem: 'tabela'
+            });
+            
+            console.log(`✅ Entrega Própria: envio ${prazoEnvio}d + produção ${producaoDias}d`);
+        }
+    }
+    
+    // ============================================================
+    // 3. PROCESSAR OPÇÕES DA API (SuperFrete)
+    // ============================================================
+    if (opcoes && opcoes.length > 0) {
+        console.log('📋 Processando opções da API:', opcoes.length);
+        
+        opcoes.forEach(op => {
+            let valorBase = parseFloat(op.price || op.preco || 0);
+            let prazoBase = parseInt(op.delivery_time || op.prazo || 0);
+            
+            // AJUSTES: +R$12,00 no valor e +2 dias no prazo de envio
+            let valorFinal = valorBase + 12.00;
+            let prazoEnvio = prazoBase + 2;
+            
+            // Verifica se é entrega própria
+            const isEntregaPropria = 
+                op.is_entrega_propria === true || 
+                (op.nome && op.nome.toLowerCase().includes('entrega própria')) ||
+                (op.name && op.name.toLowerCase().includes('entrega própria')) ||
+                (op.service && op.service.toLowerCase().includes('entrega própria'));
+            
+            if (isEntregaPropria) {
+                console.log('⏭️ Ignorando Entrega Própria da API (já temos da tabela)');
+                return;
+            }
+            
+            let nome = op.nome || op.name || op.service || 'Frete';
+            
+            // Melhorar nome dos serviços
+            if (nome.includes('PAC') || nome === 'PAC') nome = 'PAC';
+            else if (nome.includes('SEDEX') || nome === 'SEDEX') nome = 'SEDEX';
+            else if (nome.includes('Jadlog') || nome === 'Jadlog') nome = 'Jadlog';
+            else if (nome.includes('Loggi') || nome === 'Loggi') nome = 'Loggi';
+            else if (nome.includes('Transportadora')) nome = 'Transportadora';
+            
+            // ============================================================
+            // PRAZO: No carrinho mostra separado, no checkout mostra total
+            // ============================================================
+            const prazoTotal = prazoEnvio + producaoDias;
+            
+            opcoesFormatadas.push({
+                nome: nome,
+                valor: valorFinal,
+                prazoEnvio: prazoEnvio,
+                prazoProducao: producaoDias,
+                prazo: isCheckout ? `${prazoTotal} dias úteis` : `${prazoEnvio} dias úteis`,
+                prazoDias: prazoTotal,
+                codigo: op.id || op.codigo || op.service_code || nome,
+                freteGratis: valorFinal === 0,
+                isEntregaPropria: false,
+                origem: 'api',
+                _api: true,
+                _valor_original: valorBase,
+                _prazo_original: prazoBase
+            });
+            
+            console.log(`✅ ${nome}: envio ${prazoEnvio}d + produção ${producaoDias}d = ${prazoTotal}d`);
+        });
+    }
+    
+    // ============================================================
+    // 4. Ordenar por valor (menor para maior)
+    // ============================================================
+    opcoesFormatadas.sort((a, b) => a.valor - b.valor);
+    
+    // Garantir que Retirada na Loja fique em primeiro
+    const indexRetirada = opcoesFormatadas.findIndex(op => op.codigo === 'RETIRADA');
+    if (indexRetirada > 0) {
+        const retirada = opcoesFormatadas.splice(indexRetirada, 1)[0];
+        opcoesFormatadas.unshift(retirada);
+    }
+    
+    // Se tem Entrega Própria grátis, colocar em segundo
+    const indexEntregaGratis = opcoesFormatadas.findIndex(op => 
+        op.isEntregaPropria && op.freteGratis
+    );
+    if (indexEntregaGratis > 1) {
+        const entrega = opcoesFormatadas.splice(indexEntregaGratis, 1)[0];
+        opcoesFormatadas.splice(1, 0, entrega);
+    }
+    
+    console.log('📋 Opções formatadas:', opcoesFormatadas);
+    return opcoesFormatadas;
+}    
 
 
 
@@ -6595,8 +6713,8 @@ async function calcularFreteCarrinho() {
             mostrarNotificacao('✅ Endereço selecionado! Carregando opções de frete...', 'success');
         }
 
-        // ============================================================
-// CARREGAR OPÇÕES DE FRETE (CHECKOUT)
+// ============================================================
+// CARREGAR OPÇÕES DE FRETE (CHECKOUT - Mostra total)
 // ============================================================
 async function carregarOpcoesFreteCheckout() {
     const container = document.getElementById('freteOpcoesContainer');
@@ -6609,7 +6727,6 @@ async function carregarOpcoesFreteCheckout() {
         document.getElementById('checkoutCepDisplay').textContent = cep;
         checkoutState.producaoDias = calcularPrazoProducao();
         
-        // Buscar frete via API (salva na planilha)
         const peso = calcularPesoTotal();
         const dims = calcularDimensoes();
         
@@ -6646,25 +6763,19 @@ async function carregarOpcoesFreteCheckout() {
                 is_entrega_propria: op.nome && op.nome.toLowerCase().includes('entrega própria')
             }));
             
-            // FORMATAR TODAS AS OPÇÕES
-            const opcoesFormatadas = formatarOpcoesFrete(opcoes);
+            // isCheckout = true → mostra TOTAL (envio + produção)
+            const opcoesFormatadas = formatarOpcoesFrete(opcoes, true);
             checkoutState.opcoesFrete = opcoesFormatadas;
             
             if (opcoesFormatadas.length === 0) {
                 container.innerHTML = `<div style="text-align:center;padding:20px;color:#e74c3c;"><i class="fas fa-exclamation-circle"></i> Nenhuma opção de frete disponível.</div>`;
             } else {
-                // MOSTRAR TODAS AS OPÇÕES
                 opcoesFormatadas.forEach((op, index) => {
                     const div = document.createElement('div');
                     div.className = 'frete-opcao';
                     
-                    // Selecionar o primeiro (menor valor) automaticamente
-                    if (index === 0 && !op.isEntregaPropria) {
-                        div.classList.add('selecionado');
-                        checkoutState.freteSelecionado = op;
-                        liberarPagamento();
-                    } else if (op.isEntregaPropria && !checkoutState.freteSelecionado) {
-                        // Se tem entrega própria, seleciona ela primeiro
+                    // Selecionar o primeiro automaticamente
+                    if (index === 0) {
                         div.classList.add('selecionado');
                         checkoutState.freteSelecionado = op;
                         liberarPagamento();
@@ -6673,12 +6784,20 @@ async function carregarOpcoesFreteCheckout() {
                     const badgeGratis = op.freteGratis ? ' 🎁' : '';
                     const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
                     
+                    // ============================================================
+                    // CHECKOUT: Mostra prazo TOTAL (envio + produção)
+                    // ============================================================
+                    let infoProducao = '';
+                    if (op.prazoProducao > 0) {
+                        infoProducao = `<span class="frete-producao"> 🔄 +${op.prazoProducao} dias de produção</span>`;
+                    }
+                    
                     div.innerHTML = `
                         <div>
                             <div class="frete-nome">${op.nome}${badgeGratis}</div>
                             <div>
                                 <span class="frete-prazo">📦 ${op.prazo}</span>
-                                ${op.producao ? `<span class="frete-producao"> 🔄 ${op.producao}</span>` : ''}
+                                ${infoProducao}
                             </div>
                         </div>
                         <div class="frete-valor ${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
@@ -6699,34 +6818,37 @@ async function carregarOpcoesFreteCheckout() {
                 });
             }
         } else {
-            // FALHA: Mostrar apenas Retirada na Loja
+            // Fallback: Retirada na Loja
             const producaoDias = calcularPrazoProducao();
             const prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
             
-            const opcoesFallback = [{
+            const opcao = {
                 nome: '📦 Retirada na Loja',
                 valor: 0,
                 prazo: `${prazoRetirada} dias úteis`,
                 prazoDias: prazoRetirada,
+                prazoEnvio: PRAZO_RETIRADA_LOJA,
+                prazoProducao: producaoDias,
                 codigo: 'RETIRADA',
-                producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
                 freteGratis: true,
-                isEntregaPropria: false,
-                origem: 'retirada'
-            }];
+                isEntregaPropria: false
+            };
             
-            checkoutState.opcoesFrete = opcoesFallback;
-            checkoutState.freteSelecionado = opcoesFallback[0];
+            checkoutState.opcoesFrete = [opcao];
+            checkoutState.freteSelecionado = opcao;
             
             container.innerHTML = `
                 <div style="padding:12px 16px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;color:#856404;font-size:14px;margin-bottom:10px;">
                     <strong>⚠️ Não foi possível carregar todos os fretes</strong>
                     <p style="margin:4px 0 0 0;font-size:13px;">A Retirada na Loja está disponível.</p>
                 </div>
-                <div class="frete-opcao selecionado" style="border-color:var(--primary-blue);background:#f0f8ff;">
+                <div class="frete-opcao selecionado">
                     <div>
                         <div class="frete-nome">📦 Retirada na Loja</div>
-                        <div><span class="frete-prazo">📦 ${prazoRetirada} dias úteis</span></div>
+                        <div>
+                            <span class="frete-prazo">📦 ${prazoRetirada} dias úteis</span>
+                            ${producaoDias > 0 ? `<span class="frete-producao"> 🔄 +${producaoDias} dias de produção</span>` : ''}
+                        </div>
                     </div>
                     <div class="frete-valor gratis">Grátis</div>
                 </div>
@@ -6744,7 +6866,6 @@ async function carregarOpcoesFreteCheckout() {
                     <i class="fab fa-whatsapp"></i> Falar com Atendente para outros fretes
                 </button>
             `;
-            
             liberarPagamento();
         }
         
@@ -6752,7 +6873,7 @@ async function carregarOpcoesFreteCheckout() {
         atualizarResumoFinal();
         
     } catch (error) {
-        console.error('❌ Erro ao carregar frete:', error);
+        console.error('❌ Erro:', error);
         container.innerHTML = `
             <div style="text-align:center;padding:20px;color:#e74c3c;">
                 <i class="fas fa-exclamation-circle"></i> Erro ao carregar opções de frete.
