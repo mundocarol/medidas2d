@@ -2453,11 +2453,10 @@
             100% { transform: rotate(360deg); }
         }
 
-
-        /* ===== HEADER - CORRIGIDO ===== */
+/* ===== HEADER ===== */
 .header {
     background: var(--primary-blue);
-    padding: 10px 20px;
+    padding: 15px 20px;
     box-shadow: var(--shadow);
     position: sticky;
     top: 0;
@@ -2472,7 +2471,6 @@
     align-items: center;
 }
 
-/* LOGO */
 .logo {
     display: flex;
     align-items: center;
@@ -2496,10 +2494,10 @@
     cursor: pointer; 
 }
 
-/* HEADER ACTIONS */
+/* ===== HEADER ACTIONS ===== */
 .header-actions {
     display: flex;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
 }
 
@@ -2507,16 +2505,16 @@
     background: transparent;
     border: none;
     color: white;
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
-    padding: 6px;
+    padding: 8px;
     border-radius: 50%;
     transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
     position: relative;
 }
 
@@ -2540,7 +2538,37 @@
     display: none;
 }
 
-/* ===== NOME DO CLIENTE - CORRIGIDO ===== */
+/* ===== USER DROPDOWN - CORRIGIDO ===== */
+.user-dropdown {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0px;
+}
+
+.user-dropdown .btn-login {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.user-dropdown .btn-login:hover {
+    background: rgba(255,255,255,0.15);
+    transform: scale(1.1);
+}
+
+/* ===== NOME DO CLIENTE - ABAIXO DO ÍCONE ===== */
 .cliente-nome {
     color: white;
     font-size: 10px;
@@ -2559,41 +2587,12 @@
     display: block; 
 }
 
-/* ===== USER DROPDOWN - CORRIGIDO ===== */
-.user-dropdown {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0px;
-}
-
-.user-dropdown .btn-login {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 50%;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-}
-
-.user-dropdown .btn-login:hover {
-    background: rgba(255,255,255,0.15);
-    transform: scale(1.1);
-}
-
+/* ===== USER DROPDOWN CONTENT ===== */
 .user-dropdown-content {
     display: none;
     position: absolute;
     right: 0;
-    top: 45px;
+    top: 55px;
     background: white;
     min-width: 200px;
     box-shadow: 0 8px 16px rgba(0,0,0,0.2);
@@ -2660,26 +2659,6 @@
     color: white;
 }
 
-/* ===== RESPONSIVO ===== */
-@media (max-width: 768px) {
-    .header { padding: 10px 15px; }
-    .logo { max-width: 130px; }
-    .logo img { max-width: 160px; }
-    .header-actions button { font-size: 16px; width: 34px; height: 34px; padding: 5px; }
-    .cliente-nome { font-size: 9px; max-width: 50px; }
-    .user-dropdown .btn-login { font-size: 16px; width: 34px; height: 34px; padding: 5px; }
-}
-
-@media (max-width: 480px) {
-    .header { padding: 8px 10px; }
-    .logo { max-width: 100px; }
-    .logo img { max-width: 120px; }
-    .header-actions { gap: 4px; }
-    .header-actions button { font-size: 14px; width: 30px; height: 30px; padding: 4px; }
-    .cliente-nome { font-size: 8px; max-width: 40px; }
-    .user-dropdown .btn-login { font-size: 14px; width: 30px; height: 30px; padding: 4px; }
-}
-
 
     </style>
 </head>
@@ -2695,7 +2674,7 @@
                 <img src="https://cdn.awsli.com.br/1608/1608652/arquivos/logo-mc-2026-branca.webp" 
                      alt="MC Embalagens BH" 
                      id="logo-img"
-                     style="height:45px;width:auto;object-fit:contain;">
+                     style="height:50px;width:auto;object-fit:contain;">
             </a>
         </div>
         <div class="header-actions">
@@ -2729,7 +2708,6 @@
         </div>
     </div>
 </header>
-
 
     <!-- ============================================================ -->
     <!-- MAIN CONTENT -->
@@ -6029,7 +6007,7 @@ function abrirWhatsAppAtendente(cep) {
             }
         }
 
-        // ============================================================
+// ============================================================
 // ATUALIZAR NOME DO CLIENTE NO HEADER
 // ============================================================
 function atualizarNomeClienteHeader() {
@@ -6054,7 +6032,6 @@ function atualizarNomeClienteHeader() {
         btn.innerHTML = '<i class="fas fa-user"></i>';
     }
 }
-
         function sairConta() {
             if (confirm('Tem certeza que deseja sair da sua conta?')) {
                 localStorage.removeItem('usuarioLogado');
