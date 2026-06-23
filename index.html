@@ -1334,14 +1334,59 @@
         .frete-erro {
             color: var(--danger);
             font-size: 14px;
-            padding: 8px 12px;
+            padding: 12px 16px;
             background: #fde8e8;
-            border-radius: 6px;
+            border-radius: 8px;
             margin-top: 10px;
             display: none;
+            border-left: 4px solid var(--danger);
         }
 
         .frete-erro.show { display: block; }
+
+        /* ===== ESTILO PARA MENSAGEM DE ATENDENTE ===== */
+        .frete-atendente {
+            padding: 15px 18px;
+            background: #fff3cd;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+            color: #856404;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        .frete-atendente.show { display: block; }
+        .frete-atendente .btn-whatsapp-atendente {
+            display: inline-block;
+            margin-top: 10px;
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .frete-atendente .btn-whatsapp-atendente:hover {
+            background: #1da851;
+            transform: scale(1.02);
+        }
+        .frete-atendente .btn-whatsapp-atendente i {
+            margin-right: 8px;
+        }
+        .frete-sucesso {
+            color: #155724;
+            font-size: 14px;
+            padding: 12px 16px;
+            background: #d4edda;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid #28a745;
+            display: none;
+        }
+        .frete-sucesso.show { display: block; }
 
         /* ===== FRETE NO CHECKOUT ===== */
         .frete-opcao {
@@ -2402,12 +2447,11 @@
             text-align: center;
         }
 
-/* ===== ANIMAÇÃO SPIN ===== */
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-        
+        /* ===== ANIMAÇÃO SPIN ===== */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -2479,20 +2523,20 @@
             </div>
         </section>
 
-       <!-- ===== VÍDEOS ===== -->
-<section class="videos-section" id="videosSection">
-    <h2 class="section-title"> Tutoriais e Apresentações </h2>
-    <div class="videos-grid" id="videosGrid">
-        <div class="video-wrapper">
-            <iframe 
-                src="https://www.youtube-nocookie.com/embed/caJcK4Ja-po?rel=0&modestbranding=1&playsinline=1" 
-                allowfullscreen 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                loading="lazy">
-            </iframe>
-        </div>
-    </div>
-</section>
+        <!-- ===== VÍDEOS ===== -->
+        <section class="videos-section" id="videosSection">
+            <h2 class="section-title"> Tutoriais e Apresentações </h2>
+            <div class="videos-grid" id="videosGrid">
+                <div class="video-wrapper">
+                    <iframe 
+                        src="https://www.youtube-nocookie.com/embed/caJcK4Ja-po?rel=0&modestbranding=1&playsinline=1" 
+                        allowfullscreen 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </section>
 
         <section class="products-section" id="productsSection" style="display: none;">
             <div class="products-header">
@@ -2541,8 +2585,6 @@
         <a class="side-menu-item" onclick="fecharMenu();abrirMeusPedidos();"><i class="fas fa-box"></i> Meus Pedidos</a>
         <a class="side-menu-item" onclick="fecharMenu();abrirAtendimento();"><i class="fas fa-headset"></i> Central de Atendimento</a>
         <a class="side-menu-item" onclick="fecharMenu();abrirWhatsApp();"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-        
-        <!-- POLÍTICAS - Links para páginas externas -->
         <a class="side-menu-item" href="politica-troca.html" target="_blank"><i class="fas fa-exchange-alt"></i> Política de Troca</a>
         <a class="side-menu-item" href="politica-privacidade.html" target="_blank"><i class="fas fa-shield-alt"></i> Política de Privacidade</a>
         <a class="side-menu-item" href="termos-envio.html" target="_blank"><i class="fas fa-truck"></i> Termos de Envio</a>
@@ -2597,6 +2639,7 @@
                 <p style="text-align:center;padding:30px;color:#999;">Seu carrinho está vazio</p>
             </div>
 
+            <!-- ===== FRETE NO CARRINHO - ATUALIZADO ===== -->
             <div class="frete-carrinho-container" id="freteCarrinhoContainer" style="display:none;">
                 <div class="frete-row">
                     <input type="text" id="cepCarrinho" placeholder="Digite seu CEP (ex: 31050650)" maxlength="9" oninput="this.value=this.value.replace(/\D/g,'')">
@@ -3246,77 +3289,77 @@
         // ============================================================
         // CONFIGURAÇÃO DA API E WHATSAPP
         // ============================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycby4Emvm9dk7Y9YMt4pmbUplpiGHZu_UEDM933xpQjExwVtdsKJ7UEff0gtRn7MUxwoX/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxdhrjpgk7d_R-i6tIT8NqinDT_-PeASta5SJN_1qj8iZUTJJRaonm0zaFHTniiJ4CzHA/exec';
         const WHATSAPP_NUMBER = '5531984834383';
         const PIX_KEY = '10648303000179';
 
         // ============================================================
-// CONFIGURAÇÃO SUPERFRETE
-// ============================================================
-const SUPERFRETE_APPSCRIPT_URL = API_URL;
-const CEP_ORIGEM = '31050650';
-const PESO_PADRAO = 0.5; // Peso padrão reduzido para não inflacionar frete
-const DIMENSAO_PADRAO = { altura: 5, largura: 5, comprimento: 5 }; // Dimensões mínimas
-const MARGEM_SEGURANCA = 1.0; // REMOVIDA - agora é 1.0 (sem margem)
-const ACRESCIMO_VALOR_FRETE = 0; // REMOVIDO - agora é 0
-const ACRESCIMO_PRAZO_FRETE = 0; // REMOVIDO - agora é 0
-const PRAZO_RETIRADA_LOJA = 1;
+        // CONFIGURAÇÃO SUPERFRETE
+        // ============================================================
+        const SUPERFRETE_APPSCRIPT_URL = API_URL;
+        const CEP_ORIGEM = '31050650';
+        const PESO_PADRAO = 0.5;
+        const DIMENSAO_PADRAO = { altura: 5, largura: 5, comprimento: 5 };
+        const MARGEM_SEGURANCA = 1.0;
+        const ACRESCIMO_VALOR_FRETE = 0;
+        const ACRESCIMO_PRAZO_FRETE = 0;
+        const PRAZO_RETIRADA_LOJA = 1;
 
-// ============================================================
-// TABELA DE FRETE - ENTREGA PRÓPRIA (CORRIGIDA)
-// ============================================================
-const TABELA_FRETE_ENTREGA_PROPRIA = {
-    'Belo Horizonte': [
-        { min: 0.01, max: 120.00, cost: 24.90 },
-        { min: 120.01, max: 299.99, cost: 19.90 },
-        { min: 300.00, max: 999999, cost: 0 }
-    ],
-    'Betim': [
-        { min: 0.01, max: 120.00, cost: 69.90 },
-        { min: 120.01, max: 299.99, cost: 54.90 },
-        { min: 300.00, max: 999999, cost: 44.90 }
-    ],
-    'Contagem': [
-        { min: 0.01, max: 120.00, cost: 29.90 },
-        { min: 120.01, max: 299.99, cost: 24.90 },
-        { min: 300.00, max: 999999, cost: 19.90 }
-    ],
-    'Sabará': [
-        { min: 0.01, max: 120.00, cost: 39.90 },
-        { min: 120.01, max: 299.99, cost: 26.90 },
-        { min: 300.00, max: 999999, cost: 22.90 }
-    ],
-    'Ibirité': [
-        { min: 0.01, max: 120.00, cost: 59.90 },
-        { min: 120.01, max: 299.99, cost: 54.90 },
-        { min: 300.00, max: 999999, cost: 44.90 }
-    ],
-    'Ribeirão das Neves': [
-        { min: 0.01, max: 120.00, cost: 59.90 },
-        { min: 120.01, max: 299.99, cost: 54.90 },
-        { min: 300.00, max: 999999, cost: 44.90 }
-    ],
-    'Santa Luzia': [
-        { min: 0.01, max: 120.00, cost: 49.90 },
-        { min: 120.01, max: 299.99, cost: 44.90 },
-        { min: 300.00, max: 999999, cost: 39.90 }
-    ],
-    'Vespasiano': [
-        { min: 0.01, max: 120.00, cost: 49.90 },
-        { min: 120.01, max: 299.99, cost: 44.90 },
-        { min: 300.00, max: 999999, cost: 39.90 }
-    ],
-    'Lagoa Santa': [
-        { min: 0.01, max: 120.00, cost: 59.90 },
-        { min: 120.01, max: 299.99, cost: 54.90 },
-        { min: 300.00, max: 999999, cost: 44.90 }
-    ],
-    'Nova Lima': [
-        { min: 0.01, max: 120.00, cost: 59.90 },
-        { min: 120.01, max: 299.99, cost: 54.90 },
-        { min: 300.00, max: 999999, cost: 44.90 }
-    ]
-};
+        // ============================================================
+        // TABELA DE FRETE - ENTREGA PRÓPRIA (CORRIGIDA)
+        // ============================================================
+        const TABELA_FRETE_ENTREGA_PROPRIA = {
+            'Belo Horizonte': [
+                { min: 0.01, max: 120.00, cost: 24.90 },
+                { min: 120.01, max: 299.99, cost: 19.90 },
+                { min: 300.00, max: 999999, cost: 0 }
+            ],
+            'Betim': [
+                { min: 0.01, max: 120.00, cost: 69.90 },
+                { min: 120.01, max: 299.99, cost: 54.90 },
+                { min: 300.00, max: 999999, cost: 44.90 }
+            ],
+            'Contagem': [
+                { min: 0.01, max: 120.00, cost: 29.90 },
+                { min: 120.01, max: 299.99, cost: 24.90 },
+                { min: 300.00, max: 999999, cost: 19.90 }
+            ],
+            'Sabará': [
+                { min: 0.01, max: 120.00, cost: 39.90 },
+                { min: 120.01, max: 299.99, cost: 26.90 },
+                { min: 300.00, max: 999999, cost: 22.90 }
+            ],
+            'Ibirité': [
+                { min: 0.01, max: 120.00, cost: 59.90 },
+                { min: 120.01, max: 299.99, cost: 54.90 },
+                { min: 300.00, max: 999999, cost: 44.90 }
+            ],
+            'Ribeirão das Neves': [
+                { min: 0.01, max: 120.00, cost: 59.90 },
+                { min: 120.01, max: 299.99, cost: 54.90 },
+                { min: 300.00, max: 999999, cost: 44.90 }
+            ],
+            'Santa Luzia': [
+                { min: 0.01, max: 120.00, cost: 49.90 },
+                { min: 120.01, max: 299.99, cost: 44.90 },
+                { min: 300.00, max: 999999, cost: 39.90 }
+            ],
+            'Vespasiano': [
+                { min: 0.01, max: 120.00, cost: 49.90 },
+                { min: 120.01, max: 299.99, cost: 44.90 },
+                { min: 300.00, max: 999999, cost: 39.90 }
+            ],
+            'Lagoa Santa': [
+                { min: 0.01, max: 120.00, cost: 59.90 },
+                { min: 120.01, max: 299.99, cost: 54.90 },
+                { min: 300.00, max: 999999, cost: 44.90 }
+            ],
+            'Nova Lima': [
+                { min: 0.01, max: 120.00, cost: 59.90 },
+                { min: 120.01, max: 299.99, cost: 54.90 },
+                { min: 300.00, max: 999999, cost: 44.90 }
+            ]
+        };
 
         // ============================================================
         // DADOS DOS PRODUTOS
@@ -3401,42 +3444,35 @@ const TABELA_FRETE_ENTREGA_PROPRIA = {
         }
 
         function fecharModal(id) {
-    document.getElementById(id).style.display = 'none';
-    
-    // ============================================================
-    // LIMPAR FRETE AO FECHAR O CARRINHO
-    // ============================================================
-    if (id === 'cartModal') {
-        // Limpar resultados do frete
-        const resultadoEl = document.getElementById('freteResultadoCarrinho');
-        if (resultadoEl) {
-            resultadoEl.style.display = 'none';
-            resultadoEl.innerHTML = '';
+            document.getElementById(id).style.display = 'none';
+            
+            if (id === 'cartModal') {
+                const resultadoEl = document.getElementById('freteResultadoCarrinho');
+                if (resultadoEl) {
+                    resultadoEl.style.display = 'none';
+                    resultadoEl.innerHTML = '';
+                }
+                const cepInput = document.getElementById('cepCarrinho');
+                if (cepInput) {
+                    cepInput.value = '';
+                }
+                const erroEl = document.getElementById('freteErroCarrinho');
+                if (erroEl) {
+                    erroEl.classList.remove('show');
+                    erroEl.textContent = '';
+                }
+                const atendenteEl = document.querySelector('.frete-atendente');
+                if (atendenteEl) atendenteEl.remove();
+                const sucessoEl = document.getElementById('freteSucessoCarrinho');
+                if (sucessoEl) sucessoEl.classList.remove('show');
+                const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
+                if (btnCalcular) {
+                    btnCalcular.innerHTML = '<i class="fas fa-truck"></i> Calcular Frete';
+                    btnCalcular.disabled = false;
+                }
+                console.log('🧹 Frete do carrinho limpo ao fechar');
+            }
         }
-        
-        // Limpar CEP
-        const cepInput = document.getElementById('cepCarrinho');
-        if (cepInput) {
-            cepInput.value = '';
-        }
-        
-        // Limpar erro
-        const erroEl = document.getElementById('freteErroCarrinho');
-        if (erroEl) {
-            erroEl.classList.remove('show');
-            erroEl.textContent = '';
-        }
-        
-        // Resetar botão de calcular
-        const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
-        if (btnCalcular) {
-            btnCalcular.innerHTML = '<i class="fas fa-truck"></i> Calcular Frete';
-            btnCalcular.disabled = false;
-        }
-        
-        console.log('🧹 Frete do carrinho limpo ao fechar');
-    }
-}
 
         function mostrarNotificacao(mensagem, tipo = 'info') {
             const notifAnterior = document.querySelector('.notification-floating');
@@ -3643,224 +3679,210 @@ const TABELA_FRETE_ENTREGA_PROPRIA = {
         }
 
         // ============================================================
-// CALCULAR FRETE ENTREGA PRÓPRIA (CORRIGIDA)
-// ============================================================
-function calcularEntregaPropria(cidade, totalPedido) {
-    if (!cidade) {
-        console.warn('⚠️ Cidade não informada para cálculo de frete');
-        return { encontrado: false, cost: null, mensagem: 'Cidade não informada' };
-    }
-    
-    const cidadeNormalizada = cidade.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    
-    let cidadeEncontrada = null;
-    let chaveEncontrada = null;
-    
-    for (const [key, value] of Object.entries(TABELA_FRETE_ENTREGA_PROPRIA)) {
-        const keyNormalizada = key.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        if (keyNormalizada === cidadeNormalizada) {
-            cidadeEncontrada = value;
-            chaveEncontrada = key;
-            break;
-        }
-    }
-    
-    if (!cidadeEncontrada) {
-        console.log(`ℹ️ Cidade "${cidade}" não encontrada na tabela de entrega própria`);
-        return { encontrado: false, cost: null, mensagem: 'Cidade não encontrada na tabela' };
-    }
-    
-    // LOG para debug
-    console.log(`🔍 Calculando frete para ${chaveEncontrada} - Total: R$ ${totalPedido.toFixed(2)}`);
-    
-    let custo = null;
-    let faixaSelecionada = null;
-    
-    for (const faixa of cidadeEncontrada) {
-        // Verifica se o total está dentro da faixa (incluindo limites)
-        if (totalPedido >= faixa.min && totalPedido <= faixa.max) {
-            custo = faixa.cost;
-            faixaSelecionada = faixa;
-            console.log(`✅ Faixa encontrada: R$ ${faixa.min} até R$ ${faixa.max} → R$ ${faixa.cost.toFixed(2)}`);
-            break;
-        }
-    }
-    
-    if (custo === null) {
-        console.warn(`⚠️ Nenhuma faixa encontrada para total R$ ${totalPedido.toFixed(2)} em ${chaveEncontrada}`);
-        return { encontrado: false, cost: null, mensagem: 'Faixa de preço não encontrada' };
-    }
-    
-    return { 
-        encontrado: true, 
-        cost: custo, 
-        mensagem: `Entrega Própria - ${chaveEncontrada}`,
-        faixa: faixaSelecionada,
-        cidade: chaveEncontrada,
-        freteGratis: custo === 0
-    };
-}
-
+        // CALCULAR ENTREGA PRÓPRIA (CORRIGIDA)
         // ============================================================
-// CALCULAR PESO TOTAL (CORRIGIDO)
-// ============================================================
-function calcularPesoTotal() {
-    let pesoTotal = 0;
-    let temPesoCadastrado = false;
-    
-    carrinho.forEach(item => {
-        const product = encontrarProduto(item.productId);
-        
-        if (product && product.weight > 0) {
-            pesoTotal += product.weight * item.quantity;
-            temPesoCadastrado = true;
-        } else if (item.detalhes && item.detalhes.length > 0) {
-            item.detalhes.forEach(d => {
-                if (d.weight) {
-                    const peso = parseFloat(d.weight.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
-                    pesoTotal += peso * d.qty;
-                    if (peso > 0) temPesoCadastrado = true;
-                }
-            });
-        }
-    });
-    
-    // Se NENHUM produto tem peso, usa o padrão mínimo
-    if (!temPesoCadastrado || pesoTotal === 0) {
-        console.log('ℹ️ Nenhum peso cadastrado, usando peso padrão mínimo');
-        const totalItems = carrinho.reduce((sum, item) => sum + item.quantity, 0);
-        pesoTotal = PESO_PADRAO * Math.max(totalItems, 1);
-    }
-    
-    console.log(`⚖️ Peso total calculado: ${pesoTotal.toFixed(2)}kg`);
-    return Math.max(pesoTotal, 0.1);
-}
-        function extrairPesoDimensoes(info) {
-    if (!info) {
-        return { 
-            peso: PESO_PADRAO, 
-            altura: DIMENSAO_PADRAO.altura, 
-            largura: DIMENSAO_PADRAO.largura, 
-            comprimento: DIMENSAO_PADRAO.comprimento 
-        };
-    }
-    
-    const parts = info.split('-');
-    if (parts.length !== 2) {
-        return { 
-            peso: PESO_PADRAO, 
-            altura: DIMENSAO_PADRAO.altura, 
-            largura: DIMENSAO_PADRAO.largura, 
-            comprimento: DIMENSAO_PADRAO.comprimento 
-        };
-    }
-    
-    const pesoStr = parts[0].replace(/[^0-9.,]/g, '').replace(',', '.');
-    const peso = parseFloat(pesoStr) || PESO_PADRAO;
-    
-    const dimsStr = parts[1];
-    const dims = dimsStr.split('x').map(d => parseInt(d.trim()) || 0);
-    
-    if (dims.length !== 3) {
-        return { 
-            peso: peso, 
-            altura: DIMENSAO_PADRAO.altura, 
-            largura: DIMENSAO_PADRAO.largura, 
-            comprimento: DIMENSAO_PADRAO.comprimento 
-        };
-    }
-    
-    // ============================================================
-    // CORREÇÃO: PLANILHA USA Comprimento x Largura x Altura
-    // ============================================================
-    const comprimento = dims[0];
-    const largura = dims[1];
-    const altura = dims[2];
-    
-    // NÃO AJUSTA MAIS A ALTURA AQUI - DEIXA O VALOR ORIGINAL
-    console.log(`📐 Planilha: ${dimsStr} → Comprimento=${comprimento}, Largura=${largura}, Altura=${altura}`);
-    
-    return { 
-        peso: peso, 
-        altura: altura || DIMENSAO_PADRAO.altura, 
-        largura: largura || DIMENSAO_PADRAO.largura, 
-        comprimento: comprimento || DIMENSAO_PADRAO.comprimento 
-    };
-}
-
-function calcularDimensoes() {
-    let volumeTotal = 0;
-    let temProdutoComDimensao = false;
-    
-    carrinho.forEach(item => {
-        const product = encontrarProduto(item.productId);
-        
-        if (item.detalhes && item.detalhes.length > 0) {
-            item.detalhes.forEach(d => {
-                if (d.dimensions) {
-                    const info = extrairPesoDimensoes(d.weight + '-' + d.dimensions);
-                    if (info) {
-                        const volume = info.altura * info.largura * info.comprimento;
-                        volumeTotal += volume * d.qty;
-                        temProdutoComDimensao = true;
-                    }
-                }
-            });
-        }
-        
-        if (!temProdutoComDimensao && product) {
-            for (const qty of product.quantities) {
-                if (qty.dimensions && qty.weight) {
-                    const info = extrairPesoDimensoes(qty.weight + '-' + qty.dimensions);
-                    if (info) {
-                        const volume = info.altura * info.largura * info.comprimento;
-                        volumeTotal += volume * (item.quantity / qty.qty);
-                        temProdutoComDimensao = true;
-                        break;
-                    }
+        function calcularEntregaPropria(cidade, totalPedido) {
+            if (!cidade) {
+                console.warn('⚠️ Cidade não informada para cálculo de frete');
+                return { encontrado: false, cost: null, mensagem: 'Cidade não informada' };
+            }
+            
+            const cidadeNormalizada = cidade.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            
+            let cidadeEncontrada = null;
+            let chaveEncontrada = null;
+            
+            for (const [key, value] of Object.entries(TABELA_FRETE_ENTREGA_PROPRIA)) {
+                const keyNormalizada = key.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                if (keyNormalizada === cidadeNormalizada) {
+                    cidadeEncontrada = value;
+                    chaveEncontrada = key;
+                    break;
                 }
             }
+            
+            if (!cidadeEncontrada) {
+                console.log(`ℹ️ Cidade "${cidade}" não encontrada na tabela de entrega própria`);
+                return { encontrado: false, cost: null, mensagem: 'Cidade não encontrada na tabela' };
+            }
+            
+            console.log(`🔍 Calculando frete para ${chaveEncontrada} - Total: R$ ${totalPedido.toFixed(2)}`);
+            
+            let custo = null;
+            let faixaSelecionada = null;
+            
+            for (const faixa of cidadeEncontrada) {
+                if (totalPedido >= faixa.min && totalPedido <= faixa.max) {
+                    custo = faixa.cost;
+                    faixaSelecionada = faixa;
+                    console.log(`✅ Faixa encontrada: R$ ${faixa.min} até R$ ${faixa.max} → R$ ${faixa.cost.toFixed(2)}`);
+                    break;
+                }
+            }
+            
+            if (custo === null) {
+                console.warn(`⚠️ Nenhuma faixa encontrada para total R$ ${totalPedido.toFixed(2)} em ${chaveEncontrada}`);
+                return { encontrado: false, cost: null, mensagem: 'Faixa de preço não encontrada' };
+            }
+            
+            return { 
+                encontrado: true, 
+                cost: custo, 
+                mensagem: `Entrega Própria - ${chaveEncontrada}`,
+                faixa: faixaSelecionada,
+                cidade: chaveEncontrada,
+                freteGratis: custo === 0
+            };
         }
-    });
-    
-    if (!temProdutoComDimensao || volumeTotal === 0) {
-        console.log('ℹ️ Nenhuma dimensão cadastrada, usando dimensão padrão mínima');
-        const totalItems = carrinho.reduce((sum, item) => sum + item.quantity, 0);
-        const volPadrao = DIMENSAO_PADRAO.altura * DIMENSAO_PADRAO.largura * DIMENSAO_PADRAO.comprimento;
-        volumeTotal = volPadrao * Math.max(totalItems, 1);
-    }
-    
-    // Calcula a dimensão cúbica
-    const lado = Math.cbrt(volumeTotal);
-    let dimensao = Math.ceil(lado);
-    
-    // ============================================================
-    // AJUSTE FINAL: Garante que a dimensão final atenda aos limites
-    // ============================================================
-    // Altura mínima: 2cm, Largura mínima: 11cm, Comprimento mínimo: 16cm
-    // Como estamos usando uma caixa cúbica (altura = largura = comprimento),
-    // precisamos que a dimensão seja >= 16cm para atender todos os limites
-    const DIMENSAO_MINIMA = 16; // Maior limite mínimo (comprimento)
-    if (dimensao < DIMENSAO_MINIMA) {
-        console.log(`⚠️ Dimensão calculada (${dimensao}cm) é menor que o mínimo da API (${DIMENSAO_MINIMA}cm). Ajustando para ${DIMENSAO_MINIMA}cm.`);
-        dimensao = DIMENSAO_MINIMA;
-    }
-    
-    // Limite máximo: 105cm
-    const DIMENSAO_MAXIMA = 105;
-    if (dimensao > DIMENSAO_MAXIMA) {
-        console.log(`⚠️ Dimensão calculada (${dimensao}cm) excede o máximo da API (${DIMENSAO_MAXIMA}cm). Ajustando para ${DIMENSAO_MAXIMA}cm.`);
-        dimensao = DIMENSAO_MAXIMA;
-    }
-    
-    console.log(`📦 Dimensões calculadas: ${dimensao}x${dimensao}x${dimensao} (volume: ${volumeTotal})`);
-    
-    return { 
-        altura: dimensao, 
-        largura: dimensao, 
-        comprimento: dimensao 
-    };
-}
+
+        // ============================================================
+        // CALCULAR PESO TOTAL (CORRIGIDO)
+        // ============================================================
+        function calcularPesoTotal() {
+            let pesoTotal = 0;
+            let temPesoCadastrado = false;
+            
+            carrinho.forEach(item => {
+                const product = encontrarProduto(item.productId);
+                
+                if (product && product.weight > 0) {
+                    pesoTotal += product.weight * item.quantity;
+                    temPesoCadastrado = true;
+                } else if (item.detalhes && item.detalhes.length > 0) {
+                    item.detalhes.forEach(d => {
+                        if (d.weight) {
+                            const peso = parseFloat(d.weight.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+                            pesoTotal += peso * d.qty;
+                            if (peso > 0) temPesoCadastrado = true;
+                        }
+                    });
+                }
+            });
+            
+            if (!temPesoCadastrado || pesoTotal === 0) {
+                console.log('ℹ️ Nenhum peso cadastrado, usando peso padrão mínimo');
+                const totalItems = carrinho.reduce((sum, item) => sum + item.quantity, 0);
+                pesoTotal = PESO_PADRAO * Math.max(totalItems, 1);
+            }
+            
+            console.log(`⚖️ Peso total calculado: ${pesoTotal.toFixed(2)}kg`);
+            return Math.max(pesoTotal, 0.1);
+        }
+
+        function extrairPesoDimensoes(info) {
+            if (!info) {
+                return { 
+                    peso: PESO_PADRAO, 
+                    altura: DIMENSAO_PADRAO.altura, 
+                    largura: DIMENSAO_PADRAO.largura, 
+                    comprimento: DIMENSAO_PADRAO.comprimento 
+                };
+            }
+            
+            const parts = info.split('-');
+            if (parts.length !== 2) {
+                return { 
+                    peso: PESO_PADRAO, 
+                    altura: DIMENSAO_PADRAO.altura, 
+                    largura: DIMENSAO_PADRAO.largura, 
+                    comprimento: DIMENSAO_PADRAO.comprimento 
+                };
+            }
+            
+            const pesoStr = parts[0].replace(/[^0-9.,]/g, '').replace(',', '.');
+            const peso = parseFloat(pesoStr) || PESO_PADRAO;
+            
+            const dimsStr = parts[1];
+            const dims = dimsStr.split('x').map(d => parseInt(d.trim()) || 0);
+            
+            if (dims.length !== 3) {
+                return { 
+                    peso: peso, 
+                    altura: DIMENSAO_PADRAO.altura, 
+                    largura: DIMENSAO_PADRAO.largura, 
+                    comprimento: DIMENSAO_PADRAO.comprimento 
+                };
+            }
+            
+            const comprimento = dims[0];
+            const largura = dims[1];
+            const altura = dims[2];
+            
+            console.log(`📐 Planilha: ${dimsStr} → Comprimento=${comprimento}, Largura=${largura}, Altura=${altura}`);
+            
+            return { 
+                peso: peso, 
+                altura: altura || DIMENSAO_PADRAO.altura, 
+                largura: largura || DIMENSAO_PADRAO.largura, 
+                comprimento: comprimento || DIMENSAO_PADRAO.comprimento 
+            };
+        }
+
+        function calcularDimensoes() {
+            let volumeTotal = 0;
+            let temProdutoComDimensao = false;
+            
+            carrinho.forEach(item => {
+                const product = encontrarProduto(item.productId);
+                
+                if (item.detalhes && item.detalhes.length > 0) {
+                    item.detalhes.forEach(d => {
+                        if (d.dimensions) {
+                            const info = extrairPesoDimensoes(d.weight + '-' + d.dimensions);
+                            if (info) {
+                                const volume = info.altura * info.largura * info.comprimento;
+                                volumeTotal += volume * d.qty;
+                                temProdutoComDimensao = true;
+                            }
+                        }
+                    });
+                }
+                
+                if (!temProdutoComDimensao && product) {
+                    for (const qty of product.quantities) {
+                        if (qty.dimensions && qty.weight) {
+                            const info = extrairPesoDimensoes(qty.weight + '-' + qty.dimensions);
+                            if (info) {
+                                const volume = info.altura * info.largura * info.comprimento;
+                                volumeTotal += volume * (item.quantity / qty.qty);
+                                temProdutoComDimensao = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+            
+            if (!temProdutoComDimensao || volumeTotal === 0) {
+                console.log('ℹ️ Nenhuma dimensão cadastrada, usando dimensão padrão mínima');
+                const totalItems = carrinho.reduce((sum, item) => sum + item.quantity, 0);
+                const volPadrao = DIMENSAO_PADRAO.altura * DIMENSAO_PADRAO.largura * DIMENSAO_PADRAO.comprimento;
+                volumeTotal = volPadrao * Math.max(totalItems, 1);
+            }
+            
+            const lado = Math.cbrt(volumeTotal);
+            let dimensao = Math.ceil(lado);
+            
+            const DIMENSAO_MINIMA = 16;
+            if (dimensao < DIMENSAO_MINIMA) {
+                console.log(`⚠️ Dimensão calculada (${dimensao}cm) é menor que o mínimo da API (${DIMENSAO_MINIMA}cm). Ajustando para ${DIMENSAO_MINIMA}cm.`);
+                dimensao = DIMENSAO_MINIMA;
+            }
+            
+            const DIMENSAO_MAXIMA = 105;
+            if (dimensao > DIMENSAO_MAXIMA) {
+                console.log(`⚠️ Dimensão calculada (${dimensao}cm) excede o máximo da API (${DIMENSAO_MAXIMA}cm). Ajustando para ${DIMENSAO_MAXIMA}cm.`);
+                dimensao = DIMENSAO_MAXIMA;
+            }
+            
+            console.log(`📦 Dimensões calculadas: ${dimensao}x${dimensao}x${dimensao} (volume: ${volumeTotal})`);
+            
+            return { 
+                altura: dimensao, 
+                largura: dimensao, 
+                comprimento: dimensao 
+            };
+        }
 
         // ============================================================
         // CALCULAR PRAZO DE PRODUÇÃO
@@ -3883,437 +3905,298 @@ function calcularDimensoes() {
         }
 
         // ============================================================
-        // GERAR OPÇÕES DE FRETE
+        // GERAR OPÇÕES DE FRETE (NÃO USA MAIS - MANTIDO PARA COMPATIBILIDADE)
         // ============================================================
         function gerarOpcoesFrete(cep, peso, totalProdutos) {
-    const cepStr = String(cep).replace(/\D/g, '');
-    const cepNum = parseInt(cepStr) || 0;
-    const opcoes = [];
-    
-    // ============================================================
-    // FALLBACK REALISTA - NÃO USA VALORES INFLADOS
-    // ============================================================
-    const distancia = Math.abs(cepNum - 31050650) / 100000;
-    const prazoBase = Math.max(2, Math.min(10, Math.floor(distancia * 3) + 2));
-    
-    // PAC: valores realistas
-    let valorPac = 18.90 + (peso * 1.2) + (distancia * 1.5);
-    valorPac = Math.round(valorPac * 100) / 100;
-    valorPac = Math.max(valorPac, 12);
-    const prazoPac = Math.min(prazoBase + 3, 10);
-    
-    // SEDEX: valores realistas
-    let valorSedex = 30.50 + (peso * 2.0) + (distancia * 2.5);
-    valorSedex = Math.round(valorSedex * 100) / 100;
-    valorSedex = Math.max(valorSedex, 20);
-    const prazoSedex = Math.min(prazoBase + 1, 5);
-    
-    // Jadlog
-    let valorJadlog = 22.00 + (peso * 1.5) + (distancia * 2.0);
-    valorJadlog = Math.round(valorJadlog * 100) / 100;
-    valorJadlog = Math.max(valorJadlog, 15);
-    const prazoJadlog = Math.min(prazoBase + 2, 8);
-    
-    // Transportadora
-    let valorTransportadora = 35.00 + (peso * 1.5) + (distancia * 1.2);
-    valorTransportadora = Math.round(valorTransportadora * 100) / 100;
-    valorTransportadora = Math.max(valorTransportadora, 25);
-    const prazoTransportadora = Math.min(prazoBase + 5, 15);
-    
-    opcoes.push({
-        id: 'PAC',
-        name: 'PAC',
-        price: valorPac,
-        delivery_time: prazoPac,
-        service: 'PAC',
-        frete_gratis: false,
-        is_entrega_propria: false
-    });
-    
-    opcoes.push({
-        id: 'SEDEX',
-        name: 'SEDEX',
-        price: valorSedex,
-        delivery_time: prazoSedex,
-        service: 'SEDEX',
-        frete_gratis: false,
-        is_entrega_propria: false
-    });
-    
-    opcoes.push({
-        id: 'JADLOG',
-        name: 'Jadlog',
-        price: valorJadlog,
-        delivery_time: prazoJadlog,
-        service: 'Jadlog',
-        frete_gratis: false,
-        is_entrega_propria: false
-    });
-    
-    opcoes.push({
-        id: 'TRANSPORTADORA',
-        name: 'Transportadora',
-        price: valorTransportadora,
-        delivery_time: prazoTransportadora,
-        service: 'Transportadora',
-        frete_gratis: false,
-        is_entrega_propria: false
-    });
-    
-    opcoes.sort((a, b) => a.price - b.price);
-    return opcoes;
-}
-        // ============================================================
-// FORMATAR OPÇÕES DE FRETE (CORRIGIDA - SEM ACRÉSCIMOS)
-// ============================================================
-function formatarOpcoesFrete(opcoes) {
-    const opcoesFormatadas = [];
-    const producaoDias = calcularPrazoProducao();
-    
-    // Opção de retirada na loja (SEM ACRÉSCIMO)
-    const prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
-    opcoesFormatadas.push({
-        nome: 'Retirada na Loja',
-        valor: 0,
-        prazo: `${prazoRetirada} dias úteis`,
-        prazoDias: prazoRetirada,
-        codigo: 'RETIRADA',
-        producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
-        freteGratis: true,
-        isEntregaPropria: false
-    });
-    
-    let temFreteGratis = false;
-    
-    if (opcoes && opcoes.length > 0) {
-        // Verifica se tem entrega própria
-        const entregaPropria = opcoes.find(op => op.is_entrega_propria === true);
-        if (entregaPropria) {
-            temFreteGratis = entregaPropria.frete_gratis || false;
+            // Esta função não é mais usada para exibir ao cliente,
+            // mantida para compatibilidade com outras partes do código
+            return [];
         }
-        
-        opcoes.forEach(op => {
-            // Verifica se é da API (já tem os valores reais)
-            const isApi = op._api === true;
+
+        // ============================================================
+        // FORMATAR OPÇÕES DE FRETE (APENAS RETIRADA E ENTREGA PRÓPRIA)
+        // ============================================================
+        function formatarOpcoesFrete(opcoes) {
+            const opcoesFormatadas = [];
+            const producaoDias = calcularPrazoProducao();
             
-            // Entrega própria
-            if (op.is_entrega_propria) {
-                const prazoComProducao = parseInt(op.delivery_time || 0) + producaoDias;
-                const freteGratis = op.frete_gratis || false;
+            // Opção de retirada na loja (sempre disponível)
+            const prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
+            opcoesFormatadas.push({
+                nome: '📦 Retirada na Loja',
+                valor: 0,
+                prazo: `${prazoRetirada} dias úteis`,
+                prazoDias: prazoRetirada,
+                codigo: 'RETIRADA',
+                producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
+                freteGratis: true,
+                isEntregaPropria: false
+            });
+            
+            // Procurar Entrega Própria nos resultados da API
+            if (opcoes && opcoes.length > 0) {
+                const entregaPropria = opcoes.find(op => 
+                    op.is_entrega_propria === true || 
+                    (op.nome && op.nome.toLowerCase().includes('entrega própria')) ||
+                    (op.name && op.name.toLowerCase().includes('entrega própria')) ||
+                    (op.service && op.service.toLowerCase().includes('entrega própria'))
+                );
                 
-                let valorFinal = freteGratis ? 0 : op.price;
-                if (!freteGratis && valorFinal > 0) {
-                    valorFinal = valorFinal + 10;
+                if (entregaPropria) {
+                    const prazoComProducao = parseInt(entregaPropria.delivery_time || entregaPropria.prazo || 0) + producaoDias;
+                    const valor = parseFloat(entregaPropria.price || entregaPropria.preco || 0);
+                    const freteGratis = valor === 0;
+                    
+                    opcoesFormatadas.push({
+                        nome: freteGratis ? '🚚 Entrega Própria (Grátis)' : '🚚 Entrega Própria',
+                        valor: valor,
+                        prazo: `${prazoComProducao} dias úteis`,
+                        prazoDias: prazoComProducao,
+                        codigo: 'ENTREGA_PROPRIA',
+                        producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
+                        freteGratis: freteGratis,
+                        isEntregaPropria: true
+                    });
                 }
-                
-                const prazoFinal = prazoComProducao + 2;
-                
-                opcoesFormatadas.push({
-                    nome: freteGratis ? '🚚 Entrega Própria (Grátis)' : `🚚 Entrega Própria`,
-                    valor: freteGratis ? 0 : valorFinal,
-                    prazo: `${prazoFinal} dias úteis`,
-                    prazoDias: prazoFinal,
-                    codigo: 'ENTREGA_PROPRIA',
-                    producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
-                    freteGratis: freteGratis,
-                    isEntregaPropria: true
-                });
+            }
+            
+            return opcoesFormatadas;
+        }
+
+        // ============================================================
+        // CALCULAR FRETE NO CARRINHO (VIA PLANILHA)
+        // ============================================================
+        async function calcularFreteCarrinho() {
+            const cep = document.getElementById('cepCarrinho').value.trim();
+            const erroEl = document.getElementById('freteErroCarrinho');
+            const resultadoEl = document.getElementById('freteResultadoCarrinho');
+            const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
+            
+            // Limpar mensagens anteriores
+            erroEl.classList.remove('show');
+            resultadoEl.style.display = 'none';
+            resultadoEl.innerHTML = '';
+            
+            // Remover mensagem de atendente se existir
+            const atendenteExistente = document.querySelector('.frete-atendente');
+            if (atendenteExistente) atendenteExistente.remove();
+            
+            // Remover mensagem de sucesso se existir
+            const sucessoExistente = document.querySelector('.frete-sucesso');
+            if (sucessoExistente) sucessoExistente.remove();
+            
+            if (!cep || cep.length < 8) {
+                erroEl.textContent = '⚠️ Digite um CEP válido com 8 dígitos.';
+                erroEl.classList.add('show');
                 return;
             }
             
-                  // ============================================================
-        // CORREIOS E TRANSPORTADORA
+            if (carrinho.length === 0) {
+                erroEl.textContent = '⚠️ Seu carrinho está vazio. Adicione produtos primeiro.';
+                erroEl.classList.add('show');
+                return;
+            }
+            
+            resultadoEl.style.display = 'none';
+            resultadoEl.innerHTML = '<div class="frete-carregando"><i class="fas fa-spinner fa-spin"></i> Calculando frete...</div>';
+            btnCalcular.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculando...';
+            btnCalcular.disabled = true;
+            
+            try {
+                const peso = calcularPesoTotal();
+                const dims = calcularDimensoes();
+                
+                console.log('📦 Calculando frete para CEP:', cep);
+                console.log(`⚖️ Peso: ${peso}kg, Dim: ${dims.altura}x${dims.largura}x${dims.comprimento}`);
+                
+                // PASSO 1: Envia para salvar na planilha (no-cors)
+                console.log('📤 Enviando para salvar na planilha...');
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        acao: 'salvar_frete',
+                        cepDestino: cep,
+                        peso: peso,
+                        altura: dims.altura,
+                        largura: dims.largura,
+                        comprimento: dims.comprimento,
+                        _t: Date.now()
+                    })
+                });
+                
+                // Aguarda 3 segundos para a planilha ser atualizada
+                console.log('⏳ Aguardando processamento (3s)...');
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // PASSO 2: Busca o frete salvo via GET
+                console.log('📥 Buscando frete salvo...');
+                const response = await fetch(`${API_URL}?acao=buscar_ultimo_frete&_t=${Date.now()}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('📥 Dados do frete lidos da planilha:', data);
+                
+                if (data.success && data.opcoes && data.opcoes.length > 0) {
+                    // Converter para o formato esperado
+                    const opcoes = data.opcoes.map(op => ({
+                        id: op.codigo || 'FRETE',
+                        name: op.nome || 'Frete',
+                        price: parseFloat(op.preco || 0),
+                        delivery_time: parseInt(op.prazo || 0),
+                        service: op.nome || 'Frete',
+                        _api: true,
+                        is_entrega_propria: op.nome && op.nome.toLowerCase().includes('entrega própria')
+                    }));
+                    
+                    // Formatar opções (apenas Retirada e Entrega Própria)
+                    const opcoesFormatadas = formatarOpcoesFrete(opcoes);
+                    console.log('📋 Opções formatadas:', opcoesFormatadas);
+                    
+                    // Verifica se tem Entrega Própria (além da Retirada na Loja)
+                    const temEntregaPropria = opcoesFormatadas.some(op => op.isEntregaPropria);
+                    
+                    if (temEntregaPropria) {
+                        // Mostrar sucesso
+                        const sucessoDiv = document.createElement('div');
+                        sucessoDiv.className = 'frete-sucesso show';
+                        sucessoDiv.textContent = '✅ Frete calculado com sucesso!';
+                        resultadoEl.appendChild(sucessoDiv);
+                        
+                        // Mostrar resultados
+                        resultadoEl.style.display = 'block';
+                        
+                        opcoesFormatadas.forEach(op => {
+                            const div = document.createElement('div');
+                            div.className = 'opcao-frete';
+                            const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
+                            const infoProducao = op.producao ? `<span class="frete-prazo">${op.producao}</span>` : '';
+                            let badgeGratis = op.freteGratis ? ' 🎁' : '';
+                            
+                            div.innerHTML = `
+                                <div class="frete-info">
+                                    <div class="frete-nome">${op.nome}${badgeGratis}</div>
+                                    <div class="frete-prazo">${op.prazo}</div>
+                                    ${infoProducao}
+                                </div>
+                                <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
+                            `;
+                            resultadoEl.appendChild(div);
+                        });
+                        
+                        // Salvar no estado do checkout se estiver aberto
+                        if (checkoutState && checkoutState.passo >= 2) {
+                            checkoutState.opcoesFrete = opcoesFormatadas;
+                            checkoutState.freteSelecionado = opcoesFormatadas[0] || null;
+                            atualizarResumoFinal();
+                        }
+                        
+                        mostrarNotificacao('✅ Frete calculado com sucesso!', 'success');
+                    } else {
+                        // Não tem Entrega Própria - mostrar atendente
+                        mostrarMensagemAtendente(cep);
+                        mostrarNotificacao('⚠️ Frete não disponível para este CEP. Fale com nosso atendente.', 'warning');
+                    }
+                    
+                } else {
+                    // Falha na API - mostrar atendente
+                    console.warn('⚠️ Nenhuma opção de frete encontrada');
+                    mostrarMensagemAtendente(cep);
+                    mostrarNotificacao('⚠️ Falha ao calcular frete. Fale com nosso atendente.', 'warning');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao calcular frete:', error);
+                mostrarMensagemAtendente(cep);
+                mostrarNotificacao('⚠️ Falha na comunicação. Fale com nosso atendente.', 'error');
+            } finally {
+                if (resultadoEl.innerHTML && resultadoEl.children.length > 0) {
+                    resultadoEl.style.display = 'block';
+                }
+                btnCalcular.innerHTML = '<i class="fas fa-truck"></i> Calcular Frete';
+                btnCalcular.disabled = false;
+            }
+        }
+
         // ============================================================
-        let valorBase = op.price || 0;
-        let prazoBase = parseInt(op.delivery_time || 0) + producaoDias;
-        
-        // Se for da API, os valores já são reais, só aplicar acréscimos
-        let valorFinal = valorBase + 10;
-        let prazoFinal = prazoBase + 2;
-        
-        let nome = op.name || op.service || 'Frete';
-        if (nome.includes('PAC')) nome = 'PAC';
-        else if (nome.includes('SEDEX')) nome = 'SEDEX';
-        else if (nome.includes('Transportadora')) nome = 'Transportadora';
-        else if (nome.includes('Jadlog')) nome = 'Jadlog';
-        else if (nome.includes('Loggi')) nome = 'Loggi';
-        
-        opcoesFormatadas.push({
-            nome: nome,
-            valor: valorFinal,
-            prazo: `${prazoFinal} dias úteis`,
-            prazoDias: prazoFinal,
-            codigo: op.id || op.code || nome,
-            producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
-            freteGratis: false,
-            isEntregaPropria: false,
-            _api: isApi
-        });
-    });
-}
-
-// Ordenar por valor (menor para maior)
-opcoesFormatadas.sort((a, b) => a.valor - b.valor);
-
-// Se tiver frete grátis, coloca em primeiro
-if (temFreteGratis) {
-    const indexEntregaPropria = opcoesFormatadas.findIndex(op => op.isEntregaPropria && op.freteGratis);
-    if (indexEntregaPropria > 0) {
-        const entregaItem = opcoesFormatadas.splice(indexEntregaPropria, 1)[0];
-        opcoesFormatadas.unshift(entregaItem);
-    }
-}
-
-console.log('📋 Opções de frete formatadas (com acréscimos):', opcoesFormatadas);
-
-return opcoesFormatadas;
-}
-
-// ============================================================
-// BUSCAR FRETE - VIA FETCH (PARA HTML EXTERNO)
-// ============================================================
-async function buscarFreteViaFetch(cepDestino, peso, altura, largura, comprimento) {
-    console.log('📤 Enviando para AppScript via fetch...');
-    console.log(`📦 CEP: ${cepDestino}, Peso: ${peso}kg, Dim: ${altura}x${largura}x${comprimento}`);
-    
-    try {
-        // Monta a URL com os parâmetros
-        const url = `${API_URL}?acao=proxy_frete&cepDestino=${cepDestino}&peso=${peso}&altura=${altura}&largura=${largura}&comprimento=${comprimento}&_t=${Date.now()}`;
-        
-        console.log('📤 URL:', url);
-        
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP Error: ${response.status}`);
-        }
-        
-        const resultado = await response.json();
-        console.log('✅ Resposta do AppScript:', resultado);
-        
-        if (resultado.success !== false) {
-            let opcoes = [];
+        // FUNÇÃO PARA MOSTRAR MENSAGEM DE ATENDENTE
+        // ============================================================
+        function mostrarMensagemAtendente(cep) {
+            const resultadoEl = document.getElementById('freteResultadoCarrinho');
+            resultadoEl.style.display = 'block';
             
-            if (resultado.opcoes && Array.isArray(resultado.opcoes)) {
-                opcoes = resultado.opcoes.map(op => ({
-                    id: op.codigo || op.service_code || op.id || 'FRETE',
-                    name: op.nome || op.service || 'Frete',
-                    price: parseFloat(op.preco || op.price || 0),
-                    delivery_time: parseInt(op.prazo || op.delivery_time || 0),
-                    service: op.nome || op.service || 'Frete',
-                    frete_gratis: false,
-                    is_entrega_propria: false,
-                    _api: true,
-                    _fallback: op._fallback || false
-                }));
-            }
+            // Remover mensagem anterior se existir
+            const atendenteExistente = document.querySelector('.frete-atendente');
+            if (atendenteExistente) atendenteExistente.remove();
             
-            // Verifica se é fallback
-            const temFallback = opcoes.some(op => op._fallback === true);
-            const valoresAltos = opcoes.some(op => op.price > 100);
-            
-            if (temFallback || valoresAltos) {
-                console.warn('⚠️ Usando valores de fallback do AppScript');
-            } else {
-                console.log('✅ Valores REAIS da SuperFrete!');
-            }
-            
-            return opcoes;
-        } else {
-            console.warn('⚠️ AppScript retornou erro:', resultado.error);
-            if (resultado.opcoes && Array.isArray(resultado.opcoes)) {
-                return resultado.opcoes.map(op => ({
-                    id: op.codigo || 'FALLBACK',
-                    name: op.nome || 'Frete',
-                    price: parseFloat(op.preco || 0),
-                    delivery_time: parseInt(op.prazo || 0),
-                    service: op.nome || 'Frete',
-                    _fallback: true
-                }));
-            }
-            throw new Error(resultado.error || 'Erro ao calcular frete');
-        }
-        
-    } catch (error) {
-        console.error('❌ Erro no fetch:', error);
-        throw error;
-    }
-}
-
-// ============================================================
-// CALCULAR FRETE NO CARRINHO (USANDO FETCH)
-// ============================================================
-async function calcularFreteCarrinho() {
-    const cep = document.getElementById('cepCarrinho').value.trim();
-    const erroEl = document.getElementById('freteErroCarrinho');
-    const resultadoEl = document.getElementById('freteResultadoCarrinho');
-    const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
-    
-    if (!cep || cep.length < 8) {
-        erroEl.textContent = '⚠️ Digite um CEP válido com 8 dígitos.';
-        erroEl.classList.add('show');
-        return;
-    }
-    
-    erroEl.classList.remove('show');
-    resultadoEl.style.display = 'none';
-    resultadoEl.innerHTML = '<div class="frete-carregando"><i class="fas fa-spinner fa-spin"></i> Calculando frete...</div>';
-    btnCalcular.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculando...';
-    btnCalcular.disabled = true;
-    
-    try {
-        if (carrinho.length === 0) {
-            erroEl.textContent = '⚠️ Seu carrinho está vazio. Adicione produtos primeiro.';
-            erroEl.classList.add('show');
-            resultadoEl.style.display = 'none';
-            return;
-        }
-        
-        const peso = calcularPesoTotal();
-        const dims = calcularDimensoes();
-        
-        console.log('📦 Calculando frete para CEP:', cep);
-        console.log(`⚖️ Peso: ${peso}kg, Dim: ${dims.altura}x${dims.largura}x${dims.comprimento}`);
-        
-        // Buscar frete via fetch
-        const opcoes = await buscarFreteViaFetch(
-            cep,
-            peso,
-            dims.altura,
-            dims.largura,
-            dims.comprimento
-        );
-        
-        console.log('📋 Opções recebidas:', opcoes);
-        
-        if (!opcoes || opcoes.length === 0) {
-            erroEl.textContent = '⚠️ Nenhuma opção de frete disponível para este CEP.';
-            erroEl.classList.add('show');
-            resultadoEl.style.display = 'none';
-            return;
-        }
-        
-        const opcoesFormatadas = formatarOpcoesFrete(opcoes);
-        console.log('📋 Opções formatadas:', opcoesFormatadas);
-        
-        resultadoEl.style.display = 'block';
-        resultadoEl.innerHTML = '';
-        
-        opcoesFormatadas.forEach(op => {
-            const div = document.createElement('div');
-            div.className = 'opcao-frete';
-            const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
-            const infoProducao = op.producao ? `<span class="frete-prazo">${op.producao}</span>` : '';
-            let badgeGratis = op.freteGratis ? ' 🎁' : '';
-            
-            div.innerHTML = `
-                <div class="frete-info">
-                    <div class="frete-nome">${op.nome}${badgeGratis}</div>
-                    <div class="frete-prazo">${op.prazo}</div>
-                    ${infoProducao}
-                </div>
-                <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
+            const mensagemDiv = document.createElement('div');
+            mensagemDiv.className = 'frete-atendente show';
+            mensagemDiv.innerHTML = `
+                <strong>⚠️ Não foi possível calcular o frete automaticamente</strong>
+                <p style="margin:8px 0 4px 0;font-size:13px;color:#856404;">
+                    Para sua comodidade, <strong>Retirada na Loja</strong> está disponível.
+                </p>
+                <p style="margin:4px 0 8px 0;font-size:13px;color:#856404;">
+                    Para calcular o frete para outras cidades, entre em contato com nosso atendente:
+                </p>
+                <button class="btn-whatsapp-atendente" onclick="abrirWhatsAppAtendente('${cep}')">
+                    <i class="fab fa-whatsapp"></i> Falar com Atendente
+                </button>
             `;
-            resultadoEl.appendChild(div);
-        });
-        
-        // Verifica se tem fallback
-        const temFallback = opcoes.some(op => op._fallback === true);
-        if (temFallback) {
-            const aviso = document.createElement('div');
-            aviso.style.cssText = 'margin-top:10px;padding:8px 12px;background:#fff3cd;border-radius:6px;color:#856404;font-size:12px;';
-            aviso.innerHTML = '⚠️ Usando valores aproximados. Consulte-nos para confirmar o frete.';
-            resultadoEl.appendChild(aviso);
+            resultadoEl.appendChild(mensagemDiv);
         }
-        
-        if (checkoutState && checkoutState.passo >= 2) {
-            checkoutState.opcoesFrete = opcoesFormatadas;
-            checkoutState.freteSelecionado = opcoesFormatadas[0] || null;
-            atualizarResumoFinal();
+
+        // ============================================================
+        // FUNÇÃO PARA ABRIR WHATSAPP DO ATENDENTE
+        // ============================================================
+        function abrirWhatsAppAtendente(cep) {
+            const cepInfo = cep || document.getElementById('cepCarrinho').value || 'Não informado';
+            const mensagem = encodeURIComponent(
+                'Olá! Gostaria de ajuda para calcular o frete do meu pedido.\n\n' +
+                'Meu CEP é: ' + cepInfo + '\n' +
+                'Aguardo seu retorno para finalizar a compra. Obrigado!'
+            );
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
         }
-        
-        mostrarNotificacao('✅ Frete calculado com sucesso!', 'success');
-        
-    } catch (error) {
-        console.error('❌ Erro ao calcular frete:', error);
-        erroEl.textContent = '❌ Erro ao calcular frete. Tente novamente ou entre em contato.';
-        erroEl.classList.add('show');
-        resultadoEl.style.display = 'none';
-    } finally {
-        btnCalcular.innerHTML = '<i class="fas fa-truck"></i> Calcular Frete';
-        btnCalcular.disabled = false;
-    }
-}
 
-// ============================================================
-// BUSCAR FRETE SUPERFRETE - VIA FETCH
-// ============================================================
-async function buscarFreteSuperFrete(cepDestino) {
-    try {
-        const peso = calcularPesoTotal();
-        const dims = calcularDimensoes();
-        
-        console.log('📤 Buscando frete via fetch...');
-        console.log(`📦 CEP: ${cepDestino}, Peso: ${peso}kg, Dim: ${dims.altura}x${dims.largura}x${dims.comprimento}`);
-        
-        const opcoes = await buscarFreteViaFetch(
-            cepDestino,
-            peso,
-            dims.altura,
-            dims.largura,
-            dims.comprimento
-        );
-        
-        return opcoes;
-        
-    } catch (error) {
-        console.error('❌ Erro ao buscar frete:', error);
-        const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
-        return gerarOpcoesFrete(cepDestino, 0, totalProdutos);
-    }
-}
+        // ============================================================
+        // FUNÇÕES DE NAVEGAÇÃO
+        // ============================================================
+        function showHome() {
+            document.getElementById('categoriesSection').style.display = 'block';
+            document.getElementById('productsSection').style.display = 'none';
+            document.getElementById('videosSection').style.display = 'block';
+            const navItems = document.querySelectorAll('.nav-item');
+            if (navItems.length > 0) {
+                navItems.forEach(n => n.classList.remove('active'));
+                navItems[0].classList.add('active');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            salvarEstadoNavegacao();
+        }
 
+        function voltarCategorias() {
+            document.getElementById('categoriesSection').style.display = 'block';
+            document.getElementById('productsSection').style.display = 'none';
+            document.getElementById('videosSection').style.display = 'block';
+            salvarEstadoNavegacao();
+        }
 
-// ============================================================
-// FUNÇÕES DE NAVEGAÇÃO
-// ============================================================
-function showHome() {
-    document.getElementById('categoriesSection').style.display = 'block';
-    document.getElementById('productsSection').style.display = 'none';
-    document.getElementById('videosSection').style.display = 'block';
-    const navItems = document.querySelectorAll('.nav-item');
-    if (navItems.length > 0) {
-        navItems.forEach(n => n.classList.remove('active'));
-        navItems[0].classList.add('active');
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    salvarEstadoNavegacao();
-}
+        function abrirMenu() {
+            document.getElementById('sideMenu').classList.add('open');
+            document.getElementById('sideMenuOverlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
 
-function voltarCategorias() {
-    document.getElementById('categoriesSection').style.display = 'block';
-    document.getElementById('productsSection').style.display = 'none';
-    document.getElementById('videosSection').style.display = 'block';
-    salvarEstadoNavegacao();
-}
-
-function abrirMenu() {
-    document.getElementById('sideMenu').classList.add('open');
-    document.getElementById('sideMenuOverlay').classList.add('open');
-    document.body.style.overflow = 'hidden';
-}
-
-function fecharMenu() {
-    document.getElementById('sideMenu').classList.remove('open');
-    document.getElementById('sideMenuOverlay').classList.remove('open');
-    document.body.style.overflow = '';
-}
+        function fecharMenu() {
+            document.getElementById('sideMenu').classList.remove('open');
+            document.getElementById('sideMenuOverlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
 
         // ============================================================
         // ATENDIMENTO
@@ -4429,194 +4312,178 @@ function fecharMenu() {
 
         function atualizarBadge() {
             const badgeTop = document.getElementById('cartBadgeTop');
-            const badgeBottom = document.getElementById('cartBadge');
             const total = carrinho.reduce((sum, item) => sum + item.quantity, 0);
             if (badgeTop) {
                 badgeTop.textContent = total;
                 badgeTop.style.display = total > 0 ? 'block' : 'none';
             }
-            if (badgeBottom) {
-                badgeBottom.textContent = total;
-                badgeBottom.style.display = total > 0 ? 'block' : 'none';
-            }
         }
 
-
         // ============================================================
-// VERIFICAR ESTOQUE DO CARRINHO (ATUALIZAÇÃO DINÂMICA)
-// ============================================================
-async function verificarEstoqueCarrinho() {
-    if (carrinho.length === 0) return { atualizado: false, mensagem: 'Carrinho vazio' };
-    
-    console.log('🔄 Verificando estoque do carrinho...');
-    let precisaAtualizar = false;
-    let mensagem = '';
-    let itensRemovidos = [];
-    let itensAjustados = [];
-    
-    try {
-        const response = await fetch(API_URL);
-        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-        const data = await response.json();
-        
-        if (!data.produtos) return { atualizado: false, mensagem: 'Dados não encontrados' };
-        
-        // Mapear produtos da planilha por nome
-        const produtosPlanilha = {};
-        data.produtos.forEach(p => {
-            const nome = String(p.nome || '').trim();
-            if (nome) {
-                produtosPlanilha[nome] = {
-                    estoque: parseInt(p.estoque) || 0,
-                    vender_zerado: String(p.vender_zerado || '').toUpperCase() === 'SIM'
-                };
-            }
-        });
-        
-        // Verificar cada item do carrinho
-        for (let i = 0; i < carrinho.length; i++) {
-            const item = carrinho[i];
-            const produtoAtual = produtosPlanilha[item.name];
+        // VERIFICAR ESTOQUE DO CARRINHO
+        // ============================================================
+        async function verificarEstoqueCarrinho() {
+            if (carrinho.length === 0) return { atualizado: false, mensagem: 'Carrinho vazio' };
             
-            if (!produtoAtual) continue;
+            console.log('🔄 Verificando estoque do carrinho...');
+            let precisaAtualizar = false;
+            let mensagem = '';
+            let itensRemovidos = [];
+            let itensAjustados = [];
             
-            const estoqueAtual = produtoAtual.estoque;
-            const venderZerado = produtoAtual.vender_zerado;
-            const estoqueAntigo = item.stock || 999;
-            
-            // Se não pode vender zerado e estoque mudou
-            if (!venderZerado && estoqueAtual !== estoqueAntigo) {
-                item.stock = estoqueAtual;
-                precisaAtualizar = true;
+            try {
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const data = await response.json();
                 
-                // Se o estoque atual é insuficiente
-                if (estoqueAtual < item.quantity) {
-                    if (estoqueAtual === 0) {
-                        // Produto esgotado - remover do carrinho
-                        itensRemovidos.push(item.name);
-                        carrinho.splice(i, 1);
-                        i--;
-                        continue;
-                    } else {
-                        // Ajustar quantidade para o estoque disponível
-                        if (item.detalhes && item.detalhes.length > 0) {
-                            // Ajustar pacotes
-                            let totalAjustado = 0;
-                            let itensParaRemover = [];
-                            
-                            for (let d = 0; d < item.detalhes.length; d++) {
-                                const detalhe = item.detalhes[d];
-                                const unidadesPacote = detalhe.step;
-                                const unidadesTotais = detalhe.totalUnits || (detalhe.qty * unidadesPacote);
-                                
-                                if (totalAjustado + unidadesTotais <= estoqueAtual) {
-                                    totalAjustado += unidadesTotais;
-                                } else {
-                                    const restante = estoqueAtual - totalAjustado;
-                                    if (restante > 0) {
-                                        const pacotesPossiveis = Math.floor(restante / unidadesPacote);
-                                        if (pacotesPossiveis > 0) {
-                                            detalhe.qty = pacotesPossiveis;
-                                            detalhe.totalUnits = pacotesPossiveis * unidadesPacote;
-                                            totalAjustado += detalhe.totalUnits;
-                                            itensAjustados.push(`${item.name}: ${detalhe.totalUnits} unidades`);
+                if (!data.produtos) return { atualizado: false, mensagem: 'Dados não encontrados' };
+                
+                const produtosPlanilha = {};
+                data.produtos.forEach(p => {
+                    const nome = String(p.nome || '').trim();
+                    if (nome) {
+                        produtosPlanilha[nome] = {
+                            estoque: parseInt(p.estoque) || 0,
+                            vender_zerado: String(p.vender_zerado || '').toUpperCase() === 'SIM'
+                        };
+                    }
+                });
+                
+                for (let i = 0; i < carrinho.length; i++) {
+                    const item = carrinho[i];
+                    const produtoAtual = produtosPlanilha[item.name];
+                    
+                    if (!produtoAtual) continue;
+                    
+                    const estoqueAtual = produtoAtual.estoque;
+                    const venderZerado = produtoAtual.vender_zerado;
+                    const estoqueAntigo = item.stock || 999;
+                    
+                    if (!venderZerado && estoqueAtual !== estoqueAntigo) {
+                        item.stock = estoqueAtual;
+                        precisaAtualizar = true;
+                        
+                        if (estoqueAtual < item.quantity) {
+                            if (estoqueAtual === 0) {
+                                itensRemovidos.push(item.name);
+                                carrinho.splice(i, 1);
+                                i--;
+                                continue;
+                            } else {
+                                if (item.detalhes && item.detalhes.length > 0) {
+                                    let totalAjustado = 0;
+                                    let itensParaRemover = [];
+                                    
+                                    for (let d = 0; d < item.detalhes.length; d++) {
+                                        const detalhe = item.detalhes[d];
+                                        const unidadesPacote = detalhe.step;
+                                        const unidadesTotais = detalhe.totalUnits || (detalhe.qty * unidadesPacote);
+                                        
+                                        if (totalAjustado + unidadesTotais <= estoqueAtual) {
+                                            totalAjustado += unidadesTotais;
                                         } else {
-                                            itensParaRemover.push(d);
+                                            const restante = estoqueAtual - totalAjustado;
+                                            if (restante > 0) {
+                                                const pacotesPossiveis = Math.floor(restante / unidadesPacote);
+                                                if (pacotesPossiveis > 0) {
+                                                    detalhe.qty = pacotesPossiveis;
+                                                    detalhe.totalUnits = pacotesPossiveis * unidadesPacote;
+                                                    totalAjustado += detalhe.totalUnits;
+                                                    itensAjustados.push(`${item.name}: ${detalhe.totalUnits} unidades`);
+                                                } else {
+                                                    itensParaRemover.push(d);
+                                                }
+                                            } else {
+                                                itensParaRemover.push(d);
+                                            }
+                                        }
+                                    }
+                                    
+                                    itensParaRemover.forEach(d => {
+                                        const idx = item.detalhes.indexOf(d);
+                                        if (idx > -1) item.detalhes.splice(idx, 1);
+                                    });
+                                    
+                                    let novaQtd = 0;
+                                    let novoPreco = 0;
+                                    const product = encontrarProduto(item.productId);
+                                    
+                                    item.detalhes.forEach(d => {
+                                        novaQtd += d.totalUnits || (d.qty * d.step);
+                                        if (product) {
+                                            const qtyOption = product.quantities.find(q => q.qty === d.step);
+                                            if (qtyOption) {
+                                                const unidades = d.totalUnits || (d.qty * d.step);
+                                                novoPreco += (unidades * qtyOption.price) / qtyOption.qty;
+                                            }
+                                        }
+                                    });
+                                    
+                                    item.quantity = novaQtd;
+                                    item.price = novoPreco;
+                                    
+                                    if (item.quantity === 0) {
+                                        itensRemovidos.push(item.name);
+                                        carrinho.splice(i, 1);
+                                        i--;
+                                        continue;
+                                    }
+                                    
+                                } else {
+                                    if (estoqueAtual > 0) {
+                                        item.quantity = estoqueAtual;
+                                        const product = encontrarProduto(item.productId);
+                                        if (product) {
+                                            let melhorOpcao = product.quantities[0];
+                                            for (const qty of product.quantities) {
+                                                if (item.quantity >= qty.qty) {
+                                                    melhorOpcao = qty;
+                                                }
+                                            }
+                                            item.price = (item.quantity * melhorOpcao.price) / melhorOpcao.qty;
+                                            itensAjustados.push(`${item.name}: ${item.quantity} unidades`);
                                         }
                                     } else {
-                                        itensParaRemover.push(d);
+                                        itensRemovidos.push(item.name);
+                                        carrinho.splice(i, 1);
+                                        i--;
+                                        continue;
                                     }
                                 }
-                            }
-                            
-                            // Remover itens que não cabem
-                            itensParaRemover.forEach(d => {
-                                const idx = item.detalhes.indexOf(d);
-                                if (idx > -1) item.detalhes.splice(idx, 1);
-                            });
-                            
-                            // Recalcular
-                            let novaQtd = 0;
-                            let novoPreco = 0;
-                            const product = encontrarProduto(item.productId);
-                            
-                            item.detalhes.forEach(d => {
-                                novaQtd += d.totalUnits || (d.qty * d.step);
-                                if (product) {
-                                    const qtyOption = product.quantities.find(q => q.qty === d.step);
-                                    if (qtyOption) {
-                                        const unidades = d.totalUnits || (d.qty * d.step);
-                                        novoPreco += (unidades * qtyOption.price) / qtyOption.qty;
-                                    }
-                                }
-                            });
-                            
-                            item.quantity = novaQtd;
-                            item.price = novoPreco;
-                            
-                            if (item.quantity === 0) {
-                                itensRemovidos.push(item.name);
-                                carrinho.splice(i, 1);
-                                i--;
-                                continue;
-                            }
-                            
-                        } else {
-                            // Ajuste simples
-                            if (estoqueAtual > 0) {
-                                item.quantity = estoqueAtual;
-                                const product = encontrarProduto(item.productId);
-                                if (product) {
-                                    let melhorOpcao = product.quantities[0];
-                                    for (const qty of product.quantities) {
-                                        if (item.quantity >= qty.qty) {
-                                            melhorOpcao = qty;
-                                        }
-                                    }
-                                    item.price = (item.quantity * melhorOpcao.price) / melhorOpcao.qty;
-                                    itensAjustados.push(`${item.name}: ${item.quantity} unidades`);
-                                }
-                            } else {
-                                itensRemovidos.push(item.name);
-                                carrinho.splice(i, 1);
-                                i--;
-                                continue;
                             }
                         }
                     }
                 }
+                
+                if (precisaAtualizar) {
+                    salvarCarrinho();
+                    atualizarBadge();
+                    
+                    let mensagemFinal = '';
+                    if (itensRemovidos.length > 0) {
+                        mensagemFinal += `❌ Produtos removidos: ${itensRemovidos.join(', ')}\n`;
+                    }
+                    if (itensAjustados.length > 0) {
+                        mensagemFinal += `📦 Produtos ajustados: ${itensAjustados.join(', ')}\n`;
+                    }
+                    
+                    if (mensagemFinal) {
+                        mostrarNotificacao(`⚠️ Estoque atualizado! Alguns itens foram ajustados.`, 'warning');
+                        console.log('📊 Ajustes realizados:', mensagemFinal);
+                    } else {
+                        mostrarNotificacao('✅ Estoque do carrinho atualizado!', 'success');
+                    }
+                    
+                    return { atualizado: true, mensagem: mensagemFinal, removidos: itensRemovidos, ajustados: itensAjustados };
+                }
+                
+                return { atualizado: false, mensagem: 'Estoque OK' };
+                
+            } catch (error) {
+                console.error('❌ Erro ao verificar estoque:', error);
+                return { atualizado: false, mensagem: 'Erro ao verificar estoque' };
             }
         }
-        
-        if (precisaAtualizar) {
-            salvarCarrinho();
-            atualizarBadge();
-            
-            let mensagemFinal = '';
-            if (itensRemovidos.length > 0) {
-                mensagemFinal += `❌ Produtos removidos: ${itensRemovidos.join(', ')}\n`;
-            }
-            if (itensAjustados.length > 0) {
-                mensagemFinal += `📦 Produtos ajustados: ${itensAjustados.join(', ')}\n`;
-            }
-            
-            if (mensagemFinal) {
-                mostrarNotificacao(`⚠️ Estoque atualizado! Alguns itens foram ajustados.`, 'warning');
-                console.log('📊 Ajustes realizados:', mensagemFinal);
-            } else {
-                mostrarNotificacao('✅ Estoque do carrinho atualizado!', 'success');
-            }
-            
-            return { atualizado: true, mensagem: mensagemFinal, removidos: itensRemovidos, ajustados: itensAjustados };
-        }
-        
-        return { atualizado: false, mensagem: 'Estoque OK' };
-        
-    } catch (error) {
-        console.error('❌ Erro ao verificar estoque:', error);
-        return { atualizado: false, mensagem: 'Erro ao verificar estoque' };
-    }
-}
 
         function verificarCarrinhoValido() {
             if (carrinho.length === 0) {
@@ -4647,220 +4514,217 @@ async function verificarEstoqueCarrinho() {
             return { valido: true, mensagem: 'Carrinho válido!' };
         }
 
-    function abrirCarrinho() {
-    // ============================================================
-    // LIMPAR FRETE ANTES DE ABRIR
-    // ============================================================
-    const resultadoEl = document.getElementById('freteResultadoCarrinho');
-    if (resultadoEl) {
-        resultadoEl.style.display = 'none';
-        resultadoEl.innerHTML = '';
-    }
-    
-    const cepInput = document.getElementById('cepCarrinho');
-    if (cepInput) {
-        cepInput.value = '';
-    }
-    
-    const erroEl = document.getElementById('freteErroCarrinho');
-    if (erroEl) {
-        erroEl.classList.remove('show');
-        erroEl.textContent = '';
-    }
-    
-    const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
-    if (btnCalcular) {
-        btnCalcular.innerHTML = '<i class="fas fa-truck"></i> Calcular Frete';
-        btnCalcular.disabled = false;
-    }
-    
-    // ============================================================
-    // MOSTRA LOADING E ABRE MODAL
-    // ============================================================
-    const modal = document.getElementById('cartModal');
-    const container = document.getElementById('cartItems');
-    
-    modal.style.display = 'block';
-    container.innerHTML = `
-        <div style="text-align:center;padding:40px 20px;">
-            <div style="width:50px;height:50px;border:4px solid #e0e0e0;border-top:4px solid #1a3a5c;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;"></div>
-            <p style="color:#666;font-size:16px;font-weight:600;">🔄 Atualizando estoque...</p>
-            <p style="color:#999;font-size:13px;">Verificando disponibilidade dos produtos</p>
-        </div>
-    `;
-    
-    const btnFinalizar = document.querySelector('.btn-checkout');
-    if (btnFinalizar) {
-        btnFinalizar.disabled = true;
-        btnFinalizar.style.opacity = '0.5';
-        btnFinalizar.style.cursor = 'not-allowed';
-    }
-    
-    // ============================================================
-    // VERIFICA ESTOQUE E DEPOIS MOSTRA O CARRINHO
-    // ============================================================
-    verificarEstoqueCarrinho().then(() => {
-        mostrarConteudoCarrinho();
-    });
-}
-
-function mostrarConteudoCarrinho() {
-    const container = document.getElementById('cartItems');
-    const totalEl = document.getElementById('cartTotal');
-    const totalUnidadesEl = document.getElementById('totalUnidades');
-    const btnFinalizar = document.querySelector('.btn-checkout');
-    const freteContainer = document.getElementById('freteCarrinhoContainer');
-    
-    if (carrinho.length > 0) {
-        freteContainer.style.display = 'block';
-    } else {
-        freteContainer.style.display = 'none';
-    }
-    
-    if (carrinho.length === 0) {
-        container.innerHTML = '<div class="carrinho-vazio"><i class="fas fa-shopping-cart"></i><p>Seu carrinho está vazio</p><span>Adicione produtos para começar</span></div>';
-        totalEl.textContent = 'R$ 0,00';
-        totalUnidadesEl.textContent = '0 un';
-        if (btnFinalizar) {
-            btnFinalizar.disabled = true;
-            btnFinalizar.style.opacity = '0.5';
-            btnFinalizar.style.cursor = 'not-allowed';
-        }
-        return;
-    }
-    
-    container.innerHTML = '';
-    let totalUnidades = 0;
-    let avisoEstoque = false;
-    let botaoHabilitado = true;
-    let mensagemBloqueio = '';
-    
-    carrinho.forEach((item, index) => {
-        const product = encontrarProduto(item.productId);
-        const div = document.createElement('div');
-        div.className = 'cart-item-moderno';
-        const imgSrc = (item.images && item.images.length > 0) ? item.images[0] : '';
-        const estoqueAtual = product ? product.stock : item.stock;
-        const podeVenderZerado = product ? product.vender_zerado : item.vender_zerado;
-        const temEstoqueSuficiente = estoqueAtual >= item.quantity;
-        const prazoProducao = product ? product.productionDays : (item.productionDays || 7);
-        totalUnidades += item.quantity;
-        
-        let stockStatus = '';
-        let avisoAdicional = '';
-        let isItemInvalido = false;
-        
-        if (!podeVenderZerado) {
-            if (temEstoqueSuficiente) {
-                stockStatus = `<span class="stock-badge available"><i class="fas fa-check-circle"></i> Disponível (${estoqueAtual} un)</span>`;
-            } else {
-                stockStatus = `<span class="stock-badge esgotado" style="background:#fce4ec;color:#c62828;">
-                    <i class="fas fa-exclamation-triangle"></i> Estoque insuficiente! (${estoqueAtual} un disponível)
-                </span>`;
-                avisoEstoque = true;
-                botaoHabilitado = false;
-                mensagemBloqueio = '⚠️ Ajuste as quantidades dos itens com estoque insuficiente.';
-                isItemInvalido = true;
-                avisoAdicional = `<div style="color:#e74c3c;font-size:12px;margin-top:4px;font-weight:bold;">
-                    ⚠️ A quantidade solicitada (${item.quantity} un) excede o estoque disponível (${estoqueAtual} un)
-                </div>`;
+        function abrirCarrinho() {
+            const resultadoEl = document.getElementById('freteResultadoCarrinho');
+            if (resultadoEl) {
+                resultadoEl.style.display = 'none';
+                resultadoEl.innerHTML = '';
             }
-        } else {
-            if (temEstoqueSuficiente) {
-                stockStatus = `<span class="stock-badge available"><i class="fas fa-check-circle"></i> Disponível (${estoqueAtual} un)</span>`;
-            } else {
-                stockStatus = `<span class="stock-badge production"><i class="fas fa-clock"></i> Produção: ${prazoProducao} dias</span>`;
+            
+            const cepInput = document.getElementById('cepCarrinho');
+            if (cepInput) {
+                cepInput.value = '';
             }
-        }
-        
-        let controlesHTML = '';
-        if (item.detalhes && item.detalhes.length > 0) {
-            controlesHTML = item.detalhes.map((d, dIndex) => {
-                const totalUnidades = d.totalUnits || (d.qty * d.step);
-                return `
-                    <div class="pacote-control">
-                        <span class="pacote-label">${d.step} un</span>
-                        <div class="qty-control-mini">
-                            <button onclick="ajustarPacote(${index}, ${dIndex}, -1)" class="btn-mini"><i class="fas fa-minus"></i></button>
-                            <span class="qty-mini">${d.qty}</span>
-                            <button onclick="ajustarPacote(${index}, ${dIndex}, 1)" class="btn-mini"><i class="fas fa-plus"></i></button>
-                        </div>
-                        <span class="pacote-total">${totalUnidades} un</span>
-                    </div>
-                `;
-            }).join('');
-        } else {
-            controlesHTML = `
-                <div class="pacote-control">
-                    <span class="pacote-label">Unidades</span>
-                    <div class="qty-control-mini">
-                        <button onclick="ajustarPacoteSimples(${index}, -1)" class="btn-mini"><i class="fas fa-minus"></i></button>
-                        <span class="qty-mini">${item.quantity}</span>
-                        <button onclick="ajustarPacoteSimples(${index}, 1)" class="btn-mini"><i class="fas fa-plus"></i></button>
-                    </div>
+            
+            const erroEl = document.getElementById('freteErroCarrinho');
+            if (erroEl) {
+                erroEl.classList.remove('show');
+                erroEl.textContent = '';
+            }
+            
+            const atendenteEl = document.querySelector('.frete-atendente');
+            if (atendenteEl) atendenteEl.remove();
+            
+            const sucessoEl = document.querySelector('.frete-sucesso');
+            if (sucessoEl) sucessoEl.remove();
+            
+            const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
+            if (btnCalcular) {
+                btnCalcular.innerHTML = '<i class="fas fa-truck"></i> Calcular Frete';
+                btnCalcular.disabled = false;
+            }
+            
+            const modal = document.getElementById('cartModal');
+            const container = document.getElementById('cartItems');
+            
+            modal.style.display = 'block';
+            container.innerHTML = `
+                <div style="text-align:center;padding:40px 20px;">
+                    <div style="width:50px;height:50px;border:4px solid #e0e0e0;border-top:4px solid #1a3a5c;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px;"></div>
+                    <p style="color:#666;font-size:16px;font-weight:600;">🔄 Atualizando estoque...</p>
+                    <p style="color:#999;font-size:13px;">Verificando disponibilidade dos produtos</p>
                 </div>
             `;
+            
+            const btnFinalizar = document.querySelector('.btn-checkout');
+            if (btnFinalizar) {
+                btnFinalizar.disabled = true;
+                btnFinalizar.style.opacity = '0.5';
+                btnFinalizar.style.cursor = 'not-allowed';
+            }
+            
+            verificarEstoqueCarrinho().then(() => {
+                mostrarConteudoCarrinho();
+            });
         }
-        
-        const subtotal = item.price || 0;
-        if (isItemInvalido) {
-            div.style.borderLeft = '4px solid #e74c3c';
-            div.style.paddingLeft = '12px';
+
+        function mostrarConteudoCarrinho() {
+            const container = document.getElementById('cartItems');
+            const totalEl = document.getElementById('cartTotal');
+            const totalUnidadesEl = document.getElementById('totalUnidades');
+            const btnFinalizar = document.querySelector('.btn-checkout');
+            const freteContainer = document.getElementById('freteCarrinhoContainer');
+            
+            if (carrinho.length > 0) {
+                freteContainer.style.display = 'block';
+            } else {
+                freteContainer.style.display = 'none';
+            }
+            
+            if (carrinho.length === 0) {
+                container.innerHTML = '<div class="carrinho-vazio"><i class="fas fa-shopping-cart"></i><p>Seu carrinho está vazio</p><span>Adicione produtos para começar</span></div>';
+                totalEl.textContent = 'R$ 0,00';
+                totalUnidadesEl.textContent = '0 un';
+                if (btnFinalizar) {
+                    btnFinalizar.disabled = true;
+                    btnFinalizar.style.opacity = '0.5';
+                    btnFinalizar.style.cursor = 'not-allowed';
+                }
+                return;
+            }
+            
+            container.innerHTML = '';
+            let totalUnidades = 0;
+            let avisoEstoque = false;
+            let botaoHabilitado = true;
+            let mensagemBloqueio = '';
+            
+            carrinho.forEach((item, index) => {
+                const product = encontrarProduto(item.productId);
+                const div = document.createElement('div');
+                div.className = 'cart-item-moderno';
+                const imgSrc = (item.images && item.images.length > 0) ? item.images[0] : '';
+                const estoqueAtual = product ? product.stock : item.stock;
+                const podeVenderZerado = product ? product.vender_zerado : item.vender_zerado;
+                const temEstoqueSuficiente = estoqueAtual >= item.quantity;
+                const prazoProducao = product ? product.productionDays : (item.productionDays || 7);
+                totalUnidades += item.quantity;
+                
+                let stockStatus = '';
+                let avisoAdicional = '';
+                let isItemInvalido = false;
+                
+                if (!podeVenderZerado) {
+                    if (temEstoqueSuficiente) {
+                        stockStatus = `<span class="stock-badge available"><i class="fas fa-check-circle"></i> Disponível (${estoqueAtual} un)</span>`;
+                    } else {
+                        stockStatus = `<span class="stock-badge esgotado" style="background:#fce4ec;color:#c62828;">
+                            <i class="fas fa-exclamation-triangle"></i> Estoque insuficiente! (${estoqueAtual} un disponível)
+                        </span>`;
+                        avisoEstoque = true;
+                        botaoHabilitado = false;
+                        mensagemBloqueio = '⚠️ Ajuste as quantidades dos itens com estoque insuficiente.';
+                        isItemInvalido = true;
+                        avisoAdicional = `<div style="color:#e74c3c;font-size:12px;margin-top:4px;font-weight:bold;">
+                            ⚠️ A quantidade solicitada (${item.quantity} un) excede o estoque disponível (${estoqueAtual} un)
+                        </div>`;
+                    }
+                } else {
+                    if (temEstoqueSuficiente) {
+                        stockStatus = `<span class="stock-badge available"><i class="fas fa-check-circle"></i> Disponível (${estoqueAtual} un)</span>`;
+                    } else {
+                        stockStatus = `<span class="stock-badge production"><i class="fas fa-clock"></i> Produção: ${prazoProducao} dias</span>`;
+                    }
+                }
+                
+                let controlesHTML = '';
+                if (item.detalhes && item.detalhes.length > 0) {
+                    controlesHTML = item.detalhes.map((d, dIndex) => {
+                        const totalUnidades = d.totalUnits || (d.qty * d.step);
+                        return `
+                            <div class="pacote-control">
+                                <span class="pacote-label">${d.step} un</span>
+                                <div class="qty-control-mini">
+                                    <button onclick="ajustarPacote(${index}, ${dIndex}, -1)" class="btn-mini"><i class="fas fa-minus"></i></button>
+                                    <span class="qty-mini">${d.qty}</span>
+                                    <button onclick="ajustarPacote(${index}, ${dIndex}, 1)" class="btn-mini"><i class="fas fa-plus"></i></button>
+                                </div>
+                                <span class="pacote-total">${totalUnidades} un</span>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    controlesHTML = `
+                        <div class="pacote-control">
+                            <span class="pacote-label">Unidades</span>
+                            <div class="qty-control-mini">
+                                <button onclick="ajustarPacoteSimples(${index}, -1)" class="btn-mini"><i class="fas fa-minus"></i></button>
+                                <span class="qty-mini">${item.quantity}</span>
+                                <button onclick="ajustarPacoteSimples(${index}, 1)" class="btn-mini"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                const subtotal = item.price || 0;
+                if (isItemInvalido) {
+                    div.style.borderLeft = '4px solid #e74c3c';
+                    div.style.paddingLeft = '12px';
+                }
+                
+                div.innerHTML = `
+                    <div class="cart-item-moderno-inner">
+                        <div class="cart-item-left-moderno">
+                            <div class="cart-item-image-moderno">
+                                ${imgSrc ? `<img src="${imgSrc}" alt="${item.name}">` : '<span class="img-placeholder">📦</span>'}
+                            </div>
+                            <div class="cart-item-info-moderno">
+                                <div class="cart-item-nome">${item.name} ${isItemInvalido ? '🔴' : ''}</div>
+                                <div class="cart-item-controles">${controlesHTML}</div>
+                                <div class="cart-item-status">${stockStatus}</div>
+                                ${avisoAdicional}
+                            </div>
+                        </div>
+                        <div class="cart-item-right-moderno">
+                            <div class="cart-item-subtotal">R$ ${subtotal.toFixed(2)}</div>
+                            <button class="btn-remover-item" onclick="removerItemCarrinho(${index})" title="Remover item"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            
+            if (!botaoHabilitado && btnFinalizar) {
+                btnFinalizar.disabled = true;
+                btnFinalizar.style.opacity = '0.5';
+                btnFinalizar.style.cursor = 'not-allowed';
+                btnFinalizar.title = mensagemBloqueio || 'Ajuste os itens com estoque insuficiente';
+            } else if (btnFinalizar) {
+                btnFinalizar.disabled = false;
+                btnFinalizar.style.opacity = '1';
+                btnFinalizar.style.cursor = 'pointer';
+                btnFinalizar.title = '';
+            }
+            
+            if (avisoEstoque) {
+                const avisoDiv = document.createElement('div');
+                avisoDiv.style.cssText = `
+                    background: #fff3cd;
+                    padding: 12px 16px;
+                    border-radius: 8px;
+                    margin: 10px 0;
+                    border-left: 4px solid #f39c12;
+                    color: #856404;
+                    font-size: 14px;
+                `;
+                avisoDiv.innerHTML = `<strong>⚠️ Atenção:</strong> Alguns produtos têm estoque insuficiente. Ajuste as quantidades para prosseguir.`;
+                container.insertBefore(avisoDiv, container.firstChild);
+            }
+            
+            const total = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
+            totalEl.textContent = `R$ ${total.toFixed(2)}`;
+            totalUnidadesEl.textContent = `${totalUnidades} un`;
         }
-        
-        div.innerHTML = `
-            <div class="cart-item-moderno-inner">
-                <div class="cart-item-left-moderno">
-                    <div class="cart-item-image-moderno">
-                        ${imgSrc ? `<img src="${imgSrc}" alt="${item.name}">` : '<span class="img-placeholder">📦</span>'}
-                    </div>
-                    <div class="cart-item-info-moderno">
-                        <div class="cart-item-nome">${item.name} ${isItemInvalido ? '🔴' : ''}</div>
-                        <div class="cart-item-controles">${controlesHTML}</div>
-                        <div class="cart-item-status">${stockStatus}</div>
-                        ${avisoAdicional}
-                    </div>
-                </div>
-                <div class="cart-item-right-moderno">
-                    <div class="cart-item-subtotal">R$ ${subtotal.toFixed(2)}</div>
-                    <button class="btn-remover-item" onclick="removerItemCarrinho(${index})" title="Remover item"><i class="fas fa-trash-alt"></i></button>
-                </div>
-            </div>
-        `;
-        container.appendChild(div);
-    });
-    
-    if (!botaoHabilitado && btnFinalizar) {
-        btnFinalizar.disabled = true;
-        btnFinalizar.style.opacity = '0.5';
-        btnFinalizar.style.cursor = 'not-allowed';
-        btnFinalizar.title = mensagemBloqueio || 'Ajuste os itens com estoque insuficiente';
-    } else if (btnFinalizar) {
-        btnFinalizar.disabled = false;
-        btnFinalizar.style.opacity = '1';
-        btnFinalizar.style.cursor = 'pointer';
-        btnFinalizar.title = '';
-    }
-    
-    if (avisoEstoque) {
-        const avisoDiv = document.createElement('div');
-        avisoDiv.style.cssText = `
-            background: #fff3cd;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin: 10px 0;
-            border-left: 4px solid #f39c12;
-            color: #856404;
-            font-size: 14px;
-        `;
-        avisoDiv.innerHTML = `<strong>⚠️ Atenção:</strong> Alguns produtos têm estoque insuficiente. Ajuste as quantidades para prosseguir.`;
-        container.insertBefore(avisoDiv, container.firstChild);
-    }
-    
-    const total = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
-    totalEl.textContent = `R$ ${total.toFixed(2)}`;
-    totalUnidadesEl.textContent = `${totalUnidades} un`;
-}
 
         // ============================================================
         // AJUSTAR PACOTE
@@ -5371,9 +5235,6 @@ function mostrarConteudoCarrinho() {
             });
         }
 
-
-
-
         // ============================================================
         // FUNÇÕES DE BUSCA
         // ============================================================
@@ -5462,7 +5323,7 @@ function mostrarConteudoCarrinho() {
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('userDropdown');
             const btn = document.getElementById('btnUserMenu');
-            if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+            if (dropdown && !dropdown.contains(e.target) && !btn.contains(e.target)) {
                 dropdown.classList.remove('show');
             }
         });
@@ -6161,95 +6022,95 @@ function mostrarConteudoCarrinho() {
             }
         }
 
-// ============================================================
-// PAGAMENTOS VIA WHATSAPP - CORRIGIDO
-// ============================================================
-function solicitarLinkPagamento() {
-    let numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
-    let valorTotal = '0,00';
-    
-    if (carrinho.length > 0) {
-        valorTotal = carrinho.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
-    }
-    
-    if (pedidoDataEnvio?.total) {
-        valorTotal = pedidoDataEnvio.total.toFixed(2);
-    }
-    
-    if (checkoutState?.freteSelecionado) {
-        const freteValor = checkoutState.freteSelecionado.valor || 0;
-        const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
-        valorTotal = (totalProdutos + freteValor).toFixed(2);
-    }
-    
-    const mensagem = `*💳 SOLICITAÇÃO DE LINK DE PAGAMENTO*%0A%0A` +
-        `*Cliente:* ${usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente'}%0A` +
-        `*Email:* ${usuarioLogado?.email || checkoutState.clienteData?.email || ''}%0A` +
-        `*Telefone:* ${usuarioLogado?.telefone || checkoutState.clienteData?.telefone || ''}%0A` +
-        `*Valor total:* R$ ${valorTotal.replace('.', ',')}%0A` +
-        `*Pedido:* #${numeroPedido}%0A%0A` +
-        `Por favor, enviar link de pagamento.`;
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
-    fecharModal('pagamentoModal');
-}
+        // ============================================================
+        // PAGAMENTOS VIA WHATSAPP
+        // ============================================================
+        function solicitarLinkPagamento() {
+            let numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
+            let valorTotal = '0,00';
+            
+            if (carrinho.length > 0) {
+                valorTotal = carrinho.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
+            }
+            
+            if (pedidoDataEnvio?.total) {
+                valorTotal = pedidoDataEnvio.total.toFixed(2);
+            }
+            
+            if (checkoutState?.freteSelecionado) {
+                const freteValor = checkoutState.freteSelecionado.valor || 0;
+                const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
+                valorTotal = (totalProdutos + freteValor).toFixed(2);
+            }
+            
+            const mensagem = `*💳 SOLICITAÇÃO DE LINK DE PAGAMENTO*%0A%0A` +
+                `*Cliente:* ${usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente'}%0A` +
+                `*Email:* ${usuarioLogado?.email || checkoutState.clienteData?.email || ''}%0A` +
+                `*Telefone:* ${usuarioLogado?.telefone || checkoutState.clienteData?.telefone || ''}%0A` +
+                `*Valor total:* R$ ${valorTotal.replace('.', ',')}%0A` +
+                `*Pedido:* #${numeroPedido}%0A%0A` +
+                `Por favor, enviar link de pagamento.`;
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
+            fecharModal('pagamentoModal');
+        }
 
-function solicitarBoleto() {
-    let numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
-    let valorTotal = '0,00';
-    
-    if (carrinho.length > 0) {
-        valorTotal = carrinho.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
-    }
-    
-    if (pedidoDataEnvio?.total) {
-        valorTotal = pedidoDataEnvio.total.toFixed(2);
-    }
-    
-    if (checkoutState?.freteSelecionado) {
-        const freteValor = checkoutState.freteSelecionado.valor || 0;
-        const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
-        valorTotal = (totalProdutos + freteValor).toFixed(2);
-    }
-    
-    const mensagem = `*📄 SOLICITAÇÃO DE BOLETO*%0A%0A` +
-        `*Cliente:* ${usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente'}%0A` +
-        `*Email:* ${usuarioLogado?.email || checkoutState.clienteData?.email || ''}%0A` +
-        `*Telefone:* ${usuarioLogado?.telefone || checkoutState.clienteData?.telefone || ''}%0A` +
-        `*Valor total:* R$ ${valorTotal.replace('.', ',')}%0A` +
-        `*Pedido:* #${numeroPedido}%0A%0A` +
-        `Por favor, gerar boleto para pagamento.`;
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
-    fecharModal('pagamentoModal');
-}
+        function solicitarBoleto() {
+            let numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
+            let valorTotal = '0,00';
+            
+            if (carrinho.length > 0) {
+                valorTotal = carrinho.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
+            }
+            
+            if (pedidoDataEnvio?.total) {
+                valorTotal = pedidoDataEnvio.total.toFixed(2);
+            }
+            
+            if (checkoutState?.freteSelecionado) {
+                const freteValor = checkoutState.freteSelecionado.valor || 0;
+                const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
+                valorTotal = (totalProdutos + freteValor).toFixed(2);
+            }
+            
+            const mensagem = `*📄 SOLICITAÇÃO DE BOLETO*%0A%0A` +
+                `*Cliente:* ${usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente'}%0A` +
+                `*Email:* ${usuarioLogado?.email || checkoutState.clienteData?.email || ''}%0A` +
+                `*Telefone:* ${usuarioLogado?.telefone || checkoutState.clienteData?.telefone || ''}%0A` +
+                `*Valor total:* R$ ${valorTotal.replace('.', ',')}%0A` +
+                `*Pedido:* #${numeroPedido}%0A%0A` +
+                `Por favor, gerar boleto para pagamento.`;
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
+            fecharModal('pagamentoModal');
+        }
 
-function enviarComprovantePix() {
-    let numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
-    let valorTotal = '0,00';
-    
-    if (carrinho.length > 0) {
-        valorTotal = carrinho.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
-    }
-    
-    if (pedidoDataEnvio?.total) {
-        valorTotal = pedidoDataEnvio.total.toFixed(2);
-    }
-    
-    if (checkoutState?.freteSelecionado) {
-        const freteValor = checkoutState.freteSelecionado.valor || 0;
-        const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
-        valorTotal = (totalProdutos + freteValor).toFixed(2);
-    }
-    
-    const mensagem = `*✅ COMPROVANTE PIX ENVIADO*%0A%0A` +
-        `*Cliente:* ${usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente'}%0A` +
-        `*Email:* ${usuarioLogado?.email || checkoutState.clienteData?.email || ''}%0A` +
-        `*Telefone:* ${usuarioLogado?.telefone || checkoutState.clienteData?.telefone || ''}%0A` +
-        `*Pedido:* #${numeroPedido}%0A` +
-        `*Valor:* R$ ${valorTotal.replace('.', ',')}%0A%0A` +
-        `Envio o comprovante em anexo. Por favor, confirmar o pagamento.`;
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
-    fecharModal('pagamentoModal');
-}
+        function enviarComprovantePix() {
+            let numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
+            let valorTotal = '0,00';
+            
+            if (carrinho.length > 0) {
+                valorTotal = carrinho.reduce((sum, item) => sum + (item.price || 0), 0).toFixed(2);
+            }
+            
+            if (pedidoDataEnvio?.total) {
+                valorTotal = pedidoDataEnvio.total.toFixed(2);
+            }
+            
+            if (checkoutState?.freteSelecionado) {
+                const freteValor = checkoutState.freteSelecionado.valor || 0;
+                const totalProdutos = carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
+                valorTotal = (totalProdutos + freteValor).toFixed(2);
+            }
+            
+            const mensagem = `*✅ COMPROVANTE PIX ENVIADO*%0A%0A` +
+                `*Cliente:* ${usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente'}%0A` +
+                `*Email:* ${usuarioLogado?.email || checkoutState.clienteData?.email || ''}%0A` +
+                `*Telefone:* ${usuarioLogado?.telefone || checkoutState.clienteData?.telefone || ''}%0A` +
+                `*Pedido:* #${numeroPedido}%0A` +
+                `*Valor:* R$ ${valorTotal.replace('.', ',')}%0A%0A` +
+                `Envio o comprovante em anexo. Por favor, confirmar o pagamento.`;
+            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${mensagem}`, '_blank');
+            fecharModal('pagamentoModal');
+        }
 
         function copiarPix() {
             const codigo = document.getElementById('pixCodigo').textContent;
@@ -6260,131 +6121,118 @@ function enviarComprovantePix() {
             });
         }
 
-     function abrirPagamento() {
-    fecharModal('confirmacaoModal');
-    document.getElementById('pagamentoModal').style.display = 'block';
-    const metodo = checkoutState.pagamentoSelecionado || 'PIX';
-    document.getElementById('pagamentoPIX').style.display = 'none';
-    document.getElementById('pagamentoCartao').style.display = 'none';
-    document.getElementById('pagamentoBoleto').style.display = 'none';
-    if (metodo === 'PIX') {
-        document.getElementById('pagamentoPIX').style.display = 'block';
-    } else if (metodo === 'Cartão') {
-        document.getElementById('pagamentoCartao').style.display = 'block';
-    } else if (metodo === 'Boleto') {
-        document.getElementById('pagamentoBoleto').style.display = 'block';
-    }
-    
-    // Mostrar número do pedido e valor no modal de pagamento
-    const numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
-    let valorTotal = pedidoDataEnvio?.total || carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
-    
-    // Atualizar o título do modal com o número do pedido
-    const tituloPagamento = document.querySelector('#pagamentoModal h2');
-    if (tituloPagamento) {
-        tituloPagamento.textContent = `💳 Pagamento - Pedido #${numeroPedido}`;
-    }
-    
-    // Atualizar o valor na área PIX
-    const pixArea = document.querySelector('.pagamento-pix-area');
-    if (pixArea) {
-        // Remover valor antigo se existir
-        const valorAntigo = pixArea.querySelector('.valor-pedido');
-        if (valorAntigo) valorAntigo.remove();
-        
-        const valorInfo = document.createElement('p');
-        valorInfo.className = 'valor-pedido';
-        valorInfo.style.cssText = 'font-weight:700;color:var(--primary-blue);font-size:18px;margin:10px 0;';
-        valorInfo.textContent = `💰 Valor total: R$ ${Number(valorTotal).toFixed(2).replace('.', ',')}`;
-        pixArea.insertBefore(valorInfo, pixArea.querySelector('.codigo'));
-    }
-}
+        function abrirPagamento() {
+            fecharModal('confirmacaoModal');
+            document.getElementById('pagamentoModal').style.display = 'block';
+            const metodo = checkoutState.pagamentoSelecionado || 'PIX';
+            document.getElementById('pagamentoPIX').style.display = 'none';
+            document.getElementById('pagamentoCartao').style.display = 'none';
+            document.getElementById('pagamentoBoleto').style.display = 'none';
+            if (metodo === 'PIX') {
+                document.getElementById('pagamentoPIX').style.display = 'block';
+            } else if (metodo === 'Cartão') {
+                document.getElementById('pagamentoCartao').style.display = 'block';
+            } else if (metodo === 'Boleto') {
+                document.getElementById('pagamentoBoleto').style.display = 'block';
+            }
+            
+            const numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
+            let valorTotal = pedidoDataEnvio?.total || carrinho.reduce((sum, item) => sum + (item.price || 0), 0);
+            
+            const tituloPagamento = document.querySelector('#pagamentoModal h2');
+            if (tituloPagamento) {
+                tituloPagamento.textContent = `💳 Pagamento - Pedido #${numeroPedido}`;
+            }
+            
+            const pixArea = document.querySelector('.pagamento-pix-area');
+            if (pixArea) {
+                const valorAntigo = pixArea.querySelector('.valor-pedido');
+                if (valorAntigo) valorAntigo.remove();
+                
+                const valorInfo = document.createElement('p');
+                valorInfo.className = 'valor-pedido';
+                valorInfo.style.cssText = 'font-weight:700;color:var(--primary-blue);font-size:18px;margin:10px 0;';
+                valorInfo.textContent = `💰 Valor total: R$ ${Number(valorTotal).toFixed(2).replace('.', ',')}`;
+                pixArea.insertBefore(valorInfo, pixArea.querySelector('.codigo'));
+            }
+        }
 
         // ============================================================
         // CHECKOUT - FUNÇÕES PRINCIPAIS
         // ============================================================
-      function abrirCheckout() {
-    // Mostra loading no checkout
-    document.getElementById('checkoutPage').style.display = 'block';
-    document.body.style.overflow = 'hidden';
-    
-    // Mostra loading no conteúdo
-    document.getElementById('checkoutContent').style.display = 'none';
-    document.getElementById('checkoutLoading').style.display = 'block';
-    document.querySelector('#checkoutLoading p').textContent = '🔄 Verificando estoque...';
-    document.querySelector('#checkoutLoading .spinner').style.display = 'block';
-    
-    // VERIFICAR ESTOQUE ANTES DE ABRIR CHECKOUT
-    verificarEstoqueCarrinho().then(() => {
-        if (carrinho.length === 0) {
-            alert('Seu carrinho está vazio!');
-            fecharCheckout();
-            return;
+        function abrirCheckout() {
+            document.getElementById('checkoutPage').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            document.getElementById('checkoutContent').style.display = 'none';
+            document.getElementById('checkoutLoading').style.display = 'block';
+            document.querySelector('#checkoutLoading p').textContent = '🔄 Verificando estoque...';
+            document.querySelector('#checkoutLoading .spinner').style.display = 'block';
+            
+            verificarEstoqueCarrinho().then(() => {
+                if (carrinho.length === 0) {
+                    alert('Seu carrinho está vazio!');
+                    fecharCheckout();
+                    return;
+                }
+                
+                const validacao = verificarCarrinhoValido();
+                if (!validacao.valido) {
+                    alert(validacao.mensagem);
+                    fecharCheckout();
+                    abrirCarrinho();
+                    return;
+                }
+                
+                document.getElementById('checkoutLoading').style.display = 'none';
+                document.getElementById('checkoutContent').style.display = 'flex';
+                
+                checkoutState.passo = 1;
+                checkoutState.enderecoSelecionado = null;
+                checkoutState.freteSelecionado = null;
+                checkoutState.pagamentoSelecionado = null;
+                checkoutState.clienteEncontrado = false;
+                checkoutState.clienteData = null;
+                checkoutState.emailBuscado = '';
+                checkoutState.dadosConfirmados = false;
+                checkoutState.opcoesFrete = [];
+                checkoutState.producaoDias = 0;
+                
+                document.getElementById('emailBusca').value = '';
+                document.getElementById('erroBusca').style.display = 'none';
+                document.getElementById('dadosClienteEncontrado').style.display = 'none';
+                document.getElementById('areaNovoCadastro').style.display = 'block';
+                document.getElementById('checkoutStep2').style.display = 'none';
+                document.getElementById('freteOpcoesContainer').innerHTML = '';
+                document.getElementById('checkoutCepDisplay').textContent = '_____-___';
+                document.getElementById('step1Status').textContent = '⏳ Pendente';
+                document.getElementById('step2Status').textContent = '⏳ Aguardando';
+                document.getElementById('step3Status').textContent = '🔒 Bloqueado';
+                document.getElementById('checkoutStep3Status').textContent = '🔒 Selecione o frete para liberar';
+                document.getElementById('btnFinalizarPedido').disabled = true;
+                document.getElementById('btnFinalizarPedido').style.opacity = '0.5';
+                
+                document.getElementById('stepIndicator1').style.color = 'var(--primary-blue)';
+                document.getElementById('stepIndicator1').style.fontWeight = '600';
+                document.getElementById('stepIndicator2').style.color = '#ccc';
+                document.getElementById('stepIndicator2').style.fontWeight = '400';
+                document.getElementById('stepIndicator3').style.color = '#ccc';
+                document.getElementById('stepIndicator3').style.fontWeight = '400';
+                
+                document.querySelectorAll('.pagamento-opcao-checkout').forEach(el => {
+                    el.style.borderColor = '#ddd';
+                    el.style.background = 'white';
+                    el.style.opacity = '0.5';
+                    el.style.pointerEvents = 'none';
+                });
+                
+                checkoutStepAtual = 1;
+                
+                atualizarResumoCheckout();
+                
+                fecharModal('cartModal');
+            });
         }
-        
-        const validacao = verificarCarrinhoValido();
-        if (!validacao.valido) {
-            alert(validacao.mensagem);
-            fecharCheckout();
-            abrirCarrinho();
-            return;
-        }
-        
-        // Esconde loading e mostra conteúdo
-        document.getElementById('checkoutLoading').style.display = 'none';
-        document.getElementById('checkoutContent').style.display = 'flex';
-        
-        // Resetar estado
-        checkoutState.passo = 1;
-        checkoutState.enderecoSelecionado = null;
-        checkoutState.freteSelecionado = null;
-        checkoutState.pagamentoSelecionado = null;
-        checkoutState.clienteEncontrado = false;
-        checkoutState.clienteData = null;
-        checkoutState.emailBuscado = '';
-        checkoutState.dadosConfirmados = false;
-        checkoutState.opcoesFrete = [];
-        checkoutState.producaoDias = 0;
-        
-        // Resetar UI
-        document.getElementById('emailBusca').value = '';
-        document.getElementById('erroBusca').style.display = 'none';
-        document.getElementById('dadosClienteEncontrado').style.display = 'none';
-        document.getElementById('areaNovoCadastro').style.display = 'block';
-        document.getElementById('checkoutStep2').style.display = 'none';
-        document.getElementById('freteOpcoesContainer').innerHTML = '';
-        document.getElementById('checkoutCepDisplay').textContent = '_____-___';
-        document.getElementById('step1Status').textContent = '⏳ Pendente';
-        document.getElementById('step2Status').textContent = '⏳ Aguardando';
-        document.getElementById('step3Status').textContent = '🔒 Bloqueado';
-        document.getElementById('checkoutStep3Status').textContent = '🔒 Selecione o frete para liberar';
-        document.getElementById('btnFinalizarPedido').disabled = true;
-        document.getElementById('btnFinalizarPedido').style.opacity = '0.5';
-        
-        // Resetar indicadores
-        document.getElementById('stepIndicator1').style.color = 'var(--primary-blue)';
-        document.getElementById('stepIndicator1').style.fontWeight = '600';
-        document.getElementById('stepIndicator2').style.color = '#ccc';
-        document.getElementById('stepIndicator2').style.fontWeight = '400';
-        document.getElementById('stepIndicator3').style.color = '#ccc';
-        document.getElementById('stepIndicator3').style.fontWeight = '400';
-        
-        // Resetar opções de pagamento
-        document.querySelectorAll('.pagamento-opcao-checkout').forEach(el => {
-            el.style.borderColor = '#ddd';
-            el.style.background = 'white';
-            el.style.opacity = '0.5';
-            el.style.pointerEvents = 'none';
-        });
-        
-        checkoutStepAtual = 1;
-        
-        // Atualizar resumo
-        atualizarResumoCheckout();
-        
-        fecharModal('cartModal');
-    });
-}
 
         function fecharCheckout() {
             document.getElementById('checkoutPage').style.display = 'none';
@@ -6566,66 +6414,150 @@ function enviarComprovantePix() {
                 document.getElementById('checkoutCepDisplay').textContent = cep;
                 checkoutState.producaoDias = calcularPrazoProducao();
                 
-                let opcoesSuperFrete = [];
-                try {
-                    const resposta = await buscarFreteSuperFrete(cep);
-                    opcoesSuperFrete = resposta || [];
-                } catch (error) {
-                    const totalProdutos = carrinho.reduce((sum, item) => sum + item.price, 0);
-                    opcoesSuperFrete = gerarOpcoesFrete(cep, 0, totalProdutos);
-                }
+                // Buscar frete via API (salva na planilha)
+                const peso = calcularPesoTotal();
+                const dims = calcularDimensoes();
                 
-                const opcoes = formatarOpcoesFrete(opcoesSuperFrete);
-                checkoutState.opcoesFrete = opcoes;
-                container.innerHTML = '';
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        acao: 'salvar_frete',
+                        cepDestino: cep,
+                        peso: peso,
+                        altura: dims.altura,
+                        largura: dims.largura,
+                        comprimento: dims.comprimento,
+                        _t: Date.now()
+                    })
+                });
                 
-                if (opcoes.length === 0) {
-                    container.innerHTML = `<div style="text-align:center;padding:20px;color:#e74c3c;"><i class="fas fa-exclamation-circle"></i> Nenhuma opção de frete disponível.</div>`;
-                } else {
-                    opcoes.forEach((op, index) => {
-                        const div = document.createElement('div');
-                        div.className = 'frete-opcao';
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                const response = await fetch(`${API_URL}?acao=buscar_ultimo_frete&_t=${Date.now()}`);
+                const data = await response.json();
+                
+                if (data.success && data.opcoes && data.opcoes.length > 0) {
+                    const opcoes = data.opcoes.map(op => ({
+                        id: op.codigo || 'FRETE',
+                        name: op.nome || 'Frete',
+                        price: parseFloat(op.preco || 0),
+                        delivery_time: parseInt(op.prazo || 0),
+                        service: op.nome || 'Frete',
+                        _api: true,
+                        is_entrega_propria: op.nome && op.nome.toLowerCase().includes('entrega própria')
+                    }));
+                    
+                    const opcoesFormatadas = formatarOpcoesFrete(opcoes);
+                    checkoutState.opcoesFrete = opcoesFormatadas;
+                    container.innerHTML = '';
+                    
+                    if (opcoesFormatadas.length === 0) {
+                        container.innerHTML = `<div style="text-align:center;padding:20px;color:#e74c3c;"><i class="fas fa-exclamation-circle"></i> Nenhuma opção de frete disponível.</div>`;
+                    } else {
+                        // Verifica se tem Entrega Própria
+                        const temEntregaPropria = opcoesFormatadas.some(op => op.isEntregaPropria);
                         
-                        let selecionar = false;
-                        if (op.isEntregaPropria) {
-                            selecionar = true;
-                        } else if (index === 0 && !opcoes.some(o => o.isEntregaPropria)) {
-                            selecionar = true;
-                        }
-                        
-                        if (selecionar) {
-                            div.classList.add('selecionado');
-                            checkoutState.freteSelecionado = op;
-                            liberarPagamento();
-                        }
-                        
-                        const badgeGratis = op.freteGratis ? ' 🎁' : '';
-                        const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
-                        
-                        div.innerHTML = `
-                            <div>
-                                <div class="frete-nome">${op.nome}${badgeGratis}</div>
-                                <div>
-                                    <span class="frete-prazo">📦 ${op.prazo}</span>
-                                    ${op.producao ? `<span class="frete-producao"> 🔄 ${op.producao}</span>` : ''}
+                        if (!temEntregaPropria) {
+                            // Mostrar mensagem de atendente no checkout
+                            container.innerHTML = `
+                                <div style="padding:15px 18px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;color:#856404;font-size:14px;margin-top:10px;">
+                                    <strong>⚠️ Não foi possível calcular o frete automaticamente</strong>
+                                    <p style="margin:8px 0 4px 0;font-size:13px;color:#856404;">
+                                        Para sua comodidade, <strong>Retirada na Loja</strong> está disponível.
+                                    </p>
+                                    <p style="margin:4px 0 8px 0;font-size:13px;color:#856404;">
+                                        Para calcular o frete para outras cidades, entre em contato com nosso atendente:
+                                    </p>
+                                    <button onclick="abrirWhatsAppAtendente('${cep}')" style="
+                                        display: inline-block;
+                                        margin-top: 10px;
+                                        background: #25D366;
+                                        color: white;
+                                        border: none;
+                                        padding: 10px 20px;
+                                        border-radius: 8px;
+                                        cursor: pointer;
+                                        font-weight: 600;
+                                        text-decoration: none;
+                                        transition: all 0.3s;
+                                    ">
+                                        <i class="fab fa-whatsapp"></i> Falar com Atendente
+                                    </button>
                                 </div>
-                            </div>
-                            <div class="frete-valor ${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
-                        `;
-                        
-                        div.onclick = function() {
-                            document.querySelectorAll('#freteOpcoesContainer .frete-opcao').forEach(el => {
-                                el.classList.remove('selecionado');
+                            `;
+                        } else {
+                            opcoesFormatadas.forEach((op, index) => {
+                                const div = document.createElement('div');
+                                div.className = 'frete-opcao';
+                                
+                                let selecionar = false;
+                                if (op.isEntregaPropria) {
+                                    selecionar = true;
+                                } else if (index === 0 && !opcoesFormatadas.some(o => o.isEntregaPropria)) {
+                                    selecionar = true;
+                                }
+                                
+                                if (selecionar) {
+                                    div.classList.add('selecionado');
+                                    checkoutState.freteSelecionado = op;
+                                    liberarPagamento();
+                                }
+                                
+                                const badgeGratis = op.freteGratis ? ' 🎁' : '';
+                                const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
+                                
+                                div.innerHTML = `
+                                    <div>
+                                        <div class="frete-nome">${op.nome}${badgeGratis}</div>
+                                        <div>
+                                            <span class="frete-prazo">📦 ${op.prazo}</span>
+                                            ${op.producao ? `<span class="frete-producao"> 🔄 ${op.producao}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <div class="frete-valor ${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
+                                `;
+                                
+                                div.onclick = function() {
+                                    document.querySelectorAll('#freteOpcoesContainer .frete-opcao').forEach(el => {
+                                        el.classList.remove('selecionado');
+                                    });
+                                    this.classList.add('selecionado');
+                                    checkoutState.freteSelecionado = op;
+                                    liberarPagamento();
+                                    atualizarResumoFinal();
+                                    mostrarNotificacao('✅ Frete selecionado! Escolha a forma de pagamento.', 'success');
+                                };
+                                
+                                container.appendChild(div);
                             });
-                            this.classList.add('selecionado');
-                            checkoutState.freteSelecionado = op;
-                            liberarPagamento();
-                            atualizarResumoFinal();
-                            mostrarNotificacao('✅ Frete selecionado! Escolha a forma de pagamento.', 'success');
-                        };
-                        
-                        container.appendChild(div);
-                    });
+                        }
+                    }
+                } else {
+                    container.innerHTML = `
+                        <div style="padding:15px 18px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;color:#856404;font-size:14px;margin-top:10px;">
+                            <strong>⚠️ Falha ao calcular frete</strong>
+                            <p style="margin:8px 0 4px 0;font-size:13px;color:#856404;">
+                                Entre em contato com nosso atendente para calcular o frete:
+                            </p>
+                            <button onclick="abrirWhatsAppAtendente('${cep}')" style="
+                                display: inline-block;
+                                margin-top: 10px;
+                                background: #25D366;
+                                color: white;
+                                border: none;
+                                padding: 10px 20px;
+                                border-radius: 8px;
+                                cursor: pointer;
+                                font-weight: 600;
+                                text-decoration: none;
+                                transition: all 0.3s;
+                            ">
+                                <i class="fab fa-whatsapp"></i> Falar com Atendente
+                            </button>
+                        </div>
+                    `;
                 }
                 
                 document.getElementById('step2Status').textContent = '✅ Completo';
@@ -7210,16 +7142,6 @@ function enviarComprovantePix() {
             }
         }
 
-
-// Verificação automática a cada 5 minutos
-setInterval(() => {
-    if (carrinho.length > 0) {
-        console.log('🔄 Verificação automática de estoque...');
-        verificarEstoqueCarrinho();
-    }
-}, 300000); // 5 minutos
-
-        
         // ============================================================
         // SALVAR E RESTAURAR ESTADO DE NAVEGAÇÃO
         // ============================================================
