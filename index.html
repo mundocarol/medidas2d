@@ -3678,62 +3678,64 @@
             return result || 'Não informado';
         }
 
-        // ============================================================
+// ============================================================
 // CALCULAR ENTREGA PRÓPRIA
 // ============================================================
 function calcularEntregaPropria(cidade, totalPedido) {
     if (!cidade) {
-        console.warn('⚠️ Cidade não informada para cálculo de frete');
         return { encontrado: false, cost: null, mensagem: 'Cidade não informada' };
     }
     
     const cidadeNormalizada = cidade.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     
-    let cidadeEncontrada = null;
-    let chaveEncontrada = null;
+    var cidadeEncontrada = null;
+    var chaveEncontrada = null;
     
-    for (const [key, value] of Object.entries(TABELA_FRETE_ENTREGA_PROPRIA)) {
-        const keyNormalizada = key.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        if (keyNormalizada === cidadeNormalizada) {
-            cidadeEncontrada = value;
-            chaveEncontrada = key;
-            break;
+    for (var key in TABELA_FRETE_ENTREGA_PROPRIA) {
+        if (TABELA_FRETE_ENTREGA_PROPRIA.hasOwnProperty(key)) {
+            var keyNormalizada = key.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            if (keyNormalizada === cidadeNormalizada) {
+                cidadeEncontrada = TABELA_FRETE_ENTREGA_PROPRIA[key];
+                chaveEncontrada = key;
+                break;
+            }
         }
     }
     
     if (!cidadeEncontrada) {
-        console.log(`ℹ️ Cidade "${cidade}" não encontrada na tabela de entrega própria`);
         return { encontrado: false, cost: null, mensagem: 'Cidade não encontrada na tabela' };
     }
     
-    console.log(`🔍 Calculando frete para ${chaveEncontrada} - Total: R$ ${totalPedido.toFixed(2)}`);
+    console.log('🔍 Calculando frete para ' + chaveEncontrada + ' - Total: R$ ' + totalPedido.toFixed(2));
     
-    let custo = null;
-    let faixaSelecionada = null;
+    var custo = null;
+    var faixaSelecionada = null;
     
-    for (const faixa of cidadeEncontrada) {
+    for (var i = 0; i < cidadeEncontrada.length; i++) {
+        var faixa = cidadeEncontrada[i];
         if (totalPedido >= faixa.min && totalPedido <= faixa.max) {
             custo = faixa.cost;
             faixaSelecionada = faixa;
-            console.log(`✅ Faixa encontrada: R$ ${faixa.min} até R$ ${faixa.max} → R$ ${faixa.cost.toFixed(2)}`);
+            console.log('✅ Faixa encontrada: R$ ' + faixa.min + ' até R$ ' + faixa.max + ' → R$ ' + faixa.cost.toFixed(2));
             break;
         }
     }
     
     if (custo === null) {
-        console.warn(`⚠️ Nenhuma faixa encontrada para total R$ ${totalPedido.toFixed(2)} em ${chaveEncontrada}`);
         return { encontrado: false, cost: null, mensagem: 'Faixa de preço não encontrada' };
     }
     
     return { 
         encontrado: true, 
         cost: custo, 
-        mensagem: `Entrega Própria - ${chaveEncontrada}`,
+        mensagem: 'Entrega Própria - ' + chaveEncontrada,
         faixa: faixaSelecionada,
         cidade: chaveEncontrada,
         freteGratis: custo === 0
     };
 }
+
+
         // ============================================================
         // CALCULAR PESO TOTAL (CORRIGIDO)
         // ============================================================
@@ -3914,7 +3916,7 @@ function calcularEntregaPropria(cidade, totalPedido) {
 
         // ============================================================
 // ============================================================
-// FORMATAR OPÇÕES DE FRETE (CARRINHO + CHECKOUT)
+// FORMATAR OPÇÕES DE FRETE (CARRINHO + CHECKOUT) - CORRIGIDO
 // ============================================================
 function formatarOpcoesFrete(opcoes, isCheckout = false) {
     const opcoesFormatadas = [];
@@ -3951,7 +3953,7 @@ function formatarOpcoesFrete(opcoes, isCheckout = false) {
         if (resultadoEntrega.encontrado) {
             const valor = resultadoEntrega.cost;
             const freteGratis = valor === 0;
-            const prazoEnvio = 3; // 3 dias para entrega própria
+            const prazoEnvio = 3;
             
             opcoesFormatadas.push({
                 nome: freteGratis ? '🚚 Entrega Própria (Grátis)' : '🚚 Entrega Própria',
@@ -3976,7 +3978,10 @@ function formatarOpcoesFrete(opcoes, isCheckout = false) {
     if (opcoes && opcoes.length > 0) {
         console.log('📋 Processando opções da API:', opcoes.length);
         
-        opcoes.forEach(op => {
+        // Usar forEach com continue não funciona, usar for normal
+        for (let i = 0; i < opcoes.length; i++) {
+            const op = opcoes[i];
+            
             let valorBase = parseFloat(op.price || op.preco || 0);
             let prazoBase = parseInt(op.delivery_time || op.prazo || 0);
             
@@ -3991,9 +3996,10 @@ function formatarOpcoesFrete(opcoes, isCheckout = false) {
                 (op.name && op.name.toLowerCase().includes('entrega própria')) ||
                 (op.service && op.service.toLowerCase().includes('entrega própria'));
             
+            // Se for entrega própria da API, pular (já temos da tabela)
             if (isEntregaPropria) {
                 console.log('⏭️ Ignorando Entrega Própria da API (já temos da tabela)');
-                return;
+                continue; // Continue é permitido dentro de for
             }
             
             let nome = op.nome || op.name || op.service || 'Frete';
@@ -4027,34 +4033,47 @@ function formatarOpcoesFrete(opcoes, isCheckout = false) {
             });
             
             console.log(`✅ ${nome}: envio ${prazoEnvio}d + produção ${producaoDias}d = ${prazoTotal}d`);
-        });
+        }
     }
     
     // ============================================================
     // 4. Ordenar por valor (menor para maior)
     // ============================================================
-    opcoesFormatadas.sort((a, b) => a.valor - b.valor);
+    opcoesFormatadas.sort(function(a, b) {
+        return a.valor - b.valor;
+    });
     
     // Garantir que Retirada na Loja fique em primeiro
-    const indexRetirada = opcoesFormatadas.findIndex(op => op.codigo === 'RETIRADA');
+    var indexRetirada = -1;
+    for (var i = 0; i < opcoesFormatadas.length; i++) {
+        if (opcoesFormatadas[i].codigo === 'RETIRADA') {
+            indexRetirada = i;
+            break;
+        }
+    }
+    
     if (indexRetirada > 0) {
-        const retirada = opcoesFormatadas.splice(indexRetirada, 1)[0];
+        var retirada = opcoesFormatadas.splice(indexRetirada, 1)[0];
         opcoesFormatadas.unshift(retirada);
     }
     
     // Se tem Entrega Própria grátis, colocar em segundo
-    const indexEntregaGratis = opcoesFormatadas.findIndex(op => 
-        op.isEntregaPropria && op.freteGratis
-    );
+    var indexEntregaGratis = -1;
+    for (var i = 0; i < opcoesFormatadas.length; i++) {
+        if (opcoesFormatadas[i].isEntregaPropria && opcoesFormatadas[i].freteGratis) {
+            indexEntregaGratis = i;
+            break;
+        }
+    }
+    
     if (indexEntregaGratis > 1) {
-        const entrega = opcoesFormatadas.splice(indexEntregaGratis, 1)[0];
+        var entrega = opcoesFormatadas.splice(indexEntregaGratis, 1)[0];
         opcoesFormatadas.splice(1, 0, entrega);
     }
     
     console.log('📋 Opções formatadas:', opcoesFormatadas);
     return opcoesFormatadas;
-}    
-
+}
 
 
 // ============================================================
@@ -4062,10 +4081,10 @@ function formatarOpcoesFrete(opcoes, isCheckout = false) {
 // ============================================================
 function obterCidadePorCep(cep) {
     if (!cep) return null;
-    const cepStr = String(cep).replace(/\D/g, '');
+    var cepStr = String(cep).replace(/\D/g, '');
     
     // Mapeamento de CEPs para cidades da região metropolitana de BH
-    const mapaCepCidade = {
+    var mapaCepCidade = {
         '30': 'Belo Horizonte',
         '31': 'Belo Horizonte',
         '32': 'Belo Horizonte',
@@ -4080,19 +4099,22 @@ function obterCidadePorCep(cep) {
     };
     
     // Verificar correspondência (prioridade: mais específico primeiro)
-    const prefixos = Object.keys(mapaCepCidade).sort((a, b) => b.length - a.length);
-    for (const prefixo of prefixos) {
+    var prefixos = Object.keys(mapaCepCidade).sort(function(a, b) {
+        return b.length - a.length;
+    });
+    
+    for (var i = 0; i < prefixos.length; i++) {
+        var prefixo = prefixos[i];
         if (cepStr.startsWith(prefixo)) {
-            console.log(`📍 CEP ${cepStr} → Cidade: ${mapaCepCidade[prefixo]}`);
+            console.log('📍 CEP ' + cepStr + ' → Cidade: ' + mapaCepCidade[prefixo]);
             return mapaCepCidade[prefixo];
         }
     }
     
-    console.log(`📍 CEP ${cepStr} → Cidade não encontrada no mapa`);
+    console.log('📍 CEP ' + cepStr + ' → Cidade não encontrada no mapa');
     return null;
 }
 
-    
     // ============================================================
     // 2. VERIFICAR ENTREGA PRÓPRIA NA TABELA
     // ============================================================
