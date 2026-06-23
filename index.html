@@ -3914,15 +3914,224 @@
         }
 
         // ============================================================
-        // FORMATAR OPÇÕES DE FRETE (APENAS RETIRADA E ENTREGA PRÓPRIA)
-        // ============================================================
-        function formatarOpcoesFrete(opcoes) {
-            const opcoesFormatadas = [];
-            const producaoDias = calcularPrazoProducao();
+// FORMATAR OPÇÕES DE FRETE (MOSTRA TODOS OS FRETES)
+// ============================================================
+function formatarOpcoesFrete(opcoes) {
+    const opcoesFormatadas = [];
+    const producaoDias = calcularPrazoProducao();
+    
+    // ============================================================
+    // 1. SEMPRE: Retirada na Loja
+    // ============================================================
+    const prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
+    opcoesFormatadas.push({
+        nome: '📦 Retirada na Loja',
+        valor: 0,
+        prazo: `${prazoRetirada} dias úteis`,
+        prazoDias: prazoRetirada,
+        codigo: 'RETIRADA',
+        producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
+        freteGratis: true,
+        isEntregaPropria: false,
+        origem: 'retirada'
+    });
+    
+    // ============================================================
+    // 2. SE TEM OPÇÕES DA API, MOSTRA TODAS
+    // ============================================================
+    if (opcoes && opcoes.length > 0) {
+        console.log('📋 Processando opções da API:', opcoes.length);
+        
+        opcoes.forEach(op => {
+            const valor = parseFloat(op.price || op.preco || 0);
+            const prazo = parseInt(op.delivery_time || op.prazo || 0);
             
-            // Opção de retirada na loja (sempre disponível)
-            const prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
+            // Verifica se é entrega própria
+            const isEntregaPropria = 
+                op.is_entrega_propria === true || 
+                (op.nome && op.nome.toLowerCase().includes('entrega própria')) ||
+                (op.name && op.name.toLowerCase().includes('entrega própria')) ||
+                (op.service && op.service.toLowerCase().includes('entrega própria'));
+            
+            let nome = op.nome || op.name || op.service || 'Frete';
+            
+            // Melhorar nome dos serviços
+            if (nome.includes('PAC') || nome === 'PAC') nome = 'PAC';
+            else if (nome.includes('SEDEX') || nome === 'SEDEX') nome = 'SEDEX';
+            else if (nome.includes('Jadlog') || nome === 'Jadlog') nome = 'Jadlog';
+            else if (nome.includes('Loggi') || nome === 'Loggi') nome = 'Loggi';
+            else if (nome.includes('Transportadora')) nome = 'Transportadora';
+            else if (isEntregaPropria) nome = '🚚 Entrega Própria';
+            
+            // Adicionar à lista
             opcoesFormatadas.push({
+                nome: nome,
+                valor: valor,
+                prazo: `${prazo + producaoDias} dias úteis`,
+                prazoDias: prazo + producaoDias,
+                codigo: op.id || op.codigo || op.service_code || nome,
+                producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
+                freteGratis: valor === 0,
+                isEntregaPropria: isEntregaPropria,
+                origem: 'api',
+                _api: true
+            });
+        });
+    }
+    
+    // ============================================================
+    // 3. Ordenar por valor (menor para maior)
+    // ============================================================
+    opcoesFormatadas.sort((a, b) => a.valor - b.valor);
+    
+    // Garantir que Retirada na Loja fique em primeiro (sempre)
+    const indexRetirada = opcoesFormatadas.findIndex(op => op.codigo === 'RETIRADA');
+    if (indexRetirada > 0) {
+        const retirada = opcoesFormatadas.splice(indexRetirada, 1)[0];
+        opcoesFormatadas.unshift(retirada);
+    }
+    
+    console.log('📋 Opções formatadas (TODAS):', opcoesFormatadas);
+    return opcoesFormatadas;
+}
+        // ============================================================
+// CALCULAR FRETE NO CARRINHO (VIA PLANILHA)
+// ============================================================
+async function calcularFreteCarrinho() {
+    const cep = document.getElementById('cepCarrinho').value.trim();
+    const erroEl = document.getElementById('freteErroCarrinho');
+    const resultadoEl = document.getElementById('freteResultadoCarrinho');
+    const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
+    
+    // Limpar mensagens anteriores
+    erroEl.classList.remove('show');
+    resultadoEl.style.display = 'none';
+    resultadoEl.innerHTML = '';
+    
+    // Remover mensagem de atendente se existir
+    const atendenteExistente = document.querySelector('.frete-atendente');
+    if (atendenteExistente) atendenteExistente.remove();
+    
+    if (!cep || cep.length < 8) {
+        erroEl.textContent = '⚠️ Digite um CEP válido com 8 dígitos.';
+        erroEl.classList.add('show');
+        return;
+    }
+    
+    if (carrinho.length === 0) {
+        erroEl.textContent = '⚠️ Seu carrinho está vazio. Adicione produtos primeiro.';
+        erroEl.classList.add('show');
+        return;
+    }
+    
+    resultadoEl.style.display = 'none';
+    resultadoEl.innerHTML = '<div class="frete-carregando"><i class="fas fa-spinner fa-spin"></i> Calculando frete...</div>';
+    btnCalcular.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculando...';
+    btnCalcular.disabled = true;
+    
+    try {
+        const peso = calcularPesoTotal();
+        const dims = calcularDimensoes();
+        
+        console.log('📦 Calculando frete para CEP:', cep);
+        console.log(`⚖️ Peso: ${peso}kg, Dim: ${dims.altura}x${dims.largura}x${dims.comprimento}`);
+        
+        // PASSO 1: Envia para salvar na planilha (no-cors)
+        console.log('📤 Enviando para salvar na planilha...');
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                acao: 'salvar_frete',
+                cepDestino: cep,
+                peso: peso,
+                altura: dims.altura,
+                largura: dims.largura,
+                comprimento: dims.comprimento,
+                _t: Date.now()
+            })
+        });
+        
+        // Aguarda 3 segundos para a planilha ser atualizada
+        console.log('⏳ Aguardando processamento (3s)...');
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // PASSO 2: Busca o frete salvo via GET
+        console.log('📥 Buscando frete salvo...');
+        const response = await fetch(`${API_URL}?acao=buscar_ultimo_frete&_t=${Date.now()}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📥 Dados do frete lidos da planilha:', data);
+        
+        if (data.success && data.opcoes && data.opcoes.length > 0) {
+            // Converter para o formato esperado
+            const opcoes = data.opcoes.map(op => ({
+                id: op.codigo || 'FRETE',
+                name: op.nome || 'Frete',
+                price: parseFloat(op.preco || 0),
+                delivery_time: parseInt(op.prazo || 0),
+                service: op.nome || 'Frete',
+                _api: true,
+                is_entrega_propria: op.nome && op.nome.toLowerCase().includes('entrega própria')
+            }));
+            
+            // FORMATAR TODAS AS OPÇÕES
+            const opcoesFormatadas = formatarOpcoesFrete(opcoes);
+            console.log('📋 Opções formatadas (TODAS):', opcoesFormatadas);
+            
+            // MOSTRAR TODAS AS OPÇÕES
+            resultadoEl.style.display = 'block';
+            resultadoEl.innerHTML = '';
+            
+            // Adicionar mensagem de sucesso
+            const sucessoDiv = document.createElement('div');
+            sucessoDiv.className = 'frete-sucesso show';
+            sucessoDiv.textContent = '✅ Frete calculado com sucesso!';
+            resultadoEl.appendChild(sucessoDiv);
+            
+            // Mostrar cada opção de frete
+            opcoesFormatadas.forEach(op => {
+                const div = document.createElement('div');
+                div.className = 'opcao-frete';
+                const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
+                const infoProducao = op.producao ? `<span class="frete-prazo">${op.producao}</span>` : '';
+                let badgeGratis = op.freteGratis ? ' 🎁' : '';
+                
+                div.innerHTML = `
+                    <div class="frete-info">
+                        <div class="frete-nome">${op.nome}${badgeGratis}</div>
+                        <div class="frete-prazo">${op.prazo}</div>
+                        ${infoProducao}
+                    </div>
+                    <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
+                `;
+                resultadoEl.appendChild(div);
+            });
+            
+            // Salvar no checkout se estiver aberto
+            if (checkoutState && checkoutState.passo >= 2) {
+                checkoutState.opcoesFrete = opcoesFormatadas;
+                checkoutState.freteSelecionado = opcoesFormatadas[0] || null;
+                atualizarResumoFinal();
+            }
+            
+            mostrarNotificacao('✅ Frete calculado com sucesso!', 'success');
+            
+        } else {
+            // Falha na API - mostrar apenas retirada na loja
+            console.warn('⚠️ Nenhuma opção de frete encontrada na API');
+            
+            // Mostrar apenas Retirada na Loja (sempre disponível)
+            const opcoesFallback = [];
+            const producaoDias = calcularPrazoProducao();
+            const prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
+            
+            opcoesFallback.push({
                 nome: '📦 Retirada na Loja',
                 valor: 0,
                 prazo: `${prazoRetirada} dias úteis`,
@@ -3930,198 +4139,86 @@
                 codigo: 'RETIRADA',
                 producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
                 freteGratis: true,
-                isEntregaPropria: false
+                isEntregaPropria: false,
+                origem: 'retirada'
             });
             
-            // Procurar Entrega Própria nos resultados da API
-            if (opcoes && opcoes.length > 0) {
-                const entregaPropria = opcoes.find(op => 
-                    op.is_entrega_propria === true || 
-                    (op.nome && op.nome.toLowerCase().includes('entrega própria')) ||
-                    (op.name && op.name.toLowerCase().includes('entrega própria')) ||
-                    (op.service && op.service.toLowerCase().includes('entrega própria'))
-                );
-                
-                if (entregaPropria) {
-                    const prazoComProducao = parseInt(entregaPropria.delivery_time || entregaPropria.prazo || 0) + producaoDias;
-                    const valor = parseFloat(entregaPropria.price || entregaPropria.preco || 0);
-                    const freteGratis = valor === 0;
-                    
-                    opcoesFormatadas.push({
-                        nome: freteGratis ? '🚚 Entrega Própria (Grátis)' : '🚚 Entrega Própria',
-                        valor: valor,
-                        prazo: `${prazoComProducao} dias úteis`,
-                        prazoDias: prazoComProducao,
-                        codigo: 'ENTREGA_PROPRIA',
-                        producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
-                        freteGratis: freteGratis,
-                        isEntregaPropria: true
-                    });
-                }
-            }
-            
-            return opcoesFormatadas;
-        }
-
-        // ============================================================
-        // CALCULAR FRETE NO CARRINHO (VIA PLANILHA)
-        // ============================================================
-        async function calcularFreteCarrinho() {
-            const cep = document.getElementById('cepCarrinho').value.trim();
-            const erroEl = document.getElementById('freteErroCarrinho');
-            const resultadoEl = document.getElementById('freteResultadoCarrinho');
-            const btnCalcular = document.getElementById('btnCalcularFreteCarrinho');
-            
-            // Limpar mensagens anteriores
-            erroEl.classList.remove('show');
-            resultadoEl.style.display = 'none';
+            resultadoEl.style.display = 'block';
             resultadoEl.innerHTML = '';
             
-            // Remover mensagem de atendente se existir
-            const atendenteExistente = document.querySelector('.frete-atendente');
-            if (atendenteExistente) atendenteExistente.remove();
+            // Mostrar aviso
+            const avisoDiv = document.createElement('div');
+            avisoDiv.style.cssText = 'padding:12px 16px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;color:#856404;font-size:14px;margin-bottom:10px;';
+            avisoDiv.innerHTML = `
+                <strong>⚠️ Não foi possível carregar todos os fretes</strong>
+                <p style="margin:4px 0 0 0;font-size:13px;">A Retirada na Loja está disponível. Entre em contato para outros fretes.</p>
+            `;
+            resultadoEl.appendChild(avisoDiv);
             
-            // Remover mensagem de sucesso se existir
-            const sucessoExistente = document.querySelector('.frete-sucesso');
-            if (sucessoExistente) sucessoExistente.remove();
+            // Mostrar Retirada na Loja
+            opcoesFallback.forEach(op => {
+                const div = document.createElement('div');
+                div.className = 'opcao-frete';
+                const valorClass = 'frete-valor gratis';
+                
+                div.innerHTML = `
+                    <div class="frete-info">
+                        <div class="frete-nome">${op.nome}</div>
+                        <div class="frete-prazo">${op.prazo}</div>
+                        ${op.producao ? `<span class="frete-prazo">${op.producao}</span>` : ''}
+                    </div>
+                    <div class="${valorClass}">Grátis</div>
+                `;
+                resultadoEl.appendChild(div);
+            });
             
-            if (!cep || cep.length < 8) {
-                erroEl.textContent = '⚠️ Digite um CEP válido com 8 dígitos.';
-                erroEl.classList.add('show');
-                return;
-            }
+            // Botão para atendente
+            const btnAtendente = document.createElement('button');
+            btnAtendente.style.cssText = 'margin-top:10px;background:#25D366;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;width:100%;';
+            btnAtendente.innerHTML = '<i class="fab fa-whatsapp"></i> Falar com Atendente';
+            btnAtendente.onclick = function() { abrirWhatsAppAtendente(cep); };
+            resultadoEl.appendChild(btnAtendente);
             
-            if (carrinho.length === 0) {
-                erroEl.textContent = '⚠️ Seu carrinho está vazio. Adicione produtos primeiro.';
-                erroEl.classList.add('show');
-                return;
-            }
-            
-            resultadoEl.style.display = 'none';
-            resultadoEl.innerHTML = '<div class="frete-carregando"><i class="fas fa-spinner fa-spin"></i> Calculando frete...</div>';
-            btnCalcular.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculando...';
-            btnCalcular.disabled = true;
-            
-            try {
-                const peso = calcularPesoTotal();
-                const dims = calcularDimensoes();
-                
-                console.log('📦 Calculando frete para CEP:', cep);
-                console.log(`⚖️ Peso: ${peso}kg, Dim: ${dims.altura}x${dims.largura}x${dims.comprimento}`);
-                
-                // PASSO 1: Envia para salvar na planilha (no-cors)
-                console.log('📤 Enviando para salvar na planilha...');
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        acao: 'salvar_frete',
-                        cepDestino: cep,
-                        peso: peso,
-                        altura: dims.altura,
-                        largura: dims.largura,
-                        comprimento: dims.comprimento,
-                        _t: Date.now()
-                    })
-                });
-                
-                // Aguarda 3 segundos para a planilha ser atualizada
-                console.log('⏳ Aguardando processamento (3s)...');
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                
-                // PASSO 2: Busca o frete salvo via GET
-                console.log('📥 Buscando frete salvo...');
-                const response = await fetch(`${API_URL}?acao=buscar_ultimo_frete&_t=${Date.now()}`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP Error: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('📥 Dados do frete lidos da planilha:', data);
-                
-                if (data.success && data.opcoes && data.opcoes.length > 0) {
-                    // Converter para o formato esperado
-                    const opcoes = data.opcoes.map(op => ({
-                        id: op.codigo || 'FRETE',
-                        name: op.nome || 'Frete',
-                        price: parseFloat(op.preco || 0),
-                        delivery_time: parseInt(op.prazo || 0),
-                        service: op.nome || 'Frete',
-                        _api: true,
-                        is_entrega_propria: op.nome && op.nome.toLowerCase().includes('entrega própria')
-                    }));
-                    
-                    // Formatar opções (apenas Retirada e Entrega Própria)
-                    const opcoesFormatadas = formatarOpcoesFrete(opcoes);
-                    console.log('📋 Opções formatadas:', opcoesFormatadas);
-                    
-                    // Verifica se tem Entrega Própria (além da Retirada na Loja)
-                    const temEntregaPropria = opcoesFormatadas.some(op => op.isEntregaPropria);
-                    
-                    if (temEntregaPropria) {
-                        // Mostrar sucesso
-                        const sucessoDiv = document.createElement('div');
-                        sucessoDiv.className = 'frete-sucesso show';
-                        sucessoDiv.textContent = '✅ Frete calculado com sucesso!';
-                        resultadoEl.appendChild(sucessoDiv);
-                        
-                        // Mostrar resultados
-                        resultadoEl.style.display = 'block';
-                        
-                        opcoesFormatadas.forEach(op => {
-                            const div = document.createElement('div');
-                            div.className = 'opcao-frete';
-                            const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
-                            const infoProducao = op.producao ? `<span class="frete-prazo">${op.producao}</span>` : '';
-                            let badgeGratis = op.freteGratis ? ' 🎁' : '';
-                            
-                            div.innerHTML = `
-                                <div class="frete-info">
-                                    <div class="frete-nome">${op.nome}${badgeGratis}</div>
-                                    <div class="frete-prazo">${op.prazo}</div>
-                                    ${infoProducao}
-                                </div>
-                                <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
-                            `;
-                            resultadoEl.appendChild(div);
-                        });
-                        
-                        // Salvar no estado do checkout se estiver aberto
-                        if (checkoutState && checkoutState.passo >= 2) {
-                            checkoutState.opcoesFrete = opcoesFormatadas;
-                            checkoutState.freteSelecionado = opcoesFormatadas[0] || null;
-                            atualizarResumoFinal();
-                        }
-                        
-                        mostrarNotificacao('✅ Frete calculado com sucesso!', 'success');
-                    } else {
-                        // Não tem Entrega Própria - mostrar atendente
-                        mostrarMensagemAtendente(cep);
-                        mostrarNotificacao('⚠️ Frete não disponível para este CEP. Fale com nosso atendente.', 'warning');
-                    }
-                    
-                } else {
-                    // Falha na API - mostrar atendente
-                    console.warn('⚠️ Nenhuma opção de frete encontrada');
-                    mostrarMensagemAtendente(cep);
-                    mostrarNotificacao('⚠️ Falha ao calcular frete. Fale com nosso atendente.', 'warning');
-                }
-                
-            } catch (error) {
-                console.error('❌ Erro ao calcular frete:', error);
-                mostrarMensagemAtendente(cep);
-                mostrarNotificacao('⚠️ Falha na comunicação. Fale com nosso atendente.', 'error');
-            } finally {
-                if (resultadoEl.innerHTML && resultadoEl.children.length > 0) {
-                    resultadoEl.style.display = 'block';
-                }
-                btnCalcular.innerHTML = '<i class="fas fa-truck"></i> Calcular Frete';
-                btnCalcular.disabled = false;
-            }
+            mostrarNotificacao('⚠️ Apenas Retirada na Loja disponível. Fale com nosso atendente.', 'warning');
         }
-
+        
+    } catch (error) {
+        console.error('❌ Erro ao calcular frete:', error);
+        
+        // Mostrar erro com opção de atendente
+        resultadoEl.style.display = 'block';
+        resultadoEl.innerHTML = `
+            <div style="padding:15px 18px;background:#fde8e8;border-radius:8px;border-left:4px solid #e74c3c;color:#721c24;font-size:14px;">
+                <strong>❌ Erro ao calcular frete</strong>
+                <p style="margin:8px 0 4px 0;font-size:13px;">Não foi possível calcular os fretes no momento.</p>
+                <p style="margin:4px 0 8px 0;font-size:13px;">Entre em contato com nosso atendente:</p>
+                <button onclick="abrirWhatsAppAtendente('${cep}')" style="
+                    display: inline-block;
+                    margin-top: 10px;
+                    background: #25D366;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    text-decoration: none;
+                    transition: all 0.3s;
+                    width: 100%;
+                ">
+                    <i class="fab fa-whatsapp"></i> Falar com Atendente
+                </button>
+            </div>
+        `;
+        mostrarNotificacao('⚠️ Falha na comunicação. Fale com nosso atendente.', 'error');
+    } finally {
+        if (resultadoEl.innerHTML && resultadoEl.children.length > 0) {
+            resultadoEl.style.display = 'block';
+        }
+        btnCalcular.innerHTML = '<i class="fas fa-truck"></i> Calcular Frete';
+        btnCalcular.disabled = false;
+    }
+}
         // ============================================================
         // FUNÇÃO PARA MOSTRAR MENSAGEM DE ATENDENTE
         // ============================================================
@@ -6401,174 +6498,182 @@
         }
 
         // ============================================================
-        // CARREGAR OPÇÕES DE FRETE (CHECKOUT)
-        // ============================================================
-        async function carregarOpcoesFreteCheckout() {
-            const container = document.getElementById('freteOpcoesContainer');
-            const erroEl = document.getElementById('freteErroCheckout');
-            erroEl.style.display = 'none';
-            container.innerHTML = `<div style="text-align:center;padding:20px;color:#999;"><i class="fas fa-spinner fa-spin"></i> Carregando opções de frete...</div>`;
+// CARREGAR OPÇÕES DE FRETE (CHECKOUT)
+// ============================================================
+async function carregarOpcoesFreteCheckout() {
+    const container = document.getElementById('freteOpcoesContainer');
+    const erroEl = document.getElementById('freteErroCheckout');
+    erroEl.style.display = 'none';
+    container.innerHTML = `<div style="text-align:center;padding:20px;color:#999;"><i class="fas fa-spinner fa-spin"></i> Carregando opções de frete...</div>`;
+    
+    try {
+        const cep = checkoutState.enderecoSelecionado?.cep || '00000-000';
+        document.getElementById('checkoutCepDisplay').textContent = cep;
+        checkoutState.producaoDias = calcularPrazoProducao();
+        
+        // Buscar frete via API (salva na planilha)
+        const peso = calcularPesoTotal();
+        const dims = calcularDimensoes();
+        
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                acao: 'salvar_frete',
+                cepDestino: cep,
+                peso: peso,
+                altura: dims.altura,
+                largura: dims.largura,
+                comprimento: dims.comprimento,
+                _t: Date.now()
+            })
+        });
+        
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        const response = await fetch(`${API_URL}?acao=buscar_ultimo_frete&_t=${Date.now()}`);
+        const data = await response.json();
+        
+        container.innerHTML = '';
+        
+        if (data.success && data.opcoes && data.opcoes.length > 0) {
+            const opcoes = data.opcoes.map(op => ({
+                id: op.codigo || 'FRETE',
+                name: op.nome || 'Frete',
+                price: parseFloat(op.preco || 0),
+                delivery_time: parseInt(op.prazo || 0),
+                service: op.nome || 'Frete',
+                _api: true,
+                is_entrega_propria: op.nome && op.nome.toLowerCase().includes('entrega própria')
+            }));
             
-            try {
-                const cep = checkoutState.enderecoSelecionado?.cep || '00000-000';
-                document.getElementById('checkoutCepDisplay').textContent = cep;
-                checkoutState.producaoDias = calcularPrazoProducao();
-                
-                // Buscar frete via API (salva na planilha)
-                const peso = calcularPesoTotal();
-                const dims = calcularDimensoes();
-                
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        acao: 'salvar_frete',
-                        cepDestino: cep,
-                        peso: peso,
-                        altura: dims.altura,
-                        largura: dims.largura,
-                        comprimento: dims.comprimento,
-                        _t: Date.now()
-                    })
-                });
-                
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                
-                const response = await fetch(`${API_URL}?acao=buscar_ultimo_frete&_t=${Date.now()}`);
-                const data = await response.json();
-                
-                if (data.success && data.opcoes && data.opcoes.length > 0) {
-                    const opcoes = data.opcoes.map(op => ({
-                        id: op.codigo || 'FRETE',
-                        name: op.nome || 'Frete',
-                        price: parseFloat(op.preco || 0),
-                        delivery_time: parseInt(op.prazo || 0),
-                        service: op.nome || 'Frete',
-                        _api: true,
-                        is_entrega_propria: op.nome && op.nome.toLowerCase().includes('entrega própria')
-                    }));
+            // FORMATAR TODAS AS OPÇÕES
+            const opcoesFormatadas = formatarOpcoesFrete(opcoes);
+            checkoutState.opcoesFrete = opcoesFormatadas;
+            
+            if (opcoesFormatadas.length === 0) {
+                container.innerHTML = `<div style="text-align:center;padding:20px;color:#e74c3c;"><i class="fas fa-exclamation-circle"></i> Nenhuma opção de frete disponível.</div>`;
+            } else {
+                // MOSTRAR TODAS AS OPÇÕES
+                opcoesFormatadas.forEach((op, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'frete-opcao';
                     
-                    const opcoesFormatadas = formatarOpcoesFrete(opcoes);
-                    checkoutState.opcoesFrete = opcoesFormatadas;
-                    container.innerHTML = '';
-                    
-                    if (opcoesFormatadas.length === 0) {
-                        container.innerHTML = `<div style="text-align:center;padding:20px;color:#e74c3c;"><i class="fas fa-exclamation-circle"></i> Nenhuma opção de frete disponível.</div>`;
-                    } else {
-                        // Verifica se tem Entrega Própria
-                        const temEntregaPropria = opcoesFormatadas.some(op => op.isEntregaPropria);
-                        
-                        if (!temEntregaPropria) {
-                            // Mostrar mensagem de atendente no checkout
-                            container.innerHTML = `
-                                <div style="padding:15px 18px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;color:#856404;font-size:14px;margin-top:10px;">
-                                    <strong>⚠️ Não foi possível calcular o frete automaticamente</strong>
-                                    <p style="margin:8px 0 4px 0;font-size:13px;color:#856404;">
-                                        Para sua comodidade, <strong>Retirada na Loja</strong> está disponível.
-                                    </p>
-                                    <p style="margin:4px 0 8px 0;font-size:13px;color:#856404;">
-                                        Para calcular o frete para outras cidades, entre em contato com nosso atendente:
-                                    </p>
-                                    <button onclick="abrirWhatsAppAtendente('${cep}')" style="
-                                        display: inline-block;
-                                        margin-top: 10px;
-                                        background: #25D366;
-                                        color: white;
-                                        border: none;
-                                        padding: 10px 20px;
-                                        border-radius: 8px;
-                                        cursor: pointer;
-                                        font-weight: 600;
-                                        text-decoration: none;
-                                        transition: all 0.3s;
-                                    ">
-                                        <i class="fab fa-whatsapp"></i> Falar com Atendente
-                                    </button>
-                                </div>
-                            `;
-                        } else {
-                            opcoesFormatadas.forEach((op, index) => {
-                                const div = document.createElement('div');
-                                div.className = 'frete-opcao';
-                                
-                                let selecionar = false;
-                                if (op.isEntregaPropria) {
-                                    selecionar = true;
-                                } else if (index === 0 && !opcoesFormatadas.some(o => o.isEntregaPropria)) {
-                                    selecionar = true;
-                                }
-                                
-                                if (selecionar) {
-                                    div.classList.add('selecionado');
-                                    checkoutState.freteSelecionado = op;
-                                    liberarPagamento();
-                                }
-                                
-                                const badgeGratis = op.freteGratis ? ' 🎁' : '';
-                                const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
-                                
-                                div.innerHTML = `
-                                    <div>
-                                        <div class="frete-nome">${op.nome}${badgeGratis}</div>
-                                        <div>
-                                            <span class="frete-prazo">📦 ${op.prazo}</span>
-                                            ${op.producao ? `<span class="frete-producao"> 🔄 ${op.producao}</span>` : ''}
-                                        </div>
-                                    </div>
-                                    <div class="frete-valor ${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
-                                `;
-                                
-                                div.onclick = function() {
-                                    document.querySelectorAll('#freteOpcoesContainer .frete-opcao').forEach(el => {
-                                        el.classList.remove('selecionado');
-                                    });
-                                    this.classList.add('selecionado');
-                                    checkoutState.freteSelecionado = op;
-                                    liberarPagamento();
-                                    atualizarResumoFinal();
-                                    mostrarNotificacao('✅ Frete selecionado! Escolha a forma de pagamento.', 'success');
-                                };
-                                
-                                container.appendChild(div);
-                            });
-                        }
+                    // Selecionar o primeiro (menor valor) automaticamente
+                    if (index === 0 && !op.isEntregaPropria) {
+                        div.classList.add('selecionado');
+                        checkoutState.freteSelecionado = op;
+                        liberarPagamento();
+                    } else if (op.isEntregaPropria && !checkoutState.freteSelecionado) {
+                        // Se tem entrega própria, seleciona ela primeiro
+                        div.classList.add('selecionado');
+                        checkoutState.freteSelecionado = op;
+                        liberarPagamento();
                     }
-                } else {
-                    container.innerHTML = `
-                        <div style="padding:15px 18px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;color:#856404;font-size:14px;margin-top:10px;">
-                            <strong>⚠️ Falha ao calcular frete</strong>
-                            <p style="margin:8px 0 4px 0;font-size:13px;color:#856404;">
-                                Entre em contato com nosso atendente para calcular o frete:
-                            </p>
-                            <button onclick="abrirWhatsAppAtendente('${cep}')" style="
-                                display: inline-block;
-                                margin-top: 10px;
-                                background: #25D366;
-                                color: white;
-                                border: none;
-                                padding: 10px 20px;
-                                border-radius: 8px;
-                                cursor: pointer;
-                                font-weight: 600;
-                                text-decoration: none;
-                                transition: all 0.3s;
-                            ">
-                                <i class="fab fa-whatsapp"></i> Falar com Atendente
-                            </button>
+                    
+                    const badgeGratis = op.freteGratis ? ' 🎁' : '';
+                    const valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
+                    
+                    div.innerHTML = `
+                        <div>
+                            <div class="frete-nome">${op.nome}${badgeGratis}</div>
+                            <div>
+                                <span class="frete-prazo">📦 ${op.prazo}</span>
+                                ${op.producao ? `<span class="frete-producao"> 🔄 ${op.producao}</span>` : ''}
+                            </div>
                         </div>
+                        <div class="frete-valor ${valorClass}">${op.valor === 0 ? 'Grátis' : `R$ ${op.valor.toFixed(2)}`}</div>
                     `;
-                }
-                
-                document.getElementById('step2Status').textContent = '✅ Completo';
-                atualizarResumoFinal();
-                
-            } catch (error) {
-                console.error('❌ Erro ao carregar frete:', error);
-                container.innerHTML = `<div style="text-align:center;padding:20px;color:#e74c3c;"><i class="fas fa-exclamation-circle"></i> Erro ao carregar opções de frete.</div>`;
+                    
+                    div.onclick = function() {
+                        document.querySelectorAll('#freteOpcoesContainer .frete-opcao').forEach(el => {
+                            el.classList.remove('selecionado');
+                        });
+                        this.classList.add('selecionado');
+                        checkoutState.freteSelecionado = op;
+                        liberarPagamento();
+                        atualizarResumoFinal();
+                        mostrarNotificacao('✅ Frete selecionado!', 'success');
+                    };
+                    
+                    container.appendChild(div);
+                });
             }
+        } else {
+            // FALHA: Mostrar apenas Retirada na Loja
+            const producaoDias = calcularPrazoProducao();
+            const prazoRetirada = PRAZO_RETIRADA_LOJA + producaoDias;
+            
+            const opcoesFallback = [{
+                nome: '📦 Retirada na Loja',
+                valor: 0,
+                prazo: `${prazoRetirada} dias úteis`,
+                prazoDias: prazoRetirada,
+                codigo: 'RETIRADA',
+                producao: producaoDias > 0 ? `+${producaoDias} dias de produção` : '',
+                freteGratis: true,
+                isEntregaPropria: false,
+                origem: 'retirada'
+            }];
+            
+            checkoutState.opcoesFrete = opcoesFallback;
+            checkoutState.freteSelecionado = opcoesFallback[0];
+            
+            container.innerHTML = `
+                <div style="padding:12px 16px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;color:#856404;font-size:14px;margin-bottom:10px;">
+                    <strong>⚠️ Não foi possível carregar todos os fretes</strong>
+                    <p style="margin:4px 0 0 0;font-size:13px;">A Retirada na Loja está disponível.</p>
+                </div>
+                <div class="frete-opcao selecionado" style="border-color:var(--primary-blue);background:#f0f8ff;">
+                    <div>
+                        <div class="frete-nome">📦 Retirada na Loja</div>
+                        <div><span class="frete-prazo">📦 ${prazoRetirada} dias úteis</span></div>
+                    </div>
+                    <div class="frete-valor gratis">Grátis</div>
+                </div>
+                <button onclick="abrirWhatsAppAtendente('${cep}')" style="
+                    margin-top: 10px;
+                    background: #25D366;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    width: 100%;
+                ">
+                    <i class="fab fa-whatsapp"></i> Falar com Atendente para outros fretes
+                </button>
+            `;
+            
+            liberarPagamento();
         }
-
+        
+        document.getElementById('step2Status').textContent = '✅ Completo';
+        atualizarResumoFinal();
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar frete:', error);
+        container.innerHTML = `
+            <div style="text-align:center;padding:20px;color:#e74c3c;">
+                <i class="fas fa-exclamation-circle"></i> Erro ao carregar opções de frete.
+                <br><br>
+                <button onclick="abrirWhatsAppAtendente('${checkoutState.enderecoSelecionado?.cep || ''}')" style="
+                    background: #25D366;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                ">
+                    <i class="fab fa-whatsapp"></i> Falar com Atendente
+                </button>
+            </div>
+        `;
+    }
+}
         // ============================================================
         // LIBERAR PAGAMENTO
         // ============================================================
