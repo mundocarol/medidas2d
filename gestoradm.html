@@ -1176,11 +1176,13 @@
         margin: 0;
         max-width: 72mm;
         height: auto;
-        overflow: visible;
+        overflow: hidden;
+        border: none;
+        box-shadow: none;
     }
     .btn-print, .btn-sm, .btn-status, .btn-edit, .btn-delete { display: none !important; }
     .no-print { display: none !important; }
-    html, body { margin: 0; padding: 0; height: auto; }
+    html, body { margin: 0; padding: 0; height: auto; overflow: hidden; }
     @page {
         margin: 0;
         size: 72mm auto;
@@ -1353,10 +1355,274 @@
     padding: 2px 8px;
     border-radius: 4px;
 }
+/* ===== TELA DE LOGIN ===== */
+.login-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--primary-blue);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.5s ease;
+}
+
+.login-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.login-box {
+    background: white;
+    padding: 40px 35px;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+
+.login-box .logo-icon {
+    font-size: 48px;
+    color: var(--primary-blue);
+    margin-bottom: 10px;
+}
+
+.login-box h1 {
+    color: var(--primary-blue);
+    font-size: 22px;
+    margin-bottom: 5px;
+}
+
+.login-box p {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.login-box .form-group {
+    text-align: left;
+}
+
+.login-box .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 13px;
+    color: #333;
+}
+
+.login-box .form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.login-box .form-group input:focus {
+    border-color: var(--primary-blue);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(26,58,92,0.1);
+}
+
+.login-box .btn-login {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 10px;
+}
+
+.login-box .btn-login:hover {
+    background: var(--secondary-blue);
+    transform: scale(1.02);
+}
+
+.login-box .btn-login:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.login-box .erro-senha {
+    color: var(--danger);
+    font-size: 13px;
+    margin-top: 8px;
+    display: none;
+}
+
+.login-box .erro-senha.show {
+    display: block;
+}
+
+.login-box .tentativas {
+    font-size: 12px;
+    color: #999;
+    margin-top: 8px;
+}
+
+.login-box .tentativas span {
+    font-weight: 700;
+    color: var(--danger);
+}
+
+
+/* ===== MODAL SENHA ABA ===== */
+.modal-senha-aba .senha-input-group {
+    text-align: center;
+    padding: 15px 0;
+}
+
+.modal-senha-aba .senha-input-group input {
+    width: 80%;
+    padding: 12px;
+    font-size: 18px;
+    text-align: center;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    letter-spacing: 3px;
+}
+
+.modal-senha-aba .senha-input-group input:focus {
+    border-color: var(--primary-blue);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(26,58,92,0.1);
+}
+
+.modal-senha-aba .senha-erro-aba {
+    color: var(--danger);
+    text-align: center;
+    display: none;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.modal-senha-aba .senha-erro-aba.show {
+    display: block;
+}
+
+.modal-senha-aba .tentativas-aba {
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    margin-top: 8px;
+}
+
+.modal-senha-aba .tentativas-aba span {
+    font-weight: 700;
+    color: var(--danger);
+}
+
+.modal-senha-aba .info-aba {
+    text-align: center;
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.modal-senha-aba .info-aba i {
+    margin-right: 6px;
+}
+
+.aba-bloqueada {
+    opacity: 0.5;
+    pointer-events: none;
+    filter: grayscale(0.3);
+}
+
+.aba-bloqueada .table-wrapper {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.aba-desbloqueada {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    filter: none !important;
+}
+
 
     </style>
 </head>
 <body>
+
+
+    <!-- ===== TELA DE LOGIN ===== -->
+<div class="login-overlay" id="loginOverlay">
+    <div class="login-box">
+        <div class="logo-icon"><i class="fas fa-boxes"></i></div>
+        <h1>🔐 Gerenciamento</h1>
+        <p>Digite a senha para acessar o painel</p>
+        
+        <div class="form-group">
+            <label>Senha de Acesso</label>
+            <input type="password" id="senhaAcesso" placeholder="Digite a senha..." 
+                   onkeypress="if(event.key==='Enter') validarAcesso()">
+        </div>
+        
+        <button class="btn-login" id="btnLoginAcesso" onclick="validarAcesso()">
+            <i class="fas fa-unlock"></i> Acessar
+        </button>
+        
+        <div class="erro-senha" id="erroSenhaAcesso">
+            <i class="fas fa-exclamation-circle"></i> Senha incorreta! Tente novamente.
+        </div>
+        
+        <div class="tentativas" id="tentativasInfo">
+            Tentativas restantes: <span id="tentativasRestantes">5</span>
+        </div>
+    </div>
+</div>
+
+
+<!-- ===== MODAL SENHA PARA ABAS PRODUTOS E CLIENTES ===== -->
+<div class="modal-overlay" id="modalSenhaAba">
+    <div class="modal modal-senha-aba" style="max-width:420px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-lock"></i> Acesso Restrito</h2>
+            <button class="modal-close" onclick="fecharModal('modalSenhaAba')">&times;</button>
+        </div>
+        
+        <div class="info-aba">
+            <i class="fas fa-shield-alt"></i> 
+            Esta área requer autenticação para ser acessada.
+        </div>
+        
+        <div class="senha-input-group">
+            <input type="password" id="senhaAbaInput" placeholder="Digite a senha..." 
+                   onkeypress="if(event.key==='Enter') validarSenhaAba()">
+        </div>
+        
+        <div class="senha-erro-aba" id="senhaErroAba">
+            <i class="fas fa-exclamation-circle"></i> Senha incorreta! Tente novamente.
+        </div>
+        
+        <div class="tentativas-aba">
+            Tentativas restantes: <span id="tentativasAbaRestantes">5</span>
+        </div>
+        
+        <div class="form-actions" style="justify-content:center;gap:12px;">
+            <button class="btn-cancel" onclick="fecharModal('modalSenhaAba')">Cancelar</button>
+            <button class="btn-save" id="btnSenhaAba" onclick="validarSenhaAba()">
+                <i class="fas fa-unlock"></i> Desbloquear
+            </button>
+        </div>
+    </div>
+</div>
 
 <div class="container" id="app">
     <header class="header">
@@ -1499,7 +1765,7 @@
     </div>
 
     <!-- Tab Produtos -->
-<div class="tab-content" id="tab-produtos">
+<div class="tab-content aba-bloqueada" id="tab-produtos">
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">
         <div style="flex:1;min-width:200px;position:relative;">
             <i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#999;"></i>
@@ -1549,7 +1815,7 @@
     </div>
 
     <!-- Tab Clientes -->
-    <div class="tab-content" id="tab-clientes">
+    <div class="tab-content aba-bloqueada" id="tab-clientes">
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
             <div style="flex:1;min-width:180px;position:relative;">
                 <i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#999;"></i>
@@ -1918,6 +2184,10 @@
 <div id="printArea"></div>
 
 <script>
+
+
+
+
 const API_URL = 'https://script.google.com/macros/s/AKfycbzgS8t9-G11EQU1J5prf2njyxB5kFqIYc9EuUT77d3rihWzVQrGpKNRKxYTGafZUtMtHw/exec';
 const SENHA_GESTOR = 'Cal@562938';
 
@@ -1952,6 +2222,19 @@ function esconderSpinner() {
 // SWITCH TAB
 // ============================================================
 function switchTab(tab) {
+    // Se for produtos ou clientes, verifica acesso
+    if (tab === 'produtos' || tab === 'clientes') {
+        if (!abasLiberadas) {
+            // Verifica se o modal já está aberto
+            const modalAberto = document.getElementById('modalSenhaAba').classList.contains('open');
+            if (!modalAberto) {
+                verificarAcessoAba(tab);
+            }
+            // Não troca a aba ainda
+            return;
+        }
+    }
+    
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     
@@ -1959,15 +2242,251 @@ function switchTab(tab) {
     if (btn) btn.classList.add('active');
     
     const content = document.getElementById(`tab-${tab}`);
-    if (content) content.classList.add('active');
+    if (content) {
+        content.classList.add('active');
+        
+        // Se for produtos ou clientes, aplica classe de bloqueio/desbloqueio
+        if (tab === 'produtos' || tab === 'clientes') {
+            if (abasLiberadas) {
+                content.classList.remove('aba-bloqueada');
+                content.classList.add('aba-desbloqueada');
+            } else {
+                content.classList.add('aba-bloqueada');
+                content.classList.remove('aba-desbloqueada');
+            }
+        }
+    }
     
+    // Carrega dados conforme a tab
     if (tab === 'pendentes' || tab === 'pedidos') {
         carregarDadosParcial();
     }
-    if (tab === 'clientes') {
+    if (tab === 'clientes' && abasLiberadas) {
         renderizarClientes();
     }
+    if (tab === 'produtos' && abasLiberadas) {
+        renderizarProdutos();
+    }
 }
+
+
+// ============================================================
+// CONTROLE DE ACESSO - SENHA
+// ============================================================
+const SENHA_ACESSO = 'Hugo@1313';
+let tentativasLogin = 5;
+let acessoLiberado = false;
+
+function validarAcesso() {
+    const input = document.getElementById('senhaAcesso');
+    const senha = input.value;
+    const erroEl = document.getElementById('erroSenhaAcesso');
+    const btn = document.getElementById('btnLoginAcesso');
+    const tentativasSpan = document.getElementById('tentativasRestantes');
+    
+    if (!senha) {
+        erroEl.textContent = '⚠️ Digite a senha para acessar.';
+        erroEl.classList.add('show');
+        return;
+    }
+    
+    if (senha === SENHA_ACESSO) {
+        // SENHA CORRETA
+        acessoLiberado = true;
+        erroEl.classList.remove('show');
+        document.getElementById('loginOverlay').classList.add('hidden');
+        
+        // Carrega os dados após o login
+        setTimeout(() => {
+            carregarDados();
+        }, 300);
+        
+        console.log('✅ Acesso liberado!');
+        return;
+    }
+    
+    // SENHA INCORRETA
+    tentativasLogin--;
+    tentativasSpan.textContent = tentativasLogin;
+    
+    if (tentativasLogin <= 0) {
+        erroEl.textContent = '❌ Número máximo de tentativas excedido. Recarregue a página.';
+        erroEl.classList.add('show');
+        btn.disabled = true;
+        input.disabled = true;
+        return;
+    }
+    
+    erroEl.textContent = `❌ Senha incorreta! Tentativas restantes: ${tentativasLogin}`;
+    erroEl.classList.add('show');
+    input.value = '';
+    input.focus();
+    input.select();
+}
+
+
+// ============================================================
+// CONTROLE DE SENHA PARA ABAS PRODUTOS E CLIENTES
+// ============================================================
+const SENHA_ABAS = 'Cal@562938';
+let tentativasAba = 5;
+let abasLiberadas = false;
+let abaParaDesbloquear = null; // 'produtos' ou 'clientes'
+
+function verificarAcessoAba(tab) {
+    // Se já estiver liberado, não faz nada
+    if (abasLiberadas) {
+        return true;
+    }
+    
+    // Salva qual aba está tentando acessar
+    abaParaDesbloquear = tab;
+    
+    // Mostra o modal de senha
+    document.getElementById('senhaAbaInput').value = '';
+    document.getElementById('senhaErroAba').classList.remove('show');
+    document.getElementById('tentativasAbaRestantes').textContent = tentativasAba;
+    document.getElementById('btnSenhaAba').disabled = false;
+    document.getElementById('senhaAbaInput').disabled = false;
+    
+    // Abre o modal
+    document.getElementById('modalSenhaAba').classList.add('open');
+    
+    // Foca no input
+    setTimeout(() => {
+        document.getElementById('senhaAbaInput').focus();
+    }, 300);
+    
+    return false;
+}
+
+function validarSenhaAba() {
+    const input = document.getElementById('senhaAbaInput');
+    const senha = input.value;
+    const erroEl = document.getElementById('senhaErroAba');
+    const btn = document.getElementById('btnSenhaAba');
+    const tentativasSpan = document.getElementById('tentativasAbaRestantes');
+    
+    if (!senha) {
+        erroEl.textContent = '⚠️ Digite a senha para acessar.';
+        erroEl.classList.add('show');
+        return;
+    }
+    
+    if (senha === SENHA_ABAS) {
+        // SENHA CORRETA
+        abasLiberadas = true;
+        erroEl.classList.remove('show');
+        fecharModal('modalSenhaAba');
+        
+        // Marca a aba atual como desbloqueada e renderiza
+        if (abaParaDesbloquear === 'produtos') {
+            document.getElementById('tab-produtos').classList.remove('aba-bloqueada');
+            document.getElementById('tab-produtos').classList.add('aba-desbloqueada');
+            renderizarProdutos();
+        } else if (abaParaDesbloquear === 'clientes') {
+            document.getElementById('tab-clientes').classList.remove('aba-bloqueada');
+            document.getElementById('tab-clientes').classList.add('aba-desbloqueada');
+            renderizarClientes();
+        }
+        
+        // Desbloqueia a outra aba também (se existir)
+        document.getElementById('tab-produtos').classList.remove('aba-bloqueada');
+        document.getElementById('tab-produtos').classList.add('aba-desbloqueada');
+        document.getElementById('tab-clientes').classList.remove('aba-bloqueada');
+        document.getElementById('tab-clientes').classList.add('aba-desbloqueada');
+        
+        // Renderiza a outra se estiver ativa
+        const tabAtiva = document.querySelector('.tab-content.active');
+        if (tabAtiva) {
+            if (tabAtiva.id === 'tab-produtos') {
+                renderizarProdutos();
+            } else if (tabAtiva.id === 'tab-clientes') {
+                renderizarClientes();
+            }
+        }
+        
+        console.log('✅ Abas Produtos e Clientes desbloqueadas!');
+        abaParaDesbloquear = null;
+        return;
+    }
+    
+    // SENHA INCORRETA
+    tentativasAba--;
+    tentativasSpan.textContent = tentativasAba;
+    
+    if (tentativasAba <= 0) {
+        erroEl.textContent = '❌ Número máximo de tentativas excedido. Recarregue a página.';
+        erroEl.classList.add('show');
+        btn.disabled = true;
+        input.disabled = true;
+        return;
+    }
+    
+    erroEl.textContent = `❌ Senha incorreta! Tentativas restantes: ${tentativasAba}`;
+    erroEl.classList.add('show');
+    input.value = '';
+    input.focus();
+    input.select();
+}
+
+// ============================================================
+// FUNÇÃO PARA RENDERIZAR PRODUTOS COM VERIFICAÇÃO
+// ============================================================
+function renderizarProdutosComVerificacao() {
+    if (!abasLiberadas) {
+        verificarAcessoAba('produtos');
+        return;
+    }
+    renderizarProdutos();
+}
+
+// ============================================================
+// FUNÇÃO PARA RENDERIZAR CLIENTES COM VERIFICAÇÃO
+// ============================================================
+function renderizarClientesComVerificacao() {
+    if (!abasLiberadas) {
+        verificarAcessoAba('clientes');
+        return;
+    }
+    renderizarClientes();
+}
+
+
+// ============================================================
+// FUNÇÃO PARA VERIFICAR SE O USUÁRIO ESTÁ LOGADO
+// ============================================================
+function verificarAcesso() {
+    // Se já tiver acesso liberado, não faz nada
+    if (acessoLiberado) return true;
+    
+    // Se a página recarregar, mantém o acesso
+    const acessoSalvo = sessionStorage.getItem('acessoGestor');
+    if (acessoSalvo === 'true') {
+        acessoLiberado = true;
+        document.getElementById('loginOverlay').classList.add('hidden');
+        return true;
+    }
+    
+    return false;
+}
+
+// ============================================================
+// BLOQUEAR ACESSO (OPCIONAL)
+// ============================================================
+function bloquearAcesso() {
+    acessoLiberado = false;
+    sessionStorage.removeItem('acessoGestor');
+    tentativasLogin = 5;
+    document.getElementById('tentativasRestantes').textContent = '5';
+    document.getElementById('senhaAcesso').value = '';
+    document.getElementById('senhaAcesso').disabled = false;
+    document.getElementById('btnLoginAcesso').disabled = false;
+    document.getElementById('loginOverlay').classList.remove('hidden');
+    document.getElementById('erroSenhaAcesso').classList.remove('show');
+}
+
+
 
 // ============================================================
 // EDITAR PEDIDO - CORRIGIDO (COM PRODUTOS ORGANIZADOS)
@@ -2352,6 +2871,12 @@ async function finalizarPedidoCheckout() {
 // CARREGAR DADOS
 // ============================================================
 async function carregarDados() {
+    // Verifica se o acesso foi liberado
+    if (!acessoLiberado && !verificarAcesso()) {
+        console.log('🔒 Acesso bloqueado. Faça login primeiro.');
+        return;
+    }
+    
     mostrarSpinner('Carregando dados...');
     try {
         const response = await fetch(API_URL);
@@ -2379,7 +2904,14 @@ async function carregarDados() {
     }
 }
 
+
+
 async function carregarDadosParcial() {
+    if (!acessoLiberado && !verificarAcesso()) {
+        console.log('🔒 Acesso bloqueado.');
+        return;
+    }
+    
     try {
         const response = await fetch(API_URL);
         const data = await response.json();
@@ -2572,6 +3104,7 @@ function imprimirCupom(idPedido) {
     let itensHtml = '';
     let subtotal = 0;
     let maiorPrazoProducao = 0;
+    let isProducaoGeral = false;
     
     // 1. FRETE
     let freteNome = 'Retirada na Loja';
@@ -2621,7 +3154,7 @@ function imprimirCupom(idPedido) {
     }
     
     // ============================================================
-    // PROCESSAMENTO DOS ITENS
+    // PROCESSAMENTO DOS ITENS - CORRIGIDO
     // ============================================================
     try {
         let itens = [];
@@ -2629,30 +3162,49 @@ function imprimirCupom(idPedido) {
         
         console.log('📝 Texto original dos itens:', textoItens);
         
+        // ============================================================
+        // 🔧 CORREÇÃO: VERIFICA SE É PRODUÇÃO PELO NOME
+        // ============================================================
         if (typeof textoItens === 'string' && textoItens.includes(' | ')) {
             const partes = textoItens.split(' | ');
             console.log('📝 Partes encontradas:', partes);
             
             partes.forEach(part => {
-                // EXTRAI O STATUS DE PRODUÇÃO
+                // ============================================================
+                // 🔧 CORREÇÃO: EXTRAI O STATUS DO NOME
+                // ============================================================
                 let isProducao = false;
                 let prazoProducao = 0;
                 let nomeLimpo = part;
                 
-                // Verifica se tem "Produção" no texto
-                const matchProd = part.match(/\(Produção\s*(\d*)\s*dias?\)/);
-                if (matchProd) {
+                // Verifica se tem "Produção" no texto (MAIÚSCULO ou MINÚSCULO)
+                const partLower = part.toLowerCase();
+                if (partLower.includes('produção') || partLower.includes('producao')) {
                     isProducao = true;
-                    prazoProducao = parseInt(matchProd[1]) || 7;
-                    nomeLimpo = nomeLimpo.replace(/\(Produção\s*\d*\s*dias?\)\s*/, '');
-                } else if (part.includes('(Produção)')) {
-                    isProducao = true;
-                    prazoProducao = 7;
-                    nomeLimpo = nomeLimpo.replace(/\(Produção\)\s*/, '');
+                    // Tenta extrair o prazo
+                    const matchProd = part.match(/Produção\s*(\d*)\s*dias?/i);
+                    if (matchProd) {
+                        prazoProducao = parseInt(matchProd[1]) || 7;
+                    } else {
+                        prazoProducao = 7; // padrão
+                    }
+                    nomeLimpo = nomeLimpo.replace(/\(Produção\s*\d*\s*dias?\)/i, '');
+                    nomeLimpo = nomeLimpo.replace(/\(Produção\)/i, '');
                 }
+                
+                // Remove "Disponível" se tiver (mas não marca como produção)
+                nomeLimpo = nomeLimpo.replace(/\(Disponível\)/i, '');
+                
+                // Remove parênteses extras
+                nomeLimpo = nomeLimpo.replace(/\(\s*\)/g, '');
+                nomeLimpo = nomeLimpo.trim();
                 
                 if (prazoProducao > maiorPrazoProducao) {
                     maiorPrazoProducao = prazoProducao;
+                }
+                
+                if (isProducao) {
+                    isProducaoGeral = true;
                 }
                 
                 // EXTRAI O PACOTE E O PREÇO
@@ -2666,8 +3218,8 @@ function imprimirCupom(idPedido) {
                     const totalUnidades = qtdPacotes * tamanhoPacote;
                     
                     let nomeFinal = nome;
-                    nomeFinal = nomeFinal.replace(/\(Produção\s*\d*\s*dias?\)/g, '');
-                    nomeFinal = nomeFinal.replace(/\(Produção\)/g, '');
+                    nomeFinal = nomeFinal.replace(/\(Produção\s*\d*\s*dias?\)/i, '');
+                    nomeFinal = nomeFinal.replace(/\(Produção\)/i, '');
                     nomeFinal = nomeFinal.trim();
                     if (!nomeFinal) nomeFinal = nome;
                     
@@ -2688,24 +3240,16 @@ function imprimirCupom(idPedido) {
                         const totalUnidades = parseInt(match2[2]) || 1;
                         const preco = parseFloat(match2[3].replace(',', '.')) || 0;
                         
-                        const matchPacote2 = nome.match(/(\d+)x\s*(\d+)/);
-                        let qtdPacotes = 1;
-                        let tamanhoPacote = totalUnidades;
-                        if (matchPacote2) {
-                            qtdPacotes = parseInt(matchPacote2[1]) || 1;
-                            tamanhoPacote = parseInt(matchPacote2[2]) || 1;
-                        }
-                        
                         let nomeFinal = nome;
-                        nomeFinal = nomeFinal.replace(/\(Produção\s*\d*\s*dias?\)/g, '');
-                        nomeFinal = nomeFinal.replace(/\(Produção\)/g, '');
+                        nomeFinal = nomeFinal.replace(/\(Produção\s*\d*\s*dias?\)/i, '');
+                        nomeFinal = nomeFinal.replace(/\(Produção\)/i, '');
                         nomeFinal = nomeFinal.trim();
                         if (!nomeFinal) nomeFinal = nome;
                         
                         itens.push({
                             nome: nomeFinal,
-                            quantidade: qtdPacotes,
-                            pacote_tamanho: tamanhoPacote,
+                            quantidade: 1,
+                            pacote_tamanho: totalUnidades,
                             totalUnidades: totalUnidades,
                             price: preco,
                             isProducao: isProducao,
@@ -2719,14 +3263,18 @@ function imprimirCupom(idPedido) {
         if (itens.length === 0 && textoItens) {
             const matchPreco = textoItens.match(/R\$\s*([\d,.]+)/);
             const preco = matchPreco ? parseFloat(matchPreco[1].replace(',', '.')) : 0;
+            const isProducao = textoItens.toLowerCase().includes('produção') || textoItens.toLowerCase().includes('producao');
+            const prazoMatch = textoItens.match(/Produção\s*(\d*)\s*dias?/i);
+            const prazo = prazoMatch ? parseInt(prazoMatch[1]) : 7;
+            
             itens = [{
                 nome: String(textoItens).substring(0, 40),
                 quantidade: 1,
                 pacote_tamanho: 1,
                 totalUnidades: 1,
                 price: preco || parseFloat(pedido.total) || 0,
-                isProducao: false,
-                prazoProducao: 0
+                isProducao: isProducao,
+                prazoProducao: isProducao ? prazo : 0
             }];
         }
         
@@ -2759,13 +3307,16 @@ function imprimirCupom(idPedido) {
             const isProducao = item.isProducao || false;
             const prazoProducao = item.prazoProducao || 0;
             
+            // ============================================================
+            // 🔧 CORREÇÃO: STATUS CORRETO
+            // ============================================================
             let statusEstoque = '';
             if (isProducao && prazoProducao > 0) {
-                statusEstoque = `${prazoProducao} dias`;
+                statusEstoque = `🔨 ${prazoProducao} dias (Produção)`;
             } else if (isProducao) {
-                statusEstoque = 'Produção';
+                statusEstoque = '🔨 Produção';
             } else {
-                statusEstoque = 'Disponível';
+                statusEstoque = '✅ Disponível';
             }
             
             const nome = String(item.nome || 'Produto').trim();
@@ -2784,7 +3335,7 @@ function imprimirCupom(idPedido) {
                     </div>
                     <div style="display:flex;justify-content:space-between;width:100%;font-size:7px;color:#000;margin-top:1px;flex-wrap:wrap;gap:2px 8px;">
                         ${unitPrice > 0 ? `<span style="color:#000;">💰 Unit: R$ ${unitPrice.toFixed(2)}</span>` : ''}
-                        <span style="color:${isProducao ? '#f39c12' : '#27ae60'};font-weight:bold;">✅ ${statusEstoque}</span>
+                        <span style="color:${isProducao ? '#f39c12' : '#27ae60'};font-weight:bold;">${statusEstoque}</span>
                     </div>
                 </div>
             `;
@@ -2922,6 +3473,11 @@ function imprimirCupom(idPedido) {
     `;
     
     printArea.style.display = 'block';
+    
+    // ============================================================
+    // 🔧 CORREÇÃO: IMPRIME APENAS 1 PÁGINA
+    // ============================================================
+    // Força o navegador a imprimir apenas 1 página
     window.print();
     
     setTimeout(() => {
@@ -4577,10 +5133,19 @@ async function finalizarPedidoManual() {
 // ============================================================
 // INICIALIZAR
 // ============================================================
-carregarDados();
+// carregarDados(); // REMOVA OU COMENTE ESTA LINHA
+
+// Verifica acesso e carrega dados
+verificarAcesso();
+
+// Se já estiver logado, carrega os dados
+if (acessoLiberado) {
+    carregarDados();
+}
 
 // Atualiza apenas pendentes e pedidos a cada 30 segundos
 setInterval(() => {
+    if (!acessoLiberado) return;
     const tabAtiva = document.querySelector('.tab-content.active');
     if (tabAtiva) {
         const id = tabAtiva.id;
@@ -4592,6 +5157,14 @@ setInterval(() => {
 
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializa
+    verificarAcesso();
+});
+
+// Salva o acesso na sessão para não pedir novamente ao recarregar
+window.addEventListener('beforeunload', function() {
+    if (acessoLiberado) {
+        sessionStorage.setItem('acessoGestor', 'true');
+    }
 });
 
 </script>
