@@ -2225,23 +2225,29 @@ function switchTab(tab) {
     // Se for produtos ou clientes, verifica acesso
     if (tab === 'produtos' || tab === 'clientes') {
         if (!abasLiberadas) {
-            // Verifica se o modal já está aberto
-            const modalAberto = document.getElementById('modalSenhaAba').classList.contains('open');
-            if (!modalAberto) {
-                verificarAcessoAba(tab);
+            // Verifica sessão primeiro
+            if (!verificarSessaoAbas()) {
+                var modalAberto = document.getElementById('modalSenhaAba').classList.contains('open');
+                if (!modalAberto) {
+                    verificarAcessoAba(tab);
+                }
+                // Não troca a aba ainda
+                return;
             }
-            // Não troca a aba ainda
-            return;
         }
     }
     
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(function(b) {
+        b.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-content').forEach(function(c) {
+        c.classList.remove('active');
+    });
     
-    const btn = document.querySelector(`.tab-btn[data-tab="${tab}"]`);
+    var btn = document.querySelector('.tab-btn[data-tab="' + tab + '"]');
     if (btn) btn.classList.add('active');
     
-    const content = document.getElementById(`tab-${tab}`);
+    var content = document.getElementById('tab-' + tab);
     if (content) {
         content.classList.add('active');
         
@@ -2273,7 +2279,7 @@ function switchTab(tab) {
 // ============================================================
 // CONTROLE DE ACESSO - SENHA
 // ============================================================
-const SENHA_ACESSO = 'Hugo@1313';
+const SENHA_ACESSO = 'Cal@562938';
 let tentativasLogin = 5;
 let acessoLiberado = false;
 
@@ -2326,14 +2332,88 @@ function validarAcesso() {
 
 
 // ============================================================
-// CONTROLE DE SENHA PARA ABAS PRODUTOS E CLIENTES
+// CONTROLE DE SENHA PARA ABAS PRODUTOS E CLIENTES (COM SESSÃO)
 // ============================================================
-const SENHA_ABAS = 'Cal@562938';
+const SENHA_ABAS = 'Hugo@1313';
 let tentativasAba = 5;
 let abasLiberadas = false;
-let abaParaDesbloquear = null; // 'produtos' ou 'clientes'
+let abaParaDesbloquear = null;
+const TEMPO_SESSAO_ABAS = 30 * 60 * 1000; // 30 minutos em milissegundos
+
+// Verifica sessão ao carregar a página
+function verificarSessaoAbas() {
+    const sessaoSalva = localStorage.getItem('sessaoAbas');
+    if (sessaoSalva) {
+        try {
+            const dadosSessao = JSON.parse(sessaoSalva);
+            const agora = Date.now();
+            const tempoDecorrido = agora - dadosSessao.timestamp;
+            
+            if (tempoDecorrido < TEMPO_SESSAO_ABAS) {
+                // Sessão ainda válida
+                abasLiberadas = true;
+                const tabProdutos = document.getElementById('tab-produtos');
+                const tabClientes = document.getElementById('tab-clientes');
+                
+                if (tabProdutos) {
+                    tabProdutos.classList.remove('aba-bloqueada');
+                    tabProdutos.classList.add('aba-desbloqueada');
+                }
+                if (tabClientes) {
+                    tabClientes.classList.remove('aba-bloqueada');
+                    tabClientes.classList.add('aba-desbloqueada');
+                }
+                
+                // Renderiza se a aba estiver ativa
+                const tabAtiva = document.querySelector('.tab-content.active');
+                if (tabAtiva) {
+                    if (tabAtiva.id === 'tab-produtos' && typeof renderizarProdutos === 'function') {
+                        renderizarProdutos();
+                    }
+                    if (tabAtiva.id === 'tab-clientes' && typeof renderizarClientes === 'function') {
+                        renderizarClientes();
+                    }
+                }
+                
+                console.log('✅ Sessão das abas restaurada (', Math.round((TEMPO_SESSAO_ABAS - tempoDecorrido) / 60000), 'min restante)');
+                return true;
+            } else {
+                // Sessão expirada
+                localStorage.removeItem('sessaoAbas');
+                abasLiberadas = false;
+                const tabProdutos = document.getElementById('tab-produtos');
+                const tabClientes = document.getElementById('tab-clientes');
+                if (tabProdutos) tabProdutos.classList.add('aba-bloqueada');
+                if (tabClientes) tabClientes.classList.add('aba-bloqueada');
+                console.log('⏰ Sessão das abas expirada (30 minutos)');
+                return false;
+            }
+        } catch (e) {
+            localStorage.removeItem('sessaoAbas');
+            return false;
+        }
+    }
+    return false;
+}
+
+function salvarSessaoAbas() {
+    localStorage.setItem('sessaoAbas', JSON.stringify({
+        timestamp: Date.now(),
+        senha: SENHA_ABAS
+    }));
+}
+
+function limparSessaoAbas() {
+    localStorage.removeItem('sessaoAbas');
+    abasLiberadas = false;
+}
 
 function verificarAcessoAba(tab) {
+    // Verifica sessão primeiro
+    if (verificarSessaoAbas()) {
+        return true;
+    }
+    
     // Se já estiver liberado, não faz nada
     if (abasLiberadas) {
         return true;
@@ -2353,7 +2433,7 @@ function verificarAcessoAba(tab) {
     document.getElementById('modalSenhaAba').classList.add('open');
     
     // Foca no input
-    setTimeout(() => {
+    setTimeout(function() {
         document.getElementById('senhaAbaInput').focus();
     }, 300);
     
@@ -2361,11 +2441,11 @@ function verificarAcessoAba(tab) {
 }
 
 function validarSenhaAba() {
-    const input = document.getElementById('senhaAbaInput');
-    const senha = input.value;
-    const erroEl = document.getElementById('senhaErroAba');
-    const btn = document.getElementById('btnSenhaAba');
-    const tentativasSpan = document.getElementById('tentativasAbaRestantes');
+    var input = document.getElementById('senhaAbaInput');
+    var senha = input.value;
+    var erroEl = document.getElementById('senhaErroAba');
+    var btn = document.getElementById('btnSenhaAba');
+    var tentativasSpan = document.getElementById('tentativasAbaRestantes');
     
     if (!senha) {
         erroEl.textContent = '⚠️ Digite a senha para acessar.';
@@ -2379,35 +2459,52 @@ function validarSenhaAba() {
         erroEl.classList.remove('show');
         fecharModal('modalSenhaAba');
         
-        // Marca a aba atual como desbloqueada e renderiza
-        if (abaParaDesbloquear === 'produtos') {
-            document.getElementById('tab-produtos').classList.remove('aba-bloqueada');
-            document.getElementById('tab-produtos').classList.add('aba-desbloqueada');
-            renderizarProdutos();
-        } else if (abaParaDesbloquear === 'clientes') {
-            document.getElementById('tab-clientes').classList.remove('aba-bloqueada');
-            document.getElementById('tab-clientes').classList.add('aba-desbloqueada');
-            renderizarClientes();
+        // Salva sessão no localStorage (30 minutos)
+        salvarSessaoAbas();
+        
+        // Desbloqueia as abas
+        var tabProdutos = document.getElementById('tab-produtos');
+        var tabClientes = document.getElementById('tab-clientes');
+        
+        if (tabProdutos) {
+            tabProdutos.classList.remove('aba-bloqueada');
+            tabProdutos.classList.add('aba-desbloqueada');
+        }
+        if (tabClientes) {
+            tabClientes.classList.remove('aba-bloqueada');
+            tabClientes.classList.add('aba-desbloqueada');
         }
         
-        // Desbloqueia a outra aba também (se existir)
-        document.getElementById('tab-produtos').classList.remove('aba-bloqueada');
-        document.getElementById('tab-produtos').classList.add('aba-desbloqueada');
-        document.getElementById('tab-clientes').classList.remove('aba-bloqueada');
-        document.getElementById('tab-clientes').classList.add('aba-desbloqueada');
-        
-        // Renderiza a outra se estiver ativa
-        const tabAtiva = document.querySelector('.tab-content.active');
+        // Renderiza a aba atual
+        var tabAtiva = document.querySelector('.tab-content.active');
         if (tabAtiva) {
-            if (tabAtiva.id === 'tab-produtos') {
+            if (tabAtiva.id === 'tab-produtos' && typeof renderizarProdutos === 'function') {
                 renderizarProdutos();
-            } else if (tabAtiva.id === 'tab-clientes') {
+            }
+            if (tabAtiva.id === 'tab-clientes' && typeof renderizarClientes === 'function') {
                 renderizarClientes();
             }
         }
         
-        console.log('✅ Abas Produtos e Clientes desbloqueadas!');
+        console.log('✅ Abas Produtos e Clientes desbloqueadas! Sessão: 30 minutos');
         abaParaDesbloquear = null;
+        
+        // Inicia timer para expirar após 30 minutos
+        setTimeout(function() {
+            limparSessaoAbas();
+            abasLiberadas = false;
+            var tabP = document.getElementById('tab-produtos');
+            var tabC = document.getElementById('tab-clientes');
+            if (tabP) tabP.classList.add('aba-bloqueada');
+            if (tabC) tabC.classList.add('aba-bloqueada');
+            
+            var tabAtiva2 = document.querySelector('.tab-content.active');
+            if (tabAtiva2 && (tabAtiva2.id === 'tab-produtos' || tabAtiva2.id === 'tab-clientes')) {
+                mostrarNotificacao('⏰ Sessão expirada. Digite a senha novamente para acessar.', 'warning');
+            }
+            console.log('⏰ Sessão das abas expirada automaticamente (30 minutos)');
+        }, TEMPO_SESSAO_ABAS);
+        
         return;
     }
     
@@ -2423,11 +2520,41 @@ function validarSenhaAba() {
         return;
     }
     
-    erroEl.textContent = `❌ Senha incorreta! Tentativas restantes: ${tentativasAba}`;
+    erroEl.textContent = '❌ Senha incorreta! Tentativas restantes: ' + tentativasAba;
     erroEl.classList.add('show');
     input.value = '';
     input.focus();
     input.select();
+}
+
+// ============================================================
+// FUNÇÃO PARA MOSTRAR NOTIFICAÇÃO
+// ============================================================
+function mostrarNotificacao(mensagem, tipo) {
+    if (tipo === undefined) tipo = 'info';
+    var notif = document.createElement('div');
+    notif.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 24px;
+        background: ${tipo === 'warning' ? '#f39c12' : '#1a3a5c'};
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 99999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        animation: slideDownNotif 0.4s ease;
+    `;
+    notif.textContent = mensagem;
+    document.body.appendChild(notif);
+    
+    setTimeout(function() {
+        notif.style.animation = 'slideUpNotif 0.4s ease';
+        setTimeout(function() { notif.remove(); }, 400);
+    }, 4000);
 }
 
 // ============================================================
@@ -4509,10 +4636,131 @@ function abrirModalStatus(id, statusAtual) {
 }
 
 async function atualizarStatus() {
-    const novoStatus = document.getElementById('status_pedido').value;
+    var novoStatus = document.getElementById('status_pedido').value;
+    var pedidoAtual = dados.pedidos.find(function(p) { return parseInt(p.id_pedido) === pedidoEditando; });
+    var statusAnterior = pedidoAtual ? pedidoAtual.status : null;
+    
     mostrarSpinner('Atualizando status...');
     
     try {
+        // ============================================================
+        // SE O STATUS FOR CANCELADO, RESTAURA O ESTOQUE
+        // ============================================================
+        if (novoStatus === 'Cancelado' && statusAnterior !== 'Cancelado') {
+            var pedido = dados.pedidos.find(function(p) { return parseInt(p.id_pedido) === pedidoEditando; });
+            
+            if (pedido && pedido.itens) {
+                console.log('🔄 Cancelando pedido #' + pedido.id_pedido + ' - Restaurando estoque...');
+                
+                var itensParaRestaurar = [];
+                var itensProcessados = [];
+                
+                try {
+                    // Tenta parsear os itens do pedido
+                    if (typeof pedido.itens === 'string') {
+                        try {
+                            itensProcessados = JSON.parse(pedido.itens);
+                        } catch (e) {
+                            // Se não for JSON, tenta extrair do formato com " | "
+                            if (pedido.itens.includes(' | ')) {
+                                var partes = pedido.itens.split(' | ');
+                                partes.forEach(function(part) {
+                                    var match = part.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
+                                    if (match) {
+                                        var nome = match[1].trim();
+                                        var qtdPacotes = parseInt(match[2]) || 1;
+                                        var tamanhoPacote = parseInt(match[3]) || 1;
+                                        var totalUnidades = qtdPacotes * tamanhoPacote;
+                                        
+                                        var isProducao = nome.includes('Produção') || nome.includes('(Produção');
+                                        
+                                        // Procura o produto pelo nome
+                                        var produto = dados.produtos.find(function(p) {
+                                            var nomeProduto = p.nome || '';
+                                            return nomeProduto.includes(nome.substring(0, 20)) || nome.includes(nomeProduto.substring(0, 20));
+                                        });
+                                        
+                                        if (produto && !isProducao) {
+                                            var estoqueAtual = parseInt(produto.estoque) || 0;
+                                            itensParaRestaurar.push({
+                                                productId: produto.id,
+                                                nome: produto.nome,
+                                                quantidade: totalUnidades,
+                                                novoEstoque: estoqueAtual + totalUnidades
+                                            });
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                    } else if (Array.isArray(pedido.itens)) {
+                        itensProcessados = pedido.itens;
+                        itensProcessados.forEach(function(item) {
+                            if (!item.isProducao) {
+                                var produto = dados.produtos.find(function(p) { return parseInt(p.id) === item.productId; });
+                                if (produto) {
+                                    var qtd = item.quantidade || 1;
+                                    var pacote = item.pacote_tamanho || 1;
+                                    var totalUnidades = qtd * pacote;
+                                    var estoqueAtual = parseInt(produto.estoque) || 0;
+                                    itensParaRestaurar.push({
+                                        productId: produto.id,
+                                        nome: produto.nome,
+                                        quantidade: totalUnidades,
+                                        novoEstoque: estoqueAtual + totalUnidades
+                                    });
+                                }
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error('❌ Erro ao processar itens para restauração:', e);
+                }
+                
+                // Restaura o estoque
+                if (itensParaRestaurar.length > 0) {
+                    console.log('📦 Itens a restaurar:', itensParaRestaurar);
+                    
+                    var now = new Date();
+                    var dia = String(now.getDate()).padStart(2, '0');
+                    var mes = String(now.getMonth() + 1).padStart(2, '0');
+                    var ano = now.getFullYear();
+                    var dataStr = dia + '/' + mes + '/' + ano;
+                    
+                    var camposAtualizacao = {};
+                    itensParaRestaurar.forEach(function(item) {
+                        camposAtualizacao[item.productId] = { 
+                            estoque: item.novoEstoque, 
+                            data_estoque: dataStr 
+                        };
+                        // Atualiza localmente
+                        var produto = dados.produtos.find(function(p) { return parseInt(p.id) === item.productId; });
+                        if (produto) {
+                            produto.estoque = item.novoEstoque;
+                            produto.data_estoque = dataStr;
+                        }
+                    });
+                    
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            acao: 'atualizar_estoque_multiplo',
+                            itens: camposAtualizacao
+                        })
+                    });
+                    
+                    console.log('✅ Estoque restaurado com sucesso!');
+                } else {
+                    console.log('ℹ️ Nenhum item para restaurar estoque.');
+                }
+            }
+        }
+        
+        // ============================================================
+        // ATUALIZA O STATUS DO PEDIDO
+        // ============================================================
         await fetch(API_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -4524,10 +4772,27 @@ async function atualizarStatus() {
             })
         });
 
+        // Atualiza localmente
+        var pedidoLocal = dados.pedidos.find(function(p) { return parseInt(p.id_pedido) === pedidoEditando; });
+        if (pedidoLocal) {
+            pedidoLocal.status = novoStatus;
+        }
+
         esconderSpinner();
-        alert('✅ Status atualizado com sucesso!');
+        
+        if (novoStatus === 'Cancelado' && statusAnterior !== 'Cancelado') {
+            alert('✅ Pedido cancelado e estoque restaurado com sucesso!');
+        } else {
+            alert('✅ Status atualizado com sucesso!');
+        }
+        
         fecharModal('modalStatus');
         carregarDadosParcial();
+        
+        // Atualiza a lista de produtos com o novo estoque
+        if (typeof renderizarProdutos === 'function' && abasLiberadas) {
+            renderizarProdutos();
+        }
 
     } catch (error) {
         console.error('Erro ao atualizar status:', error);
@@ -5133,22 +5398,21 @@ async function finalizarPedidoManual() {
 // ============================================================
 // INICIALIZAR
 // ============================================================
-// carregarDados(); // REMOVA OU COMENTE ESTA LINHA
 
-// Verifica acesso e carrega dados
-verificarAcesso();
+// Verifica sessão das abas ao carregar
+verificarSessaoAbas();
 
-// Se já estiver logado, carrega os dados
-if (acessoLiberado) {
+// Se já estiver logado (acesso principal), carrega os dados
+if (typeof acessoLiberado !== 'undefined' && acessoLiberado) {
     carregarDados();
 }
 
 // Atualiza apenas pendentes e pedidos a cada 30 segundos
-setInterval(() => {
-    if (!acessoLiberado) return;
-    const tabAtiva = document.querySelector('.tab-content.active');
+setInterval(function() {
+    if (typeof acessoLiberado !== 'undefined' && !acessoLiberado) return;
+    var tabAtiva = document.querySelector('.tab-content.active');
     if (tabAtiva) {
-        const id = tabAtiva.id;
+        var id = tabAtiva.id;
         if (id === 'tab-pendentes' || id === 'tab-pedidos') {
             carregarDadosParcial();
         }
@@ -5157,13 +5421,11 @@ setInterval(() => {
 
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializa
-    verificarAcesso();
-});
-
-// Salva o acesso na sessão para não pedir novamente ao recarregar
-window.addEventListener('beforeunload', function() {
-    if (acessoLiberado) {
-        sessionStorage.setItem('acessoGestor', 'true');
+    if (typeof verificarSessaoAbas === 'function') {
+        verificarSessaoAbas();
+    }
+    if (typeof verificarAcesso === 'function') {
+        verificarAcesso();
     }
 });
 
