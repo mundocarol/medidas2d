@@ -2667,7 +2667,7 @@
             <!-- ===== FRETE NO CARRINHO - ATUALIZADO ===== -->
             <div class="frete-carrinho-container" id="freteCarrinhoContainer" style="display:none;">
                 <div class="frete-row">
-                    <input type="text" id="cepCarrinho" placeholder="Digite seu CEP (ex: 31050650)" maxlength="9" oninput="this.value=this.value.replace(/\D/g,'')">
+                    <input type="text" id="cepCarrinho" placeholder="Digite seu CEP (ex: 31050650)" maxlength="8" oninput="this.value=this.value.replace(/\D/g,'')">
                     <button class="btn-calcular-frete" id="btnCalcularFreteCarrinho" onclick="calcularFreteCarrinho()">
                         <i class="fas fa-truck"></i> Calcular Frete
                     </button>
@@ -2976,7 +2976,7 @@
                     <div class="icone"><i class="fas fa-credit-card"></i></div>
                     <div class="info">
                         <div class="titulo">Cartão de Crédito</div>
-                        <div class="subtitulo">Visa, Mastercard, Elo, Amex</div>
+                        <div class="subtitulo">Visa, Mastercard, Elo, (outros)</div>
                     </div>
                 </div>
                 <div style="padding:15px;text-align:center;">
@@ -3016,7 +3016,7 @@
             <h2 style="color:var(--success);">✅ Pedido Realizado!</h2>
             <p style="color:#666;margin:10px 0;">Seu pedido foi confirmado com sucesso.</p>
             <div class="numero-pedido" id="confirmacaoNumeroPedido">#13001</div>
-            <p style="color:#888;font-size:14px;">Você receberá um email com os detalhes.</p>
+            <p style="color:#888;font-size:14px;">Você pode acompanhar seu pedido pelo site.</p>
             <div style="margin-top:20px;">
                 <button onclick="fecharModal('confirmacaoModal');abrirPagamento()" class="btn-checkout" style="background:var(--primary-blue);">
                     <i class="fas fa-credit-card"></i> Ir para Pagamento
@@ -3145,9 +3145,9 @@
 
         <div style="background:white;padding:15px 25px;box-shadow:0 2px 10px rgba(0,0,0,0.08);position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;">
             <div style="display:flex;align-items:center;gap:15px;">
-                <button onclick="fecharCheckout()" style="background:transparent;border:none;font-size:24px;cursor:pointer;color:#666;padding:5px 10px;">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
+                <button onclick="fecharCheckout()" style="background:transparent;border:none;font-size:24px;cursor:pointer;color:#666;padding:5px 10px;" title="Voltar">
+    <i class="fas fa-arrow-left"></i>
+</button>
                 <h2 style="font-size:20px;color:var(--primary-dark);margin:0;"></h2>
             </div>
             <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:#888;">
@@ -4325,7 +4325,7 @@ async function calcularFreteCarrinho() {
                         id: 'ENTREGA_PROPRIA',
                         name: resultadoEP.freteGratis ? 'Entrega Própria (Grátis)' : 'Entrega Própria',
                         price: resultadoEP.cost,
-                        delivery_time: 3,
+                        delivery_time: 1,
                         service: 'Entrega Própria',
                         _api: false,
                         is_entrega_propria: true
@@ -5009,37 +5009,36 @@ function abrirWhatsAppAtendente(cep) {
         
         // DETERMINA O STATUS DO ESTOQUE - SEM MENSAGEM DUPLICADA
         if (!podeVenderZerado) {
-            if (temEstoqueSuficiente && estoqueDisponivel > 0) {
-                stockStatus = `<span class="stock-badge available"><i class="fas fa-check-circle"></i> Disponível (${estoqueDisponivel} un)</span>`;
-            } else if (estoqueDisponivel === 0 && totalReservado > 0) {
-                stockStatus = `<span class="stock-badge production" style="background:#fff3cd;color:#856404;">
-                    <i class="fas fa-clock"></i> Aguardando separação (${totalReservado} un reservadas)
-                </span>`;
-            } else if (estoqueDisponivel > 0 && estoqueDisponivel < totalUnidadesItem) {
-                stockStatus = `<span class="stock-badge esgotado" style="background:#fce4ec;color:#c62828;">
-                    <i class="fas fa-exclamation-triangle"></i> Estoque insuficiente! (${estoqueDisponivel} un disponível)
-                </span>`;
-                avisoEstoque = true;
-                botaoHabilitado = false;
-                mensagemBloqueio = '⚠️ Ajuste as quantidades dos itens com estoque insuficiente.';
-                isItemInvalido = true;
-            } else {
-                stockStatus = `<span class="stock-badge esgotado" style="background:#fce4ec;color:#c62828;">
-                    <i class="fas fa-times-circle"></i> Esgotado
-                </span>`;
-                avisoEstoque = true;
-                botaoHabilitado = false;
-                mensagemBloqueio = '⚠️ Produto sem estoque disponível.';
-                isItemInvalido = true;
-            }
-        } else {
-            // Vende zerado - mostra produção SEM mensagem duplicada
-            if (estoqueAtual > 0 && temEstoqueSuficiente) {
-                stockStatus = `<span class="stock-badge available"><i class="fas fa-check-circle"></i> Disponível (${estoqueDisponivel} un)</span>`;
-            } else {
-                stockStatus = `<span class="stock-badge production"><i class="fas fa-clock"></i> Produção: ${prazoProducao} dias</span>`;
-            }
-        }
+    if (temEstoqueSuficiente && estoqueDisponivel > 0) {
+        stockStatus = `<span class="stock-badge available"><i class="fas fa-check-circle"></i> Disponível</span>`;
+    } else if (estoqueDisponivel === 0 && totalReservado > 0) {
+        stockStatus = `<span class="stock-badge production" style="background:#fff3cd;color:#856404;">
+            <i class="fas fa-clock"></i> Aguardando separação
+        </span>`;
+    } else if (estoqueDisponivel > 0 && estoqueDisponivel < totalUnidadesItem) {
+        stockStatus = `<span class="stock-badge esgotado" style="background:#fce4ec;color:#c62828;">
+            <i class="fas fa-exclamation-triangle"></i> Estoque insuficiente!
+        </span>`;
+        avisoEstoque = true;
+        botaoHabilitado = false;
+        mensagemBloqueio = '⚠️ Ajuste as quantidades dos itens com estoque insuficiente.';
+        isItemInvalido = true;
+    } else {
+        stockStatus = `<span class="stock-badge esgotado" style="background:#fce4ec;color:#c62828;">
+            <i class="fas fa-times-circle"></i> Esgotado
+        </span>`;
+        avisoEstoque = true;
+        botaoHabilitado = false;
+        mensagemBloqueio = '⚠️ Produto sem estoque disponível.';
+        isItemInvalido = true;
+    }
+} else {
+    if (estoqueAtual > 0 && temEstoqueSuficiente) {
+        stockStatus = `<span class="stock-badge available"><i class="fas fa-check-circle"></i> Disponível</span>`;
+    } else {
+        stockStatus = `<span class="stock-badge production"><i class="fas fa-clock"></i> Produção: ${prazoProducao} dias</span>`;
+    }
+}
         
         // CONTROLES DO PACOTE
         const step = item.step || 1;
@@ -6083,7 +6082,7 @@ function ajustarPacoteCarrinho(index, delta) {
             if (modal) modal.style.display = 'block';
         }
 
-        async function carregarPedidosCliente(email) {
+     async function carregarPedidosCliente(email) {
     try {
         console.log('🔍 Buscando pedidos para:', email);
         const response = await fetch(API_URL);
@@ -6096,9 +6095,7 @@ function ajustarPacoteCarrinho(index, delta) {
             return pEmail === email.toLowerCase().trim();
         });
         
-        // ============================================================
         // FILTRO DE 60 DIAS
-        // ============================================================
         const hoje = new Date();
         const sessentaDiasAtras = new Date();
         sessentaDiasAtras.setDate(hoje.getDate() - 60);
@@ -6106,10 +6103,8 @@ function ajustarPacoteCarrinho(index, delta) {
         const pedidosFiltrados = pedidosCliente.filter(p => {
             if (!p.data_pedido) return true;
             try {
-                // Tenta parsear a data
                 let dataPedido;
                 if (p.data_pedido.includes('/')) {
-                    // Formato brasileiro: dd/mm/aaaa, hh:mm
                     const partes = p.data_pedido.split(',')[0].trim().split('/');
                     if (partes.length === 3) {
                         dataPedido = new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
@@ -6124,7 +6119,6 @@ function ajustarPacoteCarrinho(index, delta) {
             }
         });
         
-        // Ordena do mais recente para o mais antigo
         pedidosFiltrados.sort((a, b) => {
             const idA = parseInt(a.id_pedido) || 0;
             const idB = parseInt(b.id_pedido) || 0;
@@ -6133,7 +6127,6 @@ function ajustarPacoteCarrinho(index, delta) {
         
         const container = document.getElementById('listaPedidosLogado');
         
-        // AVISO DE 60 DIAS
         let avisoHtml = '';
         if (pedidosCliente.length > pedidosFiltrados.length) {
             const removidos = pedidosCliente.length - pedidosFiltrados.length;
@@ -6156,26 +6149,77 @@ function ajustarPacoteCarrinho(index, delta) {
                 </div>
             `;
         } else {
-            container.innerHTML = avisoHtml + pedidosFiltrados.map(p => {
-                const statusClass = (p.status || 'pendente').toLowerCase().replace(/ /g, '_');
-                const total = parseFloat(p.total) || 0;
-                const statusColors = {
+            container.innerHTML = avisoHtml + pedidosFiltrados.map(function(p) {
+                var statusColor = {
                     'pendente': '#f39c12',
                     'em andamento': '#3498db',
                     'enviado': '#2ecc71',
                     'entregue': '#27ae60',
                     'cancelado': '#e74c3c'
-                };
-                const statusColor = statusColors[p.status?.toLowerCase()] || '#888';
+                }[p.status?.toLowerCase()] || '#888';
                 
-                let itensCount = 0;
+                var itensHtml = '';
+                var itensCount = 0;
+                
                 try {
-                    const itens = typeof p.itens === 'string' ? JSON.parse(p.itens) : p.itens;
-                    itensCount = Array.isArray(itens) ? itens.length : 0;
-                } catch (e) {}
+                    var textoItens = p.itens || '';
+                    console.log('📝 Processando itens do pedido #' + p.id_pedido + ':', textoItens);
+                    
+                    // ============================================================
+                    // 🔧 EXTRAI OS ITENS DIRETAMENTE DO TEXTO DA PLANILHA
+                    // ============================================================
+                    if (typeof textoItens === 'string' && textoItens.includes(' | ')) {
+                        var partes = textoItens.split(' | ');
+                        itensCount = partes.length;
+                        
+                        var itensProcessados = partes.map(function(part) {
+                            // Extrai nome, quantidade e preço
+                            var match = part.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
+                            if (match) {
+                                var nomeCompleto = match[1].trim();
+                                var qtd = parseInt(match[2]) || 1;
+                                var pacote = parseInt(match[3]) || 1;
+                                var preco = parseFloat(match[4].replace(',', '.')) || 0;
+                                var totalUnidades = qtd * pacote;
+                                
+                                // ============================================================
+                                // 🔧 VERIFICA SE É PRODUÇÃO PELO NOME
+                                // ============================================================
+                                var statusTag = '';
+                                if (nomeCompleto.includes('Produção')) {
+                                    var prazoMatch = nomeCompleto.match(/Produção\s*(\d*)\s*dias?/);
+                                    var prazo = prazoMatch ? parseInt(prazoMatch[1]) : 7;
+                                    statusTag = ' 🔨 ' + prazo + ' dias';
+                                } else if (nomeCompleto.includes('Disponível')) {
+                                    statusTag = ' ✅ Disponível';
+                                }
+                                
+                                // Remove o status do nome para não duplicar
+                                var nomeLimpo = nomeCompleto;
+                                nomeLimpo = nomeLimpo.replace(/\(Produção\s*\d*\s*dias?\)/g, '');
+                                nomeLimpo = nomeLimpo.replace(/\(Produção\)/g, '');
+                                nomeLimpo = nomeLimpo.replace(/\(Disponível\)/g, '');
+                                nomeLimpo = nomeLimpo.trim();
+                                if (!nomeLimpo) nomeLimpo = nomeCompleto;
+                                
+                                return '• ' + nomeLimpo + statusTag + ' - ' + qtd + 'x ' + totalUnidades + ' un - R$ ' + preco.toFixed(2);
+                            }
+                            return part;
+                        });
+                        
+                        itensHtml = itensProcessados.join('%0A');
+                        console.log('📦 Itens processados:', itensHtml);
+                    } else {
+                        itensHtml = textoItens || 'Itens não disponíveis';
+                        itensCount = 1;
+                    }
+                } catch (e) {
+                    console.error('❌ Erro ao processar itens:', e);
+                    itensHtml = p.itens || 'Itens não disponíveis';
+                    itensCount = 1;
+                }
                 
-                // Formata a data para exibição
-                let dataExibicao = p.data_pedido || '';
+                var dataExibicao = p.data_pedido || '';
                 if (dataExibicao.includes('T')) {
                     dataExibicao = dataExibicao.replace('T', ' ').substring(0, 16);
                 }
@@ -6197,7 +6241,7 @@ function ajustarPacoteCarrinho(index, delta) {
                             </div>
                             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-top:4px;">
                                 <span style="font-size:13px;color:#888;">${itensCount} itens</span>
-                                <span class="total" style="font-weight:700;color:var(--primary-blue);font-size:15px;">R$ ${total.toFixed(2)}</span>
+                                <span class="total" style="font-weight:700;color:var(--primary-blue);font-size:15px;">R$ ${parseFloat(p.total || 0).toFixed(2)}</span>
                             </div>
                             <div style="font-size:11px;color:#aaa;margin-top:4px;">
                                 <i class="fas fa-chevron-right"></i> Clique para ver detalhes
@@ -6280,168 +6324,172 @@ function ajustarPacoteCarrinho(index, delta) {
         }
 
    function mostrarDetalhesPedido(pedido) {
-    const modalAntigo = document.getElementById('detalhesPedidoModal');
+    var modalAntigo = document.getElementById('detalhesPedidoModal');
     if (modalAntigo) modalAntigo.remove();
     
-    const modal = document.createElement('div');
+    var modal = document.createElement('div');
     modal.id = 'detalhesPedidoModal';
     modal.className = 'modal';
     modal.style.display = 'block';
     modal.style.zIndex = '3000';
     
-    let itensHtml = '';
-    let totalItens = 0;
-    let totalProdutos = 0;
-    let maiorPrazoProducao = 0;
+    var itensHtml = '';
+    var totalItens = 0;
+    var totalProdutos = 0;
     
     try {
-        let itens = [];
-        let textoItens = pedido.itens || '';
+        // ============================================================
+        // 🔧 CORREÇÃO: EXTRAI O TEXTO DOS ITENS CORRETAMENTE
+        // ============================================================
+        var textoItens = '';
         
-        console.log('📝 Parseando itens do pedido:', textoItens);
+        // Se pedido for uma string, tenta parsear
+        if (typeof pedido === 'string') {
+            try {
+                pedido = JSON.parse(pedido);
+            } catch (e) {
+                // Se não for JSON, usa como está
+                console.warn('⚠️ Pedido é uma string, tentando usar como texto');
+            }
+        }
+        
+        // Agora pega os itens do objeto
+        if (pedido && typeof pedido === 'object') {
+            textoItens = pedido.itens || '';
+        } else {
+            textoItens = pedido || '';
+        }
+        
+        console.log('📝 Parseando itens do pedido #' + (pedido?.id_pedido || '') + ':', textoItens);
+        
+        // ============================================================
+        // 🔧 EXTRAI OS ITENS DIRETAMENTE DO TEXTO DA PLANILHA
+        // ============================================================
+        var itens = [];
         
         if (typeof textoItens === 'string' && textoItens.includes(' | ')) {
-            const partes = textoItens.split(' | ');
-            console.log('📝 Partes encontradas:', partes);
-            
-            partes.forEach(part => {
-                // EXTRAI O STATUS DE PRODUÇÃO
-                let isProducao = false;
-                let prazoProducao = 0;
-                let nomeLimpo = part;
-                let stock = 999;
-                
-                const matchProd = part.match(/\(Produção\s*(\d*)\s*dias?\)/);
-                if (matchProd) {
-                    isProducao = true;
-                    prazoProducao = parseInt(matchProd[1]) || 7;
-                    stock = 0;
-                    nomeLimpo = nomeLimpo.replace(/\(Produção\s*\d*\s*dias?\)\s*/, '');
-                } else if (part.includes('(Produção)')) {
-                    isProducao = true;
-                    prazoProducao = 7;
-                    stock = 0;
-                    nomeLimpo = nomeLimpo.replace(/\(Produção\)\s*/, '');
-                }
-                
-                if (prazoProducao > maiorPrazoProducao) {
-                    maiorPrazoProducao = prazoProducao;
-                }
-                
-                const matchPacote = nomeLimpo.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
-                
-                if (matchPacote) {
-                    const nome = matchPacote[1].trim();
-                    const qtdPacotes = parseInt(matchPacote[2]) || 1;
-                    const tamanhoPacote = parseInt(matchPacote[3]) || 1;
-                    const preco = parseFloat(matchPacote[4].replace(',', '.')) || 0;
-                    const totalUnidades = qtdPacotes * tamanhoPacote;
+            var partes = textoItens.split(' | ');
+            partes.forEach(function(part) {
+                // Extrai nome, quantidade e preço
+                var match = part.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
+                if (match) {
+                    var nomeCompleto = match[1].trim();
+                    var qtd = parseInt(match[2]) || 1;
+                    var pacote = parseInt(match[3]) || 1;
+                    var preco = parseFloat(match[4].replace(',', '.')) || 0;
+                    var totalUnidades = qtd * pacote;
                     
-                    let nomeFinal = nome;
-                    nomeFinal = nomeFinal.replace(/\(Produção\s*\d*\s*dias?\)/g, '');
-                    nomeFinal = nomeFinal.replace(/\(Produção\)/g, '');
-                    nomeFinal = nomeFinal.trim();
-                    if (!nomeFinal) nomeFinal = nome;
+                    // ============================================================
+                    // 🔧 VERIFICA SE É PRODUÇÃO PELO NOME
+                    // ============================================================
+                    var isProducao = nomeCompleto.includes('Produção');
+                    var prazoMatch = nomeCompleto.match(/Produção\s*(\d*)\s*dias?/);
+                    var prazo = prazoMatch ? parseInt(prazoMatch[1]) : 0;
+                    var isDisponivel = nomeCompleto.includes('Disponível');
+                    
+                    console.log('🔍 Item encontrado:', {
+                        nome: nomeCompleto,
+                        isProducao: isProducao,
+                        prazo: prazo,
+                        isDisponivel: isDisponivel
+                    });
+                    
+                    // Remove o status do nome para exibir limpo
+                    var nomeLimpo = nomeCompleto;
+                    nomeLimpo = nomeLimpo.replace(/\(Produção\s*\d*\s*dias?\)/g, '');
+                    nomeLimpo = nomeLimpo.replace(/\(Produção\)/g, '');
+                    nomeLimpo = nomeLimpo.replace(/\(Disponível\)/g, '');
+                    nomeLimpo = nomeLimpo.trim();
+                    if (!nomeLimpo) nomeLimpo = nomeCompleto;
                     
                     itens.push({
-                        nome: nomeFinal,
-                        quantidade: qtdPacotes,
-                        pacote_tamanho: tamanhoPacote,
+                        nome: nomeLimpo,
+                        nomeCompleto: nomeCompleto,
+                        quantidade: qtd,
+                        pacote_tamanho: pacote,
                         totalUnidades: totalUnidades,
                         price: preco,
                         isProducao: isProducao,
-                        prazoProducao: prazoProducao,
-                        stock: stock
+                        prazoProducao: prazo,
+                        isDisponivel: isDisponivel
                     });
                 } else {
-                    const match2 = nomeLimpo.match(/^(.+?)\s*\((\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
-                    if (match2) {
-                        const nome = match2[1].trim();
-                        const totalUnidades = parseInt(match2[2]) || 1;
-                        const preco = parseFloat(match2[3].replace(',', '.')) || 0;
-                        
-                        const matchPacote2 = nome.match(/(\d+)x\s*(\d+)/);
-                        let qtdPacotes = 1;
-                        let tamanhoPacote = totalUnidades;
-                        if (matchPacote2) {
-                            qtdPacotes = parseInt(matchPacote2[1]) || 1;
-                            tamanhoPacote = parseInt(matchPacote2[2]) || 1;
-                        }
-                        
-                        let nomeFinal = nome;
-                        nomeFinal = nomeFinal.replace(/\(Produção\s*\d*\s*dias?\)/g, '');
-                        nomeFinal = nomeFinal.replace(/\(Produção\)/g, '');
-                        nomeFinal = nomeFinal.trim();
-                        if (!nomeFinal) nomeFinal = nome;
-                        
-                        itens.push({
-                            nome: nomeFinal,
-                            quantidade: qtdPacotes,
-                            pacote_tamanho: tamanhoPacote,
-                            totalUnidades: totalUnidades,
-                            price: preco,
-                            isProducao: isProducao,
-                            prazoProducao: prazoProducao,
-                            stock: stock
-                        });
-                    }
+                    // Se não conseguir parsear, adiciona como está
+                    itens.push({
+                        nome: part,
+                        quantidade: 1,
+                        pacote_tamanho: 1,
+                        totalUnidades: 1,
+                        price: 0,
+                        isProducao: false,
+                        prazoProducao: 0,
+                        isDisponivel: false
+                    });
                 }
             });
-        }
-        
-        if (itens.length === 0 && textoItens) {
-            const matchPreco = textoItens.match(/R\$\s*([\d,.]+)/);
-            const preco = matchPreco ? parseFloat(matchPreco[1].replace(',', '.')) : 0;
-            itens = [{
-                nome: String(textoItens).substring(0, 40),
+        } else if (typeof textoItens === 'string' && textoItens) {
+            // Tenta extrair do texto simples
+            var matchPreco = textoItens.match(/R\$\s*([\d,.]+)/);
+            var preco = matchPreco ? parseFloat(matchPreco[1].replace(',', '.')) : 0;
+            itens.push({
+                nome: textoItens.substring(0, 40),
                 quantidade: 1,
                 pacote_tamanho: 1,
                 totalUnidades: 1,
-                price: preco || parseFloat(pedido.total) || 0,
-                isProducao: false,
-                prazoProducao: 0,
-                stock: 999
-            }];
+                price: preco || 0,
+                isProducao: textoItens.includes('Produção'),
+                prazoProducao: textoItens.includes('Produção') ? (textoItens.match(/Produção\s*(\d*)\s*dias?/) ? parseInt(textoItens.match(/Produção\s*(\d*)\s*dias?/)[1]) : 7) : 0,
+                isDisponivel: textoItens.includes('Disponível')
+            });
         }
         
         if (itens.length === 0) {
-            itens = [{
+            itens.push({
                 nome: 'Produto',
                 quantidade: 1,
                 pacote_tamanho: 1,
                 totalUnidades: 1,
-                price: parseFloat(pedido.total) || 0,
+                price: parseFloat(pedido?.total || 0) || 0,
                 isProducao: false,
                 prazoProducao: 0,
-                stock: 999
-            }];
+                isDisponivel: false
+            });
         }
         
         console.log('📦 Itens processados final:', itens);
         
         totalItens = itens.length;
-        itens.forEach((item, index) => {
-            const preco = parseFloat(item.price) || 0;
-            const qtd = parseInt(item.quantidade) || 1;
-            const pacote = parseInt(item.pacote_tamanho) || 1;
-            const totalUnidades = qtd * pacote;
-            const isProducao = item.isProducao || false;
-            const prazo = item.prazoProducao || 0;
-            const stock = parseInt(item.stock) || 0;
+        itens.forEach(function(item, index) {
+            var preco = parseFloat(item.price) || 0;
+            var qtd = parseInt(item.quantidade) || 1;
+            var pacote = parseInt(item.pacote_tamanho) || 1;
+            var totalUnidades = qtd * pacote;
+            var isProducao = item.isProducao || false;
+            var prazo = item.prazoProducao || 0;
             totalProdutos += preco;
             
-            const qtdTexto = `${qtd}x ${pacote} un (${totalUnidades} un)`;
+            var qtdTexto = qtd + 'x ' + pacote + ' un (' + totalUnidades + ' un)';
             
-            let statusProduto = '';
+            // ============================================================
+            // 🔧 STATUS CORRETO BASEADO NO NOME DA PLANILHA
+            // ============================================================
+            var statusProduto = '';
             if (isProducao && prazo > 0) {
-                statusProduto = `<span style="font-size:11px;color:#f39c12;">🔨 Produção: ${prazo} dias</span>`;
+                statusProduto = '<span style="font-size:11px;color:#f39c12;">🔨 Produção: ' + prazo + ' dias</span>';
             } else if (isProducao) {
-                statusProduto = `<span style="font-size:11px;color:#f39c12;">🔨 Produção</span>`;
+                statusProduto = '<span style="font-size:11px;color:#f39c12;">🔨 Produção</span>';
+            } else if (item.isDisponivel) {
+                statusProduto = '<span style="font-size:11px;color:#27ae60;">✅ Disponível</span>';
             } else {
-                statusProduto = `<span style="font-size:11px;color:#27ae60;">✅ Disponível</span>`;
+                // Se não tem status definido, verifica se o nome original tinha
+                if (item.nomeCompleto && item.nomeCompleto.includes('Produção')) {
+                    statusProduto = '<span style="font-size:11px;color:#f39c12;">🔨 Produção</span>';
+                } else {
+                    statusProduto = '<span style="font-size:11px;color:#27ae60;">✅ Disponível</span>';
+                }
             }
             
-            const nomeLimpo = item.nome || 'Produto';
+            var nomeLimpo = item.nome || 'Produto';
             
             itensHtml += `
                 <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;align-items:center;">
@@ -6463,36 +6511,49 @@ function ajustarPacoteCarrinho(index, delta) {
                 Não foi possível carregar os itens do pedido.
             </div>
         `;
-        totalProdutos = parseFloat(pedido.total) || 0;
+        totalProdutos = parseFloat(pedido?.total || 0) || 0;
     }
     
-    const total = parseFloat(pedido.total) || 0;
-    const frete = parseFloat(pedido.frete_valor) || 0;
-    const freteNome = pedido.frete || 'Retirada na Loja';
-    const status = pedido.status || 'Pendente';
-    const data = pedido.data_pedido || '';
-    const endereco = pedido.endereco_entrega || 'Não informado';
-    const pagamento = pedido.pagamento || 'Não informado';
-    const observacoes = pedido.observacoes || '';
-    const prazoEntrega = pedido.prazo_entrega || 0;
+    // ============================================================
+    // RESTO DA FUNÇÃO
+    // ============================================================
+    var pedidoObj = pedido;
+    if (typeof pedido === 'string') {
+        try {
+            pedidoObj = JSON.parse(pedido);
+        } catch (e) {
+            pedidoObj = pedido;
+        }
+    }
     
-    const dataFormatada = data.replace('T', ' ').substring(0, 16);
+    var total = parseFloat(pedidoObj?.total || 0) || 0;
+    var frete = parseFloat(pedidoObj?.frete_valor || 0) || 0;
+    var freteNome = pedidoObj?.frete || 'Retirada na Loja';
+    var status = pedidoObj?.status || 'Pendente';
+    var data = pedidoObj?.data_pedido || '';
+    var pagamento = pedidoObj?.pagamento || 'Não informado';
+    var observacoes = pedidoObj?.observacoes || '';
+    var prazoEntrega = pedidoObj?.prazo_entrega || 0;
+    var idPedido = pedidoObj?.id_pedido || '???';
+    var clienteNome = pedidoObj?.cliente_nome || 'Não identificado';
     
-    const statusColors = {
+    var dataFormatada = data.replace('T', ' ').substring(0, 16);
+    
+    var statusColors = {
         'pendente': '#f39c12',
         'em andamento': '#3498db',
         'enviado': '#2ecc71',
         'entregue': '#27ae60',
         'cancelado': '#e74c3c'
     };
-    const statusColor = statusColors[status.toLowerCase()] || '#888';
+    var statusColor = statusColors[status.toLowerCase()] || '#888';
     
     modal.innerHTML = `
         <div class="modal-content" style="max-width:700px;max-height:90vh;overflow-y:auto;">
             <span class="modal-close" onclick="fecharDetalhesPedido()">&times;</span>
             
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:8px;">
-                <h2 style="color:var(--primary-dark);margin:0;font-size:20px;">📦 Pedido #${pedido.id_pedido}</h2>
+                <h2 style="color:var(--primary-dark);margin:0;font-size:20px;">📦 Pedido #${idPedido}</h2>
                 <span style="background:${statusColor};color:white;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;">
                     ${status.toUpperCase()}
                 </span>
@@ -6505,7 +6566,7 @@ function ajustarPacoteCarrinho(index, delta) {
                 </div>
                 <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;">
                     <span style="color:#555;">Cliente</span>
-                    <span style="font-weight:600;">${pedido.cliente_nome || 'Não identificado'}</span>
+                    <span style="font-weight:600;">${clienteNome}</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;">
                     <span style="color:#555;">Pagamento</span>
@@ -6513,7 +6574,7 @@ function ajustarPacoteCarrinho(index, delta) {
                 </div>
                 <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;">
                     <span style="color:#555;">Frete</span>
-                    <span style="font-weight:600;">${freteNome} ${frete === 0 ? '(Grátis)' : `(R$ ${frete.toFixed(2)})`}</span>
+                    <span style="font-weight:600;">${freteNome} ${frete === 0 ? '(Grátis)' : '(R$ ' + frete.toFixed(2) + ')'}</span>
                 </div>
                 ${prazoEntrega > 0 ? `
                 <div style="display:flex;justify-content:space-between;padding:4px 0;grid-column:1/-1;">
@@ -6534,7 +6595,7 @@ function ajustarPacoteCarrinho(index, delta) {
                 </div>
                 <div style="display:flex;justify-content:space-between;font-size:13px;color:#888;">
                     <span>Frete</span>
-                    <span>${frete === 0 ? 'Grátis' : `R$ ${frete.toFixed(2)}`}</span>
+                    <span>${frete === 0 ? 'Grátis' : 'R$ ' + frete.toFixed(2)}</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:700;color:var(--primary-blue);padding-top:8px;border-top:1px solid #eee;margin-top:6px;">
                     <span>TOTAL</span>
@@ -6812,73 +6873,22 @@ function solicitarBoleto() {
 // ENVIAR COMPROVANTE PIX
 // ============================================================
 function enviarComprovantePix() {
-    // Buscar dados do pedido de várias fontes
-    const numeroPedido = pedidoDataEnvio?.numeroPedido || 
-                         document.getElementById('confirmacaoNumeroPedido')?.textContent?.replace('#', '') || 
-                         'Aguardando';
+    console.log('🔍 ENVIANDO COMPROVANTE PIX...');
     
-    // Calcular valores do carrinho
-    let totalProdutos = 0;
-    let itensLista = [];
-    carrinho.forEach(item => {
-        const preco = item.price || 0;
-        const qtd = item.quantity || 1;
-        const pacote = item.pacote_tamanho || 1;
-        const totalUnidades = qtd * pacote;
-        totalProdutos += preco;
-        itensLista.push({
-            nome: item.name,
-            quantidade: qtd,
-            pacote_tamanho: pacote,
-            totalUnidades: totalUnidades,
-            price: preco
-        });
-    });
-    
-    const freteValor = checkoutState?.freteSelecionado?.valor || 0;
-    const freteNome = checkoutState?.freteSelecionado?.nome || 'Retirada na Loja';
-    const totalFinal = totalProdutos + freteValor;
-    
-    const nomeCliente = usuarioLogado?.nome || checkoutState?.clienteData?.nome || 'Cliente';
-    const emailCliente = usuarioLogado?.email || checkoutState?.clienteData?.email || '';
-    const telefoneCliente = usuarioLogado?.telefone || checkoutState?.clienteData?.telefone || '';
-    
-    // GERAR RESUMO
-    let resumo = `*📋 PEDIDO #${numeroPedido}*%0A%0A`;
-    resumo += `👤 Cliente: ${nomeCliente}%0A`;
-    if (emailCliente) resumo += `📧 Email: ${emailCliente}%0A`;
-    if (telefoneCliente) resumo += `📞 Telefone: ${telefoneCliente}%0A`;
-    resumo += `%0A*🛒 PRODUTOS:*%0A`;
-    
-    if (itensLista.length > 0) {
-        itensLista.forEach(item => {
-            resumo += `• ${item.nome} - ${item.quantidade}x ${item.totalUnidades} un - R$ ${item.price.toFixed(2)}%0A`;
-        });
+    if (!pedidoDataEnvio) {
+        console.log('⚠️ pedidoDataEnvio está vazio, criando...');
+        pedidoDataEnvio = {
+            numeroPedido: document.getElementById('confirmacaoNumeroPedido')?.textContent?.replace('#', '') || 'TEMP-' + Date.now(),
+            total: 0
+        };
     }
     
-    const freteValorStr = freteValor === 0 ? 'Grátis' : `R$ ${freteValor.toFixed(2)}`;
-    resumo += `%0A*💰 RESUMO:*%0A`;
-    resumo += `Subtotal: R$ ${totalProdutos.toFixed(2)}%0A`;
-    resumo += `Frete (${freteNome}): ${freteValorStr}%0A`;
-    resumo += `*TOTAL: R$ ${totalFinal.toFixed(2)}*%0A`;
-    
-    const mensagem = `*✅ COMPROVANTE PIX ENVIADO*%0A%0A` +
-        `${resumo}%0A` +
-        `📎 Envio o comprovante em anexo. Por favor, confirmar o pagamento.`;
+    var mensagem = gerarMensagemWhatsApp('PIX');
+    console.log('📤 Mensagem:', mensagem);
     
     window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + mensagem, '_blank');
     fecharModal('pagamentoModal');
 }
-
-        function copiarPix() {
-            const codigo = document.getElementById('pixCodigo').textContent;
-            navigator.clipboard.writeText(codigo).then(() => {
-                mostrarNotificacao('✅ Chave PIX copiada!', 'success');
-            }).catch(() => {
-                alert('📋 Chave PIX: ' + codigo);
-            });
-        }
-
         // ============================================================
 // ABRIR PAGAMENTO
 // ============================================================
@@ -6899,11 +6909,15 @@ function abrirPagamento() {
         document.getElementById('pagamentoBoleto').style.display = 'block';
     }
     
-    var numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
-    var valorTotal = pedidoDataEnvio?.total || 0;
+    // ============================================================
+    // 🔧 GARANTIR QUE O NÚMERO DO PEDIDO ESTÁ DISPONÍVEL
+    // ============================================================
+    var numeroPedido = pedidoDataEnvio?.numeroPedido || 
+                       document.getElementById('confirmacaoNumeroPedido')?.textContent?.replace('#', '') || 
+                       'AGUARDANDO';
     
-    // Se não tiver pedidoDataEnvio, calcula do carrinho
-    if (!pedidoDataEnvio || !pedidoDataEnvio.total) {
+    // Se não tiver pedidoDataEnvio, cria um
+    if (!pedidoDataEnvio || !pedidoDataEnvio.numeroPedido) {
         var total = 0;
         for (var i = 0; i < carrinho.length; i++) {
             total += carrinho[i].price || 0;
@@ -6911,40 +6925,43 @@ function abrirPagamento() {
         if (checkoutState?.freteSelecionado) {
             total += checkoutState.freteSelecionado.valor || 0;
         }
-        valorTotal = total;
+        
+        pedidoDataEnvio = {
+            numeroPedido: numeroPedido,
+            total: total,
+            pagamento: metodo
+        };
     }
     
-    // Atualizar título com número do pedido
+    // Atualizar título
     var tituloPagamento = document.querySelector('#pagamentoModal h2');
     if (tituloPagamento) {
         tituloPagamento.textContent = '💳 Pagamento - Pedido #' + numeroPedido;
     }
     
-    // Atualizar área PIX com número do pedido e valores
+    // Atualizar área PIX
     var pixArea = document.querySelector('.pagamento-pix-area');
     if (pixArea) {
-        // Remover valores antigos
         var valorAntigo = pixArea.querySelector('.valor-pedido');
         if (valorAntigo) valorAntigo.remove();
         var pedidoAntigo = pixArea.querySelector('.numero-pedido-info');
         if (pedidoAntigo) pedidoAntigo.remove();
         
-        // Adicionar número do pedido
         var pedidoInfo = document.createElement('p');
         pedidoInfo.className = 'numero-pedido-info';
         pedidoInfo.style.cssText = 'font-weight:600;color:var(--primary-dark);font-size:16px;margin:5px 0;';
         pedidoInfo.textContent = '📋 Pedido #' + numeroPedido;
         pixArea.insertBefore(pedidoInfo, pixArea.querySelector('.codigo'));
         
-        // Adicionar valor total
         var valorInfo = document.createElement('p');
         valorInfo.className = 'valor-pedido';
         valorInfo.style.cssText = 'font-weight:700;color:var(--primary-blue);font-size:18px;margin:10px 0;';
-        valorInfo.textContent = '💰 Valor total: R$ ' + Number(valorTotal).toFixed(2).replace('.', ',');
+        var totalFinal = pedidoDataEnvio?.total || 0;
+        valorInfo.textContent = '💰 Valor total: R$ ' + Number(totalFinal).toFixed(2).replace('.', ',');
         pixArea.insertBefore(valorInfo, pixArea.querySelector('.codigo'));
     }
     
-    // Atualizar também os botões de Cartão e Boleto com o número do pedido
+    // Atualizar botões
     var cartaoArea = document.querySelector('#pagamentoCartao');
     if (cartaoArea) {
         var btnCartao = cartaoArea.querySelector('button');
@@ -6962,13 +6979,202 @@ function abrirPagamento() {
     }
 }
 
+
+// ============================================================
+// FUNÇÃO PARA LIMPAR DADOS DO PEDIDO ANTERIOR (SEM AFETAR LOGIN/CARRINHO)
+// ============================================================
+function limparDadosPedido() {
+    try {
+        // SÓ remove os dados do pedido
+        localStorage.removeItem('ultimoPedido');
+        
+        // Limpa as variáveis globais de pedido
+        window.pedidoFinalizado = null;
+        window.pedidoDataEnvio = null;
+        
+        // ⚠️ NÃO remove:
+        // - usuarioLogado (login)
+        // - carrinho (itens do carrinho)
+        // - estadoNavegacao (navegação)
+        
+        console.log('🧹 Dados do pedido anterior LIMPOS (login e carrinho mantidos)!');
+        return true;
+    } catch (error) {
+        console.error('❌ Erro ao limpar dados do pedido:', error);
+        return false;
+    }
+}
+
+// ============================================================
+// FUNÇÃO PARA SALVAR DADOS DO PEDIDO NO LOCALSTORAGE
+// ============================================================
+function salvarDadosPedido(dados) {
+    try {
+        // Salva apenas os dados do pedido
+        localStorage.setItem('ultimoPedido', JSON.stringify(dados));
+        console.log('💾 Dados do pedido salvos no localStorage:', dados);
+        
+        // Mantém na variável global
+        window.pedidoFinalizado = dados;
+        
+        // ⚠️ NÃO altera:
+        // - usuarioLogado (login)
+        // - carrinho (itens do carrinho)
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Erro ao salvar dados do pedido:', error);
+        return false;
+    }
+}
+
+
+// ============================================================
+// FUNÇÃO PARA CARREGAR DADOS DO PEDIDO SALVO
+// ============================================================
+function carregarDadosPedido() {
+    try {
+        var dados = localStorage.getItem('ultimoPedido');
+        if (!dados) {
+            console.log('ℹ️ Nenhum dado de pedido encontrado no localStorage');
+            return null;
+        }
+        
+        var parsed = JSON.parse(dados);
+        console.log('📂 Dados do pedido carregados:', parsed);
+        
+        // Verifica se os dados são recentes (menos de 1 hora)
+        var timestamp = parsed.timestamp || 0;
+        var agora = Date.now();
+        var diferenca = agora - timestamp;
+        var umaHora = 3600000;
+        
+        if (diferenca > umaHora) {
+            console.warn('⚠️ Dados do pedido com mais de 1 hora');
+        }
+        
+        window.pedidoFinalizado = parsed;
+        return parsed;
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar dados do pedido:', error);
+        return null;
+    }
+}
+// ============================================================
+// FUNÇÃO PARA VERIFICAR SE HÁ DADOS DE PEDIDO VÁLIDOS
+// ============================================================
+function temPedidoValido() {
+    try {
+        var dados = localStorage.getItem('ultimoPedido');
+        if (!dados) return false;
+        
+        var parsed = JSON.parse(dados);
+        
+        // Verifica se tem número de pedido
+        if (!parsed.numeroPedido) return false;
+        if (parsed.numeroPedido === 'AGUARDANDO') return false;
+        
+        // Verifica se tem itens
+        if (!parsed.itens || parsed.itens.length === 0) return false;
+        
+        // Verifica se o pedido é recente (menos de 24 horas)
+        var timestamp = parsed.timestamp || 0;
+        var agora = Date.now();
+        var diferenca = agora - timestamp;
+        var umDia = 86400000; // 24 horas em milissegundos
+        
+        if (diferenca > umDia) {
+            console.warn('⚠️ Pedido com mais de 24 horas, pode estar desatualizado');
+            return false;
+        }
+        
+        console.log('✅ Pedido válido encontrado: #' + parsed.numeroPedido);
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Erro ao verificar pedido:', error);
+        return false;
+    }
+}
+
+// ============================================================
+// FUNÇÃO PARA GERAR NOVO NÚMERO DE PEDIDO
+// ============================================================
+function gerarNovoNumeroPedido() {
+    // Tenta buscar o último ID da planilha
+    var ultimoId = 13000; // valor padrão
+    
+    try {
+        // Busca do localStorage
+        var ultimoNumero = localStorage.getItem('ultimoNumeroPedido');
+        if (ultimoNumero) {
+            ultimoId = parseInt(ultimoNumero) + 1;
+        }
+    } catch (error) {
+        console.warn('⚠️ Erro ao buscar último número, usando padrão');
+    }
+    
+    // Salva o novo número
+    localStorage.setItem('ultimoNumeroPedido', String(ultimoId));
+    
+    console.log('📦 Novo número de pedido gerado:', ultimoId);
+    return ultimoId;
+}
+
+// ============================================================
+// FUNÇÃO PARA FECHAR O CHECKOUT
+// ============================================================
+function fecharCheckout() {
+    // Esconde a página de checkout
+    var checkoutPage = document.getElementById('checkoutPage');
+    if (checkoutPage) {
+        checkoutPage.style.display = 'none';
+    }
+    
+    // Restaura o scroll da página
+    document.body.style.overflow = '';
+    
+    // Verifica se veio do carrinho e mantém ele aberto
+    var cartModal = document.getElementById('cartModal');
+    if (cartModal && cartModal.style.display === 'block') {
+        // Carrinho já está aberto, mantém
+        console.log('🔄 Voltando para o carrinho...');
+    } else {
+        // Volta para a página inicial
+        console.log('🏠 Voltando para o início...');
+        showHome();
+    }
+    
+    // Remove o loading se estiver visível
+    var loading = document.getElementById('checkoutLoading');
+    if (loading) {
+        loading.style.display = 'none';
+    }
+    
+    // Mostra o conteúdo do checkout (se estiver escondido)
+    var content = document.getElementById('checkoutContent');
+    if (content) {
+        content.style.display = 'flex';
+    }
+}
+
+
         // ============================================================
 // ABRIR CHECKOUT - CORRIGIDO
 // ============================================================
 function abrirCheckout() {
+    // ============================================================
+    // 🔧 LIMPAR APENAS DADOS DO PEDIDO ANTERIOR
+    // ============================================================
+    limparDadosPedido(); // ← Agora só limpa 'ultimoPedido'
+    console.log('🔄 Checkout aberto - Dados do pedido anterior limpos!');
+    
+    // ... resto do código existente ...
     document.getElementById('checkoutPage').style.display = 'block';
     document.body.style.overflow = 'hidden';
     
+
     document.getElementById('checkoutContent').style.display = 'none';
     document.getElementById('checkoutLoading').style.display = 'block';
     document.querySelector('#checkoutLoading p').textContent = '🔄 Verificando estoque...';
@@ -7006,7 +7212,7 @@ function abrirCheckout() {
         document.getElementById('emailBusca').value = '';
         document.getElementById('erroBusca').style.display = 'none';
         document.getElementById('dadosClienteEncontrado').style.display = 'none';
-        document.getElementById('areaNovoCadastro').style.display = 'none'; // Oculta inicialmente
+        document.getElementById('areaNovoCadastro').style.display = 'none';
         document.getElementById('checkoutStep2').style.display = 'none';
         document.getElementById('freteOpcoesContainer').innerHTML = '';
         document.getElementById('checkoutCepDisplay').textContent = '_____-___';
@@ -7024,9 +7230,6 @@ function abrirCheckout() {
         document.getElementById('stepIndicator3').style.color = '#ccc';
         document.getElementById('stepIndicator3').style.fontWeight = '400';
         
-        // ============================================================
-        // ADICIONAR AVISO NO PAGAMENTO
-        // ============================================================
         var step3 = document.getElementById('checkoutStep3');
         var avisoExistente = document.getElementById('avisoConfirmarEndereco');
         if (!avisoExistente) {
@@ -7034,7 +7237,6 @@ function abrirCheckout() {
             aviso.id = 'avisoConfirmarEndereco';
             aviso.style.cssText = 'background:#fde8e8;color:#721c24;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;border-left:4px solid #e74c3c;';
             aviso.innerHTML = '<strong>⚠️ Atenção:</strong> Confirme o endereço acima para habilitar as opções de pagamento.';
-            // Insere antes do primeiro elemento dentro do step3
             var primeiroElemento = step3.querySelector('.pagamento-opcao-checkout');
             if (primeiroElemento) {
                 step3.insertBefore(aviso, primeiroElemento);
@@ -7045,7 +7247,6 @@ function abrirCheckout() {
             avisoExistente.style.display = 'block';
         }
         
-        // BLOQUEAR OPÇÕES DE PAGAMENTO INICIALMENTE
         document.querySelectorAll('.pagamento-opcao-checkout').forEach(function(el) {
             el.style.borderColor = '#ddd';
             el.style.background = 'white';
@@ -7060,11 +7261,6 @@ function abrirCheckout() {
         fecharModal('cartModal');
     });
 }
-
-        function fecharCheckout() {
-            document.getElementById('checkoutPage').style.display = 'none';
-            document.body.style.overflow = '';
-        }
 
         // ============================================================
 // BUSCAR CLIENTE POR EMAIL (CHECKOUT) - CORRIGIDO
@@ -7269,7 +7465,6 @@ async function carregarOpcoesFreteCheckout() {
         checkoutState.producaoDias = calcularPrazoProducao();
         console.log('📦 Prazo de produção calculado no checkout:', checkoutState.producaoDias, 'dias');
         
-        // ATUALIZA O STATUS DO PASSO 3
         if (checkoutState.producaoDias > 0) {
             document.getElementById('checkoutStep3Status').textContent = `⏱️ Produção: ${checkoutState.producaoDias} dias`;
         }
@@ -7299,9 +7494,15 @@ async function carregarOpcoesFreteCheckout() {
         
         container.innerHTML = '';
         
+        // ============================================================
+        // CRIA AS OPÇÕES DE FRETE (COM ENTREGA PRÓPRIA)
+        // ============================================================
+        var opcoes = [];
+        
+        // 1. Adiciona opções da API
         if (data.success && data.opcoes && data.opcoes.length > 0) {
-            var opcoes = data.opcoes.map(function(op) {
-                return {
+            data.opcoes.forEach(function(op) {
+                opcoes.push({
                     id: op.codigo || 'FRETE',
                     name: op.nome || 'Frete',
                     price: parseFloat(op.preco || 0),
@@ -7309,121 +7510,110 @@ async function carregarOpcoesFreteCheckout() {
                     service: op.nome || 'Frete',
                     _api: true,
                     is_entrega_propria: op.nome && op.nome.toLowerCase().indexOf('entrega própria') !== -1
-                };
+                });
             });
+        }
+        
+        // ============================================================
+        // 🔧 CORREÇÃO: ADICIONA A ENTREGA PRÓPRIA NO CHECKOUT
+        // ============================================================
+        console.log('📍 Verificando Entrega Própria para o checkout...');
+        var cidade = obterCidadePorCep(cep);
+        console.log('📍 Cidade encontrada:', cidade);
+        
+        if (cidade) {
+            var totalPedido = 0;
+            for (var i = 0; i < carrinho.length; i++) {
+                totalPedido += carrinho[i].price || 0;
+            }
+            console.log('💰 Total do pedido: R$', totalPedido);
             
-            var opcoesFormatadas = formatarOpcoesFrete(opcoes, true);
-            checkoutState.opcoesFrete = opcoesFormatadas;
+            var resultadoEP = calcularEntregaPropria(cidade, totalPedido);
+            console.log('📊 Resultado Entrega Própria:', resultadoEP);
             
-            if (opcoesFormatadas.length === 0) {
-                container.innerHTML = '<div style="text-align:center;padding:20px;color:#e74c3c;"><i class="fas fa-exclamation-circle"></i> Nenhuma opção de frete disponível.</div>';
+            if (resultadoEP.encontrado) {
+                var producaoDias = checkoutState.producaoDias || 0;
+                opcoes.push({
+                    id: 'ENTREGA_PROPRIA',
+                    name: resultadoEP.freteGratis ? 'Entrega Própria (Grátis)' : 'Entrega Própria',
+                    price: resultadoEP.cost,
+                    delivery_time: 1,
+                    service: 'Entrega Própria',
+                    _api: false,
+                    is_entrega_propria: true,
+                    _cidade: cidade,
+                    _faixa: resultadoEP.faixa
+                });
+                console.log('✅ Entrega Própria ADICIONADA ao checkout!');
             } else {
-                for (var i = 0; i < opcoesFormatadas.length; i++) {
-                    var op = opcoesFormatadas[i];
-                    var div = document.createElement('div');
-                    div.className = 'frete-opcao';
-                    
-                    // GARANTE QUE O checkouState.producaoDias ESTÁ CORRETO
-                    if (i === 0) {
-                        div.classList.add('selecionado');
-                        checkoutState.freteSelecionado = op;
-                        liberarPagamento();
-                    }
-                    
-                    var badgeGratis = op.freteGratis ? ' ' : '';
-                    var valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
-                    
-                    // MOSTRA O PRAZO TOTAL (FRETE + PRODUÇÃO)
-                    var prazoTotal = op.prazoTotal || (op.prazoEnvio + checkoutState.producaoDias);
-                    var infoPrazos = '';
-                    if (op.prazoEnvio !== undefined && checkoutState.producaoDias > 0) {
-                        infoPrazos = prazoTotal + ' dias (' + op.prazoEnvio + ' envio + ' + checkoutState.producaoDias + ' produção)';
-                    } else if (op.prazoEnvio !== undefined) {
-                        infoPrazos = prazoTotal + ' dias';
-                    }
-                    
-                    div.innerHTML = `
-                        <div>
-                            <div class="frete-nome">${op.nome}${badgeGratis}</div>
-                            <div>
-                                <span class="frete-prazo">${infoPrazos}</span>
-                            </div>
-                        </div>
-                        <div class="frete-valor ${valorClass}">${op.valor === 0 ? 'Grátis' : 'R$ ' + op.valor.toFixed(2)}</div>
-                    `;
-                    
-                    div.onclick = function(op) {
-                        return function() {
-                            document.querySelectorAll('#freteOpcoesContainer .frete-opcao').forEach(function(el) {
-                                el.classList.remove('selecionado');
-                            });
-                            this.classList.add('selecionado');
-                            checkoutState.freteSelecionado = op;
-                            liberarPagamento();
-                            atualizarResumoFinal();
-                            mostrarNotificacao('✅ Frete selecionado!', 'success');
-                        };
-                    }(op);
-                    
-                    container.appendChild(div);
-                }
+                console.log('❌ Entrega Própria NÃO disponível:', resultadoEP.mensagem);
             }
         } else {
-            // Fallback: Retirada na Loja
-            var producaoDias = checkoutState.producaoDias || 0;
-            var prazoRetirada = 1 + producaoDias;
-            
-            var opcao = {
-                nome: 'Retirada na Loja',
-                valor: 0,
-                prazoEnvio: 1,
-                prazoProducao: producaoDias,
-                prazoTotal: prazoRetirada,
-                prazo: prazoRetirada + ' dias',
-                codigo: 'RETIRADA',
-                freteGratis: true,
-                isEntregaPropria: false
-            };
-            
-            checkoutState.opcoesFrete = [opcao];
-            checkoutState.freteSelecionado = opcao;
-            
-            var infoPrazos = '';
-            if (producaoDias > 0) {
-                infoPrazos = prazoRetirada + ' dias (1 envio + ' + producaoDias + ' produção)';
-            } else {
-                infoPrazos = prazoRetirada + ' dias';
-            }
-            
-            container.innerHTML = `
-                <div style="padding:12px 16px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;color:#856404;font-size:14px;margin-bottom:10px;">
-                    <strong>⚠️ Não foi possível carregar todos os fretes</strong>
-                    <p style="margin:4px 0 0 0;font-size:13px;">A Retirada na Loja está disponível.</p>
-                </div>
-                <div class="frete-opcao selecionado">
+            console.log('❌ Cidade NÃO encontrada para o CEP:', cep);
+        }
+        // ============================================================
+        // FIM DA CORREÇÃO
+        // ============================================================
+        
+        // ============================================================
+        // FORMATAR E EXIBIR
+        // ============================================================
+        var opcoesFormatadas = formatarOpcoesFrete(opcoes, true);
+        checkoutState.opcoesFrete = opcoesFormatadas;
+        
+        if (opcoesFormatadas.length === 0) {
+            container.innerHTML = '<div style="text-align:center;padding:20px;color:#e74c3c;"><i class="fas fa-exclamation-circle"></i> Nenhuma opção de frete disponível.</div>';
+        } else {
+            for (var i = 0; i < opcoesFormatadas.length; i++) {
+                var op = opcoesFormatadas[i];
+                var div = document.createElement('div');
+                div.className = 'frete-opcao';
+                
+                if (i === 0) {
+                    div.classList.add('selecionado');
+                    checkoutState.freteSelecionado = op;
+                    liberarPagamento();
+                }
+                
+                var badgeGratis = op.freteGratis ? ' ' : '';
+                var valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
+                
+                var prazoTotal = op.prazoTotal || (op.prazoEnvio + checkoutState.producaoDias);
+                var infoPrazos = '';
+                if (op.prazoEnvio !== undefined && checkoutState.producaoDias > 0) {
+                    infoPrazos = prazoTotal + ' dias (' + op.prazoEnvio + ' envio + ' + checkoutState.producaoDias + ' produção)';
+                } else if (op.prazoEnvio !== undefined) {
+                    infoPrazos = prazoTotal + ' dias';
+                }
+                
+                var isEP = op.codigo === 'ENTREGA_PROPRIA' || op.isEntregaPropria;
+                var epBadge = isEP ? ' 🚚' : '';
+                
+                div.innerHTML = `
                     <div>
-                        <div class="frete-nome">Retirada na Loja</div>
+                        <div class="frete-nome">${op.nome}${badgeGratis}${epBadge}</div>
                         <div>
                             <span class="frete-prazo">${infoPrazos}</span>
                         </div>
                     </div>
-                    <div class="frete-valor gratis">Grátis</div>
-                </div>
-                <button onclick="abrirWhatsAppAtendente('${cep}')" style="
-                    margin-top: 10px;
-                    background: #25D366;
-                    color: white;
-                    border: none;
-                    padding: 10px 20px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    width: 100%;
-                ">
-                    <i class="fab fa-whatsapp"></i> Falar com Atendente para outros fretes
-                </button>
-            `;
-            liberarPagamento();
+                    <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : 'R$ ' + op.valor.toFixed(2)}</div>
+                `;
+                
+                div.onclick = function(op) {
+                    return function() {
+                        document.querySelectorAll('#freteOpcoesContainer .frete-opcao').forEach(function(el) {
+                            el.classList.remove('selecionado');
+                        });
+                        this.classList.add('selecionado');
+                        checkoutState.freteSelecionado = op;
+                        liberarPagamento();
+                        atualizarResumoFinal();
+                        mostrarNotificacao('✅ Frete selecionado!', 'success');
+                    };
+                }(op);
+                
+                container.appendChild(div);
+            }
         }
         
         document.getElementById('step2Status').textContent = '✅ Completo';
@@ -7528,14 +7718,16 @@ function liberarPagamento() {
         // ============================================================
         // ATUALIZAR RESUMO
         // ============================================================
-     function atualizarResumoCheckout() {
+    // ============================================================
+// ATUALIZAR RESUMO DO CHECKOUT
+// ============================================================
+function atualizarResumoCheckout() {
     const container = document.getElementById('checkoutResumoProdutos');
     const totalEl = document.getElementById('checkoutSubtotal');
     
     let html = '';
     let total = 0;
     
-    // CALCULA O TOTAL DE UNIDADES POR PRODUTO NO CARRINHO
     const totalPorProduto = {};
     carrinho.forEach(item => {
         const productId = item.productId;
@@ -7556,23 +7748,25 @@ function liberarPagamento() {
         const estoqueDisponivel = estoqueAtual - totalReservado + totalUnidadesItem;
         const prazoProducao = product ? product.productionDays : (item.productionDays || 7);
         
-        // DETERMINA SE É PRODUÇÃO (MESMA LÓGICA DO CARRINHO)
         const isProducao = totalUnidadesItem > estoqueAtual;
         
         let statusEstoque = '';
         let corStatus = '#27ae60';
         
+        // ============================================================
+        // 🔧 CORREÇÃO: SEM QUANTIDADE DISPONÍVEL
+        // ============================================================
         if (isProducao) {
             statusEstoque = `🔨 Produção: ${prazoProducao} dias`;
             corStatus = '#f39c12';
         } else if (estoqueDisponivel >= totalUnidadesItem && estoqueDisponivel > 0) {
-            statusEstoque = `✅ Disponível (${estoqueDisponivel} un)`;
+            statusEstoque = `✅ Disponível`;
             corStatus = '#27ae60';
         } else if (estoqueDisponivel === 0 && totalReservado > 0) {
-            statusEstoque = `⏳ Aguardando separação (${totalReservado} un reservadas)`;
+            statusEstoque = `⏳ Aguardando separação`;
             corStatus = '#856404';
         } else {
-            statusEstoque = `✅ Disponível (0 un)`;
+            statusEstoque = `✅ Disponível`;
             corStatus = '#27ae60';
         }
         
@@ -7596,7 +7790,6 @@ function liberarPagamento() {
     container.innerHTML = html;
     totalEl.textContent = `R$ ${total.toFixed(2)}`;
     
-    // ATUALIZA O checkoutState.producaoDias
     checkoutState.producaoDias = calcularPrazoProducao();
     console.log('📦 Produção calculada no resumo:', checkoutState.producaoDias);
     
@@ -7700,46 +7893,59 @@ function atualizarResumoFinal() {
         const clienteDocumento = checkoutState.clienteData?.documento || usuarioLogado?.documento || localStorage.getItem('clienteDocumento') || '';
 
         // ============================================================
-        // SALVAR CADA PACOTE COM INFORMAÇÕES COMPLETAS
-        // ============================================================
-        let totalProdutos = 0;
-        const itensFormatados = carrinho.map(item => {
-            const preco = item.price || 0;
-            totalProdutos += preco;
-            
-            const qtdPacotes = item.qty || 1;
-            const tamanhoPacote = item.step || 1;
-            const totalUnidades = item.totalUnits || (qtdPacotes * tamanhoPacote);
-            
-            const product = encontrarProduto(item.productId);
-            const stock = product ? product.stock : 0;
-            const productionDays = product ? product.productionDays : item.productionDays || 7;
-            
-            // DETERMINA SE É PRODUÇÃO (MESMA LÓGICA DO CARRINHO)
-            const isProducao = totalUnidades > stock;
-            const prazoProducao = isProducao ? productionDays : 0;
-            
-            let nomeCompleto = item.name || 'Produto';
-            if (isProducao && prazoProducao > 0) {
-                nomeCompleto = `${nomeCompleto} (Produção ${prazoProducao} dias)`;
-            } else if (isProducao) {
-                nomeCompleto = `${nomeCompleto} (Produção)`;
-            }
-            
-            return {
-                nome: nomeCompleto,
-                quantidade: qtdPacotes,
-                pacote_tamanho: tamanhoPacote,
-                totalUnidades: totalUnidades,
-                price: preco,
-                unit_price: item.unitPrice || (totalUnidades > 0 ? preco / totalUnidades : 0),
-                isProducao: isProducao,
-                prazoProducao: prazoProducao,
-                codigo: product?.codigo || '',
-                productId: item.productId,
-                stock: stock
-            };
-        });
+// FORMATAR ITENS COM STATUS DE PRODUÇÃO - CORRIGIDO
+// ============================================================
+let totalProdutos = 0;
+const itensFormatados = carrinho.map(item => {
+    const preco = item.price || 0;
+    totalProdutos += preco;
+    
+    const qtdPacotes = item.qty || 1;
+    const tamanhoPacote = item.step || 1;
+    const totalUnidades = item.totalUnits || (qtdPacotes * tamanhoPacote);
+    
+    const product = encontrarProduto(item.productId);
+    const stock = product ? product.stock : 0;
+    const productionDays = product ? product.productionDays : item.productionDays || 7;
+    const venderZerado = product ? product.vender_zerado : item.vender_zerado;
+    
+    // ============================================================
+    // 🔧 CORREÇÃO: DETERMINA CORRETAMENTE SE É PRODUÇÃO
+    // ============================================================
+    // É produção se: vende zerado E estoque <= 0 OU quantidade > estoque
+    const isProducao = (venderZerado && stock <= 0) || totalUnidades > stock;
+    const prazoProducao = isProducao ? productionDays : 0;
+    const temEstoque = !isProducao && stock > 0;
+    
+    // ============================================================
+    // 🔧 CORREÇÃO: NOME DO PRODUTO COM STATUS CORRETO
+    // ============================================================
+    let nomeCompleto = item.name || 'Produto';
+    
+    if (isProducao && prazoProducao > 0) {
+        nomeCompleto = `${nomeCompleto} (Produção ${prazoProducao} dias)`;
+    } else if (isProducao) {
+        nomeCompleto = `${nomeCompleto} (Produção)`;
+    } else if (temEstoque) {
+        nomeCompleto = `${nomeCompleto} (Disponível)`;
+    }
+    // Se não tiver estoque e não for produção (caso raro), não adiciona nada
+    
+    return {
+        nome: nomeCompleto,
+        quantidade: qtdPacotes,
+        pacote_tamanho: tamanhoPacote,
+        totalUnidades: totalUnidades,
+        price: preco,
+        unit_price: item.unitPrice || (totalUnidades > 0 ? preco / totalUnidades : 0),
+        isProducao: isProducao,
+        prazoProducao: prazoProducao,
+        codigo: product?.codigo || '',
+        productId: item.productId,
+        stock: stock,
+        venderZerado: venderZerado
+    };
+});
 
         console.log('📦 Itens formatados para enviar:', itensFormatados);
 
@@ -7754,16 +7960,12 @@ function atualizarResumoFinal() {
         }
         const totalFinal = (totalProdutos - desconto) + freteValor;
 
-        // ============================================================
-        // VERIFICA ITENS PARA BAIXAR ESTOQUE - CORRIGIDO
-        // ============================================================
         const itensParaBaixar = [];
         carrinho.forEach(item => {
             const product = encontrarProduto(item.productId);
             const totalUnidades = item.totalUnits || (item.quantity || 0);
             const estoqueAtual = product ? parseInt(product.stock) || 0 : 0;
             
-            // DETERMINA SE É PRODUÇÃO (MESMA LÓGICA DO CARRINHO)
             const isProducao = totalUnidades > estoqueAtual;
             
             console.log(`🔍 Verificando produto: ${item.name}`);
@@ -7772,7 +7974,6 @@ function atualizarResumoFinal() {
             console.log(`   - totalUnidades solicitado: ${totalUnidades}`);
             console.log(`   - isProducao: ${isProducao}`);
             
-            // SÓ BAIXA O ESTOQUE SE NÃO FOR PRODUÇÃO E TIVER ESTOQUE
             const baixarEstoque = !isProducao && estoqueAtual > 0;
             console.log(`   - baixarEstoque: ${baixarEstoque}`);
             
@@ -7864,9 +8065,6 @@ function atualizarResumoFinal() {
         if (pedidoEncontrado) {
             console.log(`✅ Pedido #${novoId} CONFIRMADO na planilha!`);
             
-            // ============================================================
-            // BAIXA DE ESTOQUE - CORRIGIDA
-            // ============================================================
             if (pedidoDataEnvio.itensParaBaixar && pedidoDataEnvio.itensParaBaixar.length > 0) {
                 try {
                     const atualizacoes = pedidoDataEnvio.itensParaBaixar.map(item => ({
@@ -7894,6 +8092,48 @@ function atualizarResumoFinal() {
                 console.log('ℹ️ Nenhum item para baixar estoque.');
             }
 
+            // ============================================================
+            // 🔧 SALVAR DADOS DO PEDIDO NO LOCALSTORAGE
+            // ============================================================
+            var dadosPedidoParaSalvar = {
+                numeroPedido: novoId,
+                data: new Date().toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                cliente: {
+                    nome: clienteNome,
+                    email: clienteEmail,
+                    telefone: clienteTelefone,
+                    documento: clienteDocumento,
+                    endereco: checkoutState.enderecoSelecionado?.enderecoCompleto || '',
+                    cep: checkoutState.enderecoSelecionado?.cep || ''
+                },
+                itens: itensFormatados,
+                valores: {
+                    subtotal: totalProdutos,
+                    frete: {
+                        nome: freteNome,
+                        valor: freteValor
+                    },
+                    desconto: desconto || 0,
+                    total: totalFinal
+                },
+                entrega: {
+                    prazo: prazoEntrega,
+                    producaoDias: producaoDias || 0
+                },
+                pagamento: checkoutState.pagamentoSelecionado,
+                status: 'Pendente',
+                timestamp: Date.now()
+            };
+
+            salvarDadosPedido(dadosPedidoParaSalvar);
+            console.log('💾 Dados do pedido #' + novoId + ' SALVOS com sucesso!');
+
             carrinho = [];
             salvarCarrinho();
             atualizarBadge();
@@ -7901,7 +8141,18 @@ function atualizarResumoFinal() {
 
             document.getElementById('checkoutLoading').style.display = 'none';
             document.getElementById('checkoutContent').style.display = 'block';
-            fecharCheckout();
+            
+            // ============================================================
+            // 🔧 CORREÇÃO: Fechar checkout com segurança
+            // ============================================================
+            if (typeof fecharCheckout === 'function') {
+                fecharCheckout();
+            } else {
+                // Fallback: fecha manualmente
+                document.getElementById('checkoutPage').style.display = 'none';
+                document.body.style.overflow = '';
+            }
+            
             document.getElementById('confirmacaoNumeroPedido').textContent = `#${novoId}`;
             document.getElementById('confirmacaoModal').style.display = 'block';
         } else {
@@ -7922,7 +8173,6 @@ function atualizarResumoFinal() {
         btnFinalizar.disabled = false;
     }
 }
-
 
 
         function abrirCadastroDiretoCheckout() {
@@ -7973,222 +8223,142 @@ function gerarResumoPedido(numeroPedido, total, freteNome, freteValor, itens) {
     return resumo;
 }
 
+
 // ============================================================
-// ENVIAR COMPROVANTE PIX
+// FUNÇÃO PARA GERAR MENSAGEM RESUMIDA E CURTA DO WHATSAPP
 // ============================================================
+function gerarMensagemWhatsApp(tipo) {
+    // ============================================================
+    // 1. CARREGAR DADOS DO PEDIDO
+    // ============================================================
+    var dadosPedido = null;
+    
+    if (temPedidoValido()) {
+        dadosPedido = carregarDadosPedido();
+    } else {
+        // Fallback: dados do checkout
+        var itensFallback = [];
+        var subtotalFallback = 0;
+        
+        if (carrinho && carrinho.length > 0) {
+            for (var i = 0; i < carrinho.length; i++) {
+                var item = carrinho[i];
+                var preco = item.price || 0;
+                subtotalFallback += preco;
+            }
+        }
+        
+        var freteValorFallback = checkoutState?.freteSelecionado?.valor || 0;
+        var freteNomeFallback = checkoutState?.freteSelecionado?.nome || 'Retirada na Loja';
+        var prazoFallback = checkoutState?.freteSelecionado?.prazoTotal || 7;
+        
+        dadosPedido = {
+            numeroPedido: 'PENDENTE',
+            cliente: {
+                nome: usuarioLogado?.nome || checkoutState?.clienteData?.nome || 'Cliente',
+                email: usuarioLogado?.email || checkoutState?.clienteData?.email || '',
+                telefone: usuarioLogado?.telefone || checkoutState?.clienteData?.telefone || ''
+            },
+            valores: {
+                subtotal: subtotalFallback,
+                frete: { nome: freteNomeFallback, valor: freteValorFallback },
+                desconto: 0,
+                total: subtotalFallback + freteValorFallback
+            },
+            entrega: { prazo: prazoFallback },
+            pagamento: checkoutState?.pagamentoSelecionado || 'Nao informado'
+        };
+    }
+    
+    if (!dadosPedido) {
+        return 'ERRO: Dados do pedido nao encontrados.';
+    }
+    
+    // ============================================================
+    // 2. EXTRAIR DADOS
+    // ============================================================
+    var numeroPedido = dadosPedido.numeroPedido || 'AGUARDANDO';
+    var nomeCliente = dadosPedido.cliente?.nome || 'Cliente';
+    var telefoneCliente = dadosPedido.cliente?.telefone || '';
+    var emailCliente = dadosPedido.cliente?.email || '';
+    
+    var subtotal = dadosPedido.valores?.subtotal || 0;
+    var freteNome = dadosPedido.valores?.frete?.nome || 'Frete';
+    var freteValor = dadosPedido.valores?.frete?.valor || 0;
+    var desconto = dadosPedido.valores?.desconto || 0;
+    var totalFinal = dadosPedido.valores?.total || (subtotal + freteValor - desconto);
+    var prazoEntrega = dadosPedido.entrega?.prazo || 7;
+    var pagamento = dadosPedido.pagamento || 'Nao informado';
+    
+    // ============================================================
+    // 3. DEFINIR TITULO (CURTO)
+    // ============================================================
+    var titulo = '';
+    switch(tipo) {
+        case 'PIX': titulo = 'COMPROVANTE PIX'; break;
+        case 'CARTAO': titulo = 'LINK PAGAMENTO'; break;
+        case 'BOLETO': titulo = 'BOLETO'; break;
+        default: titulo = 'PEDIDO';
+    }
+    
+    // ============================================================
+    // 4. CONSTRUIR MENSAGEM (MAIS CURTA)
+    // ============================================================
+    var mensagem = '';
+    mensagem += titulo + '%0A';
+    mensagem += 'Pedido #' + numeroPedido + '%0A';
+    mensagem += 'Cliente: ' + nomeCliente + '%0A';
+    if (telefoneCliente) mensagem += 'Tel: ' + telefoneCliente + '%0A';
+    if (emailCliente) mensagem += 'Email: ' + emailCliente + '%0A';
+    mensagem += '%0A';
+    mensagem += 'Produtos: R$ ' + subtotal.toFixed(2) + '%0A';
+    mensagem += 'Frete: R$ ' + freteValor.toFixed(2) + ' (' + freteNome + ')%0A';
+    if (desconto > 0) mensagem += 'Desconto: -R$ ' + desconto.toFixed(2) + '%0A';
+    mensagem += 'Prazo: ' + prazoEntrega + ' dias%0A';
+    mensagem += 'Pagamento: ' + pagamento + '%0A';
+    mensagem += '%0A';
+    mensagem += 'TOTAL: R$ ' + totalFinal.toFixed(2);
+    
+    console.log('📤 Mensagem curta gerada!');
+    console.log('📏 Tamanho:', mensagem.length, 'caracteres');
+    console.log('📝 Mensagem:', mensagem.replace(/%0A/g, '\n'));
+    
+    return mensagem;
+}
+
+
+
+// ============================================================
+// FUNÇÕES DO WHATSAPP - COM CODIFICAÇÃO CORRETA
+// ============================================================
+
 function enviarComprovantePix() {
-    const numeroPedido = pedidoDataEnvio?.numeroPedido || 'Aguardando';
-    const total = pedidoDataEnvio?.total || 0;
-    const freteNome = pedidoDataEnvio?.frete || 'Retirada na Loja';
-    const freteValor = pedidoDataEnvio?.freteValor || 0;
-    const itens = pedidoDataEnvio?.itens || [];
-    const nomeCliente = usuarioLogado?.nome || checkoutState.clienteData?.nome || 'Cliente';
-    const emailCliente = usuarioLogado?.email || checkoutState.clienteData?.email || '';
-    const telefoneCliente = usuarioLogado?.telefone || checkoutState.clienteData?.telefone || '';
-    
-    const resumo = gerarResumoPedido(numeroPedido, total, freteNome, freteValor, itens);
-    
-    const mensagem = `*✅ COMPROVANTE PIX ENVIADO*%0A%0A` +
-        `👤 Cliente: ${nomeCliente}%0A` +
-        `📧 Email: ${emailCliente}%0A` +
-        `📞 Telefone: ${telefoneCliente}%0A%0A` +
-        `${resumo}%0A` +
-        `📎 Envio o comprovante em anexo. Por favor, confirmar o pagamento.`;
-    
-    window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + mensagem, '_blank');
+    var mensagem = gerarMensagemWhatsApp('PIX');
+    var mensagemEncoded = encodeURIComponent(mensagem);
+    var url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + mensagemEncoded;
+    console.log('📤 URL gerada:', url);
+    window.open(url, '_blank');
     fecharModal('pagamentoModal');
 }
 
-// ============================================================
-// SOLICITAR LINK DE PAGAMENTO
-// ============================================================
 function solicitarLinkPagamento() {
-    // Buscar dados do pedido de várias fontes
-    const numeroPedido = pedidoDataEnvio?.numeroPedido || 
-                         document.getElementById('confirmacaoNumeroPedido')?.textContent?.replace('#', '') || 
-                         'Aguardando';
-    
-    // Calcular valores do carrinho
-    let totalProdutos = 0;
-    let itensLista = [];
-    carrinho.forEach(item => {
-        const preco = item.price || 0;
-        const qtd = item.quantity || 1;
-        const pacote = item.pacote_tamanho || 1;
-        const totalUnidades = qtd * pacote;
-        totalProdutos += preco;
-        itensLista.push({
-            nome: item.name,
-            quantidade: qtd,
-            pacote_tamanho: pacote,
-            totalUnidades: totalUnidades,
-            price: preco
-        });
-    });
-    
-    const freteValor = checkoutState?.freteSelecionado?.valor || 0;
-    const freteNome = checkoutState?.freteSelecionado?.nome || 'Retirada na Loja';
-    const totalFinal = totalProdutos + freteValor;
-    
-    const nomeCliente = usuarioLogado?.nome || checkoutState?.clienteData?.nome || 'Cliente';
-    const emailCliente = usuarioLogado?.email || checkoutState?.clienteData?.email || '';
-    const telefoneCliente = usuarioLogado?.telefone || checkoutState?.clienteData?.telefone || '';
-    
-    // GERAR RESUMO
-    let resumo = `*📋 PEDIDO #${numeroPedido}*%0A%0A`;
-    resumo += `👤 Cliente: ${nomeCliente}%0A`;
-    if (emailCliente) resumo += `📧 Email: ${emailCliente}%0A`;
-    if (telefoneCliente) resumo += `📞 Telefone: ${telefoneCliente}%0A`;
-    resumo += `%0A*🛒 PRODUTOS:*%0A`;
-    
-    if (itensLista.length > 0) {
-        itensLista.forEach(item => {
-            resumo += `• ${item.nome} - ${item.quantidade}x ${item.totalUnidades} un - R$ ${item.price.toFixed(2)}%0A`;
-        });
-    }
-    
-    const freteValorStr = freteValor === 0 ? 'Grátis' : `R$ ${freteValor.toFixed(2)}`;
-    resumo += `%0A*💰 RESUMO:*%0A`;
-    resumo += `Subtotal: R$ ${totalProdutos.toFixed(2)}%0A`;
-    resumo += `Frete (${freteNome}): ${freteValorStr}%0A`;
-    resumo += `*TOTAL: R$ ${totalFinal.toFixed(2)}*%0A`;
-    
-    const mensagem = `*💳 SOLICITAÇÃO DE LINK DE PAGAMENTO*%0A%0A` +
-        `${resumo}%0A` +
-        `Por favor, enviar link de pagamento.`;
-    
-    window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + mensagem, '_blank');
+    var mensagem = gerarMensagemWhatsApp('CARTAO');
+    var mensagemEncoded = encodeURIComponent(mensagem);
+    var url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + mensagemEncoded;
+    console.log('📤 URL gerada:', url);
+    window.open(url, '_blank');
     fecharModal('pagamentoModal');
 }
 
-// ============================================================
-// SOLICITAR BOLETO
-// ============================================================
 function solicitarBoleto() {
-    // Buscar dados do pedido de várias fontes
-    const numeroPedido = pedidoDataEnvio?.numeroPedido || 
-                         document.getElementById('confirmacaoNumeroPedido')?.textContent?.replace('#', '') || 
-                         'Aguardando';
-    
-    // Calcular valores do carrinho
-    let totalProdutos = 0;
-    let itensLista = [];
-    carrinho.forEach(item => {
-        const preco = item.price || 0;
-        const qtd = item.quantity || 1;
-        const pacote = item.pacote_tamanho || 1;
-        const totalUnidades = qtd * pacote;
-        totalProdutos += preco;
-        itensLista.push({
-            nome: item.name,
-            quantidade: qtd,
-            pacote_tamanho: pacote,
-            totalUnidades: totalUnidades,
-            price: preco
-        });
-    });
-    
-    const freteValor = checkoutState?.freteSelecionado?.valor || 0;
-    const freteNome = checkoutState?.freteSelecionado?.nome || 'Retirada na Loja';
-    const totalFinal = totalProdutos + freteValor;
-    
-    const nomeCliente = usuarioLogado?.nome || checkoutState?.clienteData?.nome || 'Cliente';
-    const emailCliente = usuarioLogado?.email || checkoutState?.clienteData?.email || '';
-    const telefoneCliente = usuarioLogado?.telefone || checkoutState?.clienteData?.telefone || '';
-    
-    // GERAR RESUMO
-    let resumo = `*📋 PEDIDO #${numeroPedido}*%0A%0A`;
-    resumo += `👤 Cliente: ${nomeCliente}%0A`;
-    if (emailCliente) resumo += `📧 Email: ${emailCliente}%0A`;
-    if (telefoneCliente) resumo += `📞 Telefone: ${telefoneCliente}%0A`;
-    resumo += `%0A*🛒 PRODUTOS:*%0A`;
-    
-    if (itensLista.length > 0) {
-        itensLista.forEach(item => {
-            resumo += `• ${item.nome} - ${item.quantidade}x ${item.totalUnidades} un - R$ ${item.price.toFixed(2)}%0A`;
-        });
-    }
-    
-    const freteValorStr = freteValor === 0 ? 'Grátis' : `R$ ${freteValor.toFixed(2)}`;
-    resumo += `%0A*💰 RESUMO:*%0A`;
-    resumo += `Subtotal: R$ ${totalProdutos.toFixed(2)}%0A`;
-    resumo += `Frete (${freteNome}): ${freteValorStr}%0A`;
-    resumo += `*TOTAL: R$ ${totalFinal.toFixed(2)}*%0A`;
-    
-    const mensagem = `*📄 SOLICITAÇÃO DE BOLETO*%0A%0A` +
-        `${resumo}%0A` +
-        `Por favor, gerar boleto para pagamento.`;
-    
-    window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + mensagem, '_blank');
+    var mensagem = gerarMensagemWhatsApp('BOLETO');
+    var mensagemEncoded = encodeURIComponent(mensagem);
+    var url = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + mensagemEncoded;
+    console.log('📤 URL gerada:', url);
+    window.open(url, '_blank');
     fecharModal('pagamentoModal');
 }
 
-        // ============================================================
-        // ADMIN
-        // ============================================================
-        function atalhoAdmin() {
-            document.addEventListener('keydown', (e) => {
-                if (e.ctrlKey && e.key === 'm') {
-                    e.preventDefault();
-                    document.getElementById('adminModal').style.display = 'block';
-                    if (adminLogado) carregarAdminProdutos();
-                }
-            });
-        }
-
-        function fazerLoginAdmin() {
-            const senha = document.getElementById('adminPassword').value;
-            if (senha === 'Cal@562938') {
-                adminLogado = true;
-                document.getElementById('adminLogin').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-                carregarAdminProdutos();
-            } else {
-                alert('❌ Senha incorreta!');
-                document.getElementById('adminPassword').value = '';
-            }
-        }
-
-        function carregarAdminProdutos() {
-            const container = document.getElementById('adminProducts');
-            container.innerHTML = '';
-            for (const cat of PRODUCTS_DATA.categories) {
-                for (const prod of cat.products) {
-                    const div = document.createElement('div');
-                    div.className = 'admin-product-item';
-                    div.innerHTML = `
-                        <span><strong>${prod.name}</strong> (${cat.name})</span>
-                        <span>Estoque: <input type="number" class="stock-input" value="${prod.stock || 0}" data-product-id="${prod.id}" min="0"></span>
-                        <span style="font-size:11px;color:#888;">${prod.vender_zerado ? '🔄 Vende zerado' : '📦 Estoque limitado'}</span>
-                        <button class="btn-update-stock" onclick="atualizarEstoqueAdmin(${prod.id})">Atualizar</button>
-                    `;
-                    container.appendChild(div);
-                }
-            }
-        }
-
-        async function atualizarEstoqueAdmin(productId) {
-            const input = document.querySelector(`.stock-input[data-product-id="${productId}"]`);
-            if (!input) return;
-            const newStock = parseInt(input.value);
-            if (isNaN(newStock) || newStock < 0) {
-                alert('Por favor, insira um número válido!');
-                return;
-            }
-            const product = encontrarProduto(productId);
-            if (product) {
-                product.stock = newStock;
-                const sucesso = await atualizarEstoquePlanilha([
-                    { productId: productId, novoEstoque: newStock }
-                ]);
-                if (sucesso) {
-                    alert(`✅ Estoque de "${product.name}" atualizado para ${newStock} unidades!`);
-                } else {
-                    alert(`⚠️ Estoque de "${product.name}" atualizado localmente, mas não foi possível atualizar a planilha.`);
-                }
-                if (currentProducts && currentProducts.length > 0) renderizarProdutos();
-            }
-        }
 
 
 
@@ -8576,49 +8746,52 @@ function solicitarBoleto() {
             }
         }
 
+
+
         // ============================================================
-        // INICIALIZAR
-        // ============================================================
-        function init() {
-            if (!PRODUCTS_DATA.categories || PRODUCTS_DATA.categories.length === 0) {
-                console.warn('⚠️ Nenhuma categoria encontrada');
-                const grid = document.getElementById('categoriesGrid');
-                if (grid) {
-                    const loading = document.getElementById('loadingIndicator');
-                    if (!loading) {
-                        grid.innerHTML = `
-                            <div style="grid-column:1/-1;text-align:center;padding:40px;color:#999;">
-                                <i class="fas fa-database" style="font-size:48px;display:block;margin-bottom:10px;"></i>
-                                <p>Nenhum produto encontrado</p>
-                                <p style="font-size:12px;color:#bbb;">Verifique sua planilha ou tente novamente</p>
-                            </div>
-                        `;
-                    }
-                }
-                carregarCarrinho();
-                atalhoAdmin();
-                controlarHistoricoNavegacao();
-                atualizarBadge();
-                verificarSessao();
-                inicializando = false;
-                restaurarEstadoNavegacao();
-                return;
+// INICIALIZAR
+// ============================================================
+function init() {
+    if (!PRODUCTS_DATA.categories || PRODUCTS_DATA.categories.length === 0) {
+        console.warn('⚠️ Nenhuma categoria encontrada');
+        const grid = document.getElementById('categoriesGrid');
+        if (grid) {
+            const loading = document.getElementById('loadingIndicator');
+            if (!loading) {
+                grid.innerHTML = `
+                    <div style="grid-column:1/-1;text-align:center;padding:40px;color:#999;">
+                        <i class="fas fa-database" style="font-size:48px;display:block;margin-bottom:10px;"></i>
+                        <p>Nenhum produto encontrado</p>
+                        <p style="font-size:12px;color:#bbb;">Verifique sua planilha ou tente novamente</p>
+                    </div>
+                `;
             }
-            
-            renderizarCategorias();
-            carregarCarrinho();
-            atalhoAdmin();
-            controlarHistoricoNavegacao();
-            atualizarBadge();
-            verificarSessao();
-            
-            const restaurou = restaurarEstadoNavegacao();
-            if (!restaurou) {
-                showHome();
-            }
-            
-            inicializando = false;
         }
+        carregarCarrinho();
+        controlarHistoricoNavegacao();
+        atualizarBadge();
+        verificarSessao();
+        inicializando = false;
+        restaurarEstadoNavegacao();
+        return;
+    }
+    
+    renderizarCategorias();
+    carregarCarrinho();
+    controlarHistoricoNavegacao();
+    atualizarBadge();
+    verificarSessao();
+    
+    const restaurou = restaurarEstadoNavegacao();
+    if (!restaurou) {
+        showHome();
+    }
+    
+    inicializando = false;
+}
+
+
+
 
         function controlarHistoricoNavegacao() {
             window.addEventListener('popstate', function(event) {
@@ -8701,3 +8874,4 @@ function solicitarBoleto() {
     </script>
 </body>
 </html>
+
