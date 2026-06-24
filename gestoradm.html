@@ -180,6 +180,8 @@
             margin-top: 10px;
         }
 
+
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -982,170 +984,208 @@
             font-weight: 600;
         }
 
-        #printArea {
-            display: none;
-            width: 80mm;
-            padding: 2mm 5mm 2mm 3mm;
-            font-family: 'Courier New', monospace;
-            font-size: 7.5px;
-            background: white;
-            color: black;
-            box-sizing: border-box;
-            line-height: 1.15;
-            margin: -8 auto;
-            overflow: hidden;
-        }
+      #printArea {
+    display: none;
+    width: 72mm;
+    padding: 2mm 3mm 2mm 3mm;
+    font-family: 'Courier New', monospace;
+    font-size: 8px;
+    background: white;
+    color: black;
+    box-sizing: border-box;
+    line-height: 1.4;
+    margin: 0 auto;
+    overflow: hidden;
+    max-width: 72mm;
+}
 
-        .print-header {
-            text-align: center;
-            border-bottom: 1px dashed #000;
-            padding-bottom: 2px;
-            margin-bottom: 2px;
-            width: 100%;
-        }
+/* HEADER DA IMPRESSÃO */
+.print-header {
+    text-align: center;
+    border-bottom: 1px dashed #000;
+    padding-bottom: 3px;
+    margin-bottom: 3px;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
 
-        .print-header h2 {
-            font-size: 10px;
-            margin: 0;
-            letter-spacing: 0.3px;
-        }
+.print-header h2 {
+    font-size: 12px;
+    margin: 0;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
 
-        .print-header p {
-            font-size: 6.5px;
-            margin: 0.3px 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+.print-header p {
+    font-size: 7.5px;
+    margin: 0.3px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-        .print-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 6.5px;
-            padding: 0.3px 0;
-            width: 100%;
-        }
+.print-header .hr {
+    border-top: 1px dashed #000;
+    margin: 1.5px 0;
+}
 
-        .print-info span:first-child {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 55%;
-        }
+/* INFORMAÇÕES */
+.print-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 7.5px;
+    padding: 0.5px 0;
+    width: 100%;
+    max-width: 100%;
+}
 
-        .print-info span:last-child {
-            flex-shrink: 0;
-            white-space: nowrap;
-            text-align: right;
-            max-width: 42%;
-        }
+.print-info span:first-child {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 55%;
+}
 
-        .print-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.3px 0;
-            border-bottom: 1px dotted #ccc;
-            font-size: 7px;
-            width: 100%;
-        }
+.print-info span:last-child {
+    flex-shrink: 0;
+    white-space: nowrap;
+    text-align: right;
+    max-width: 42%;
+}
 
-        .print-item .nome {
-            flex: 1;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 50%;
-            font-size: 7px;
-            padding-right: 2px;
-        }
+/* ITENS DO PEDIDO - agora com flex-direction column para mais de uma linha */
+.print-item {
+    display: flex;
+    flex-direction: column;
+    padding: 2px 0;
+    border-bottom: 1px dotted #ccc;
+    width: 100%;
+    max-width: 100%;
+}
 
-        .print-item .valor {
-            flex-shrink: 0;
-            margin-left: 0;
-            font-size: 7px;
-            white-space: nowrap;
-            text-align: right;
-            min-width: 50px;
-            max-width: 70px;
-        }
+.print-item .linha1 {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
 
-        .print-item .status-print {
-            font-size: 5.5px;
-            color: #666;
-            margin: 0 2px 0 0;
-            flex-shrink: 0;
-            max-width: 30px;
-        }
+.print-item .linha1 .nome {
+    font-size: 8.5px;
+    font-weight: bold;
+    color: #000;
+    max-width: 65%;
+    word-wrap: break-word;
+    white-space: normal;
+}
 
-        .print-subtotal {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.3px 0;
-            font-size: 7px;
-            width: 100%;
-        }
+.print-item .linha1 .valor {
+    font-size: 8.5px;
+    font-weight: bold;
+    color: #000;
+    flex-shrink: 0;
+    text-align: right;
+}
 
-        .print-subtotal span:last-child {
-            flex-shrink: 0;
-            min-width: 55px;
-            text-align: right;
-        }
+.print-item .linha2 {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    font-size: 7px;
+    color: #666;
+    gap: 12px;
+    margin-top: 1px;
+}
 
-        .print-total {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
-            padding: 1.5px 0;
-            border-top: 2px solid #000;
-            margin-top: 1.5px;
-            font-size: 8.5px;
-            width: 100%;
-        }
+/* SUBTOTAL */
+.print-subtotal {
+    display: flex;
+    justify-content: space-between;
+    padding: 1px 0;
+    font-size: 8px;
+    width: 100%;
+    max-width: 100%;
+    border-top: 1px solid #000;
+    margin-top: 2px;
+    padding-top: 2px;
+}
 
-        .print-total span:last-child {
-            flex-shrink: 0;
-            min-width: 60px;
-            text-align: right;
-        }
+.print-subtotal span:last-child {
+    flex-shrink: 0;
+    min-width: 45px;
+    text-align: right;
+}
 
-        .print-footer {
-            text-align: center;
-            border-top: 1px dashed #000;
-            padding-top: 2px;
-            margin-top: 2px;
-            font-size: 5.5px;
-            width: 100%;
-        }
+/* TOTAL - DESTAQUE */
+.print-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    padding: 3px 0;
+    border-top: 2px solid #000;
+    margin-top: 2px;
+    font-size: 11px;
+    width: 100%;
+    max-width: 100%;
+}
 
-        .print-footer p {
-            margin: 0.3px 0;
-        }
+.print-total span:last-child {
+    flex-shrink: 0;
+    min-width: 50px;
+    text-align: right;
+}
 
-        @media print {
-            body * { visibility: hidden; }
-            #printArea, #printArea * { visibility: visible; }
-            #printArea {
-                position: fixed;
-                left: 0;
-                top: 0;
-                width: 80mm;
-                padding: 2mm 3mm;
-                font-size: 8px;
-                font-family: 'Courier New', monospace;
-                background: white;
-                color: black;
-                box-sizing: border-box;
-                display: block !important;
-                line-height: 1.2;
-                page-break-after: avoid;
-                page-break-inside: avoid;
-            }
-            .btn-print, .btn-sm, .btn-status, .btn-edit, .btn-delete { display: none !important; }
-            .no-print { display: none !important; }
-            html, body { margin: 0; padding: 0; height: auto; }
-            @page { margin: 0; size: 80mm auto; }
-        }
+/* RODAPÉ */
+.print-footer {
+    text-align: center;
+    border-top: 1px dashed #000;
+    padding-top: 2px;
+    margin-top: 2px;
+    font-size: 7px;
+    width: 100%;
+    max-width: 100%;
+}
+
+.print-footer p {
+    margin: 0.2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ESTILOS PARA A IMPRESSÃO - 1 PÁGINA */
+@media print {
+    body * { visibility: hidden; }
+    #printArea, #printArea * { visibility: visible; }
+    #printArea {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 72mm;
+        padding: 2mm 3mm;
+        font-size: 8px;
+        font-family: 'Courier New', monospace;
+        background: white;
+        color: black;
+        box-sizing: border-box;
+        display: block !important;
+        line-height: 1.3;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+        margin: 0;
+        max-width: 72mm;
+        height: auto;
+        overflow: visible;
+    }
+    .btn-print, .btn-sm, .btn-status, .btn-edit, .btn-delete { display: none !important; }
+    .no-print { display: none !important; }
+    html, body { margin: 0; padding: 0; height: auto; }
+    @page {
+        margin: 0;
+        size: 72mm auto;
+    }
+}
 
         .modal-confirm {
             max-width: 400px;
@@ -1303,6 +1343,16 @@
     background: var(--danger);
 }
 
+
+.data-estoque-info {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    margin-top: 4px;
+    background: #f0f4f8;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
 
     </style>
 </head>
@@ -1761,6 +1811,15 @@
                         Nenhum item adicionado
                     </div>
                 </div>
+                
+                <!-- CAMPO DE OBSERVAÇÕES ADICIONADO -->
+                <div class="form-group" style="margin-top:10px;">
+                    <label style="font-size:13px;font-weight:700;color:var(--primary-blue);">
+                        <i class="fas fa-sticky-note"></i> OBSERVAÇÕES DO PEDIDO (interno)
+                    </label>
+                    <textarea id="visObs" rows="2" placeholder="Informações internas sobre o pedido..." style="font-size:13px;width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:6px;resize:vertical;"></textarea>
+                </div>
+                
                 <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
                     <button onclick="limparCarrinhoManual()" class="btn-sm" style="background:#e74c3c;color:white;padding:8px 14px;">
                         <i class="fas fa-trash"></i> Limpar
@@ -1859,7 +1918,7 @@
 <div id="printArea"></div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbxdhrjpgk7d_R-i6tIT8NqinDT_-PeASta5SJN_1qj8iZUTJJRaonm0zaFHTniiJ4CzHA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzgS8t9-G11EQU1J5prf2njyxB5kFqIYc9EuUT77d3rihWzVQrGpKNRKxYTGafZUtMtHw/exec';
 const SENHA_GESTOR = 'Cal@562938';
 
 let dados = {
@@ -1909,6 +1968,385 @@ function switchTab(tab) {
         renderizarClientes();
     }
 }
+
+// ============================================================
+// EDITAR PEDIDO - CORRIGIDO (COM PRODUTOS ORGANIZADOS)
+// ============================================================
+async function editarPedido(id) {
+    const pedido = dados.pedidos.find(p => parseInt(p.id_pedido) === parseInt(id));
+    if (!pedido) {
+        alert('Pedido não encontrado!');
+        return;
+    }
+    
+    // Abre modal para edição
+    const modal = document.createElement('div');
+    modal.id = 'modalEditarPedido';
+    modal.className = 'modal-overlay open';
+    modal.style.display = 'flex';
+    modal.style.zIndex = '9999';
+    
+    // Processa itens para exibição
+    let itensHtml = '';
+    let itens = [];
+    let subtotal = 0;
+    
+    try {
+        let textoItens = pedido.itens || '';
+        console.log('📝 Parseando itens do pedido para edição:', textoItens);
+        
+        // Tenta parsear como JSON
+        if (typeof textoItens === 'string' && textoItens.startsWith('[')) {
+            try {
+                itens = JSON.parse(textoItens);
+            } catch (e) {
+                itens = [];
+            }
+        }
+        
+        // Se não for JSON, tenta extrair do formato com " | "
+        if (itens.length === 0 && typeof textoItens === 'string' && textoItens.includes(' | ')) {
+            const partes = textoItens.split(' | ');
+            
+            partes.forEach(part => {
+                // FORMATO: "Nome (1x 10 un) - R$ 17.97"
+                const match = part.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
+                
+                if (match) {
+                    const nome = match[1].trim();
+                    const qtdPacotes = parseInt(match[2]) || 1;
+                    const tamanhoPacote = parseInt(match[3]) || 1;
+                    const preco = parseFloat(match[4].replace(',', '.')) || 0;
+                    const totalUnidades = qtdPacotes * tamanhoPacote;
+                    
+                    // Verifica se tem produção no nome
+                    let isProducao = false;
+                    let prazoProducao = 0;
+                    if (nome.includes('(Produção')) {
+                        isProducao = true;
+                        const matchProd = nome.match(/Produção\s*(\d+)\s*dias/);
+                        prazoProducao = matchProd ? parseInt(matchProd[1]) : 7;
+                    }
+                    
+                    subtotal += preco;
+                    itens.push({
+                        nome: nome,
+                        quantidade: qtdPacotes,
+                        pacote_tamanho: tamanhoPacote,
+                        totalUnidades: totalUnidades,
+                        price: preco,
+                        isProducao: isProducao,
+                        prazoProducao: prazoProducao
+                    });
+                } else {
+                    // Fallback: formato antigo "(4 un)"
+                    const match2 = part.match(/^(.+?)\s*\((\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
+                    if (match2) {
+                        const nome = match2[1].trim();
+                        const totalUnidades = parseInt(match2[2]) || 1;
+                        const preco = parseFloat(match2[3].replace(',', '.')) || 0;
+                        
+                        subtotal += preco;
+                        itens.push({
+                            nome: nome,
+                            quantidade: 1,
+                            pacote_tamanho: totalUnidades,
+                            totalUnidades: totalUnidades,
+                            price: preco,
+                            isProducao: false,
+                            prazoProducao: 0
+                        });
+                    }
+                }
+            });
+        }
+        
+        // Se não encontrou itens, cria um fallback
+        if (itens.length === 0 && textoItens) {
+            const preco = parseFloat(pedido.total) || 0;
+            subtotal = preco;
+            itens = [{
+                nome: String(textoItens).substring(0, 40),
+                quantidade: 1,
+                pacote_tamanho: 1,
+                totalUnidades: 1,
+                price: preco,
+                isProducao: false,
+                prazoProducao: 0
+            }];
+        }
+        
+        if (itens.length === 0) {
+            itens = [{
+                nome: 'Produto',
+                quantidade: 1,
+                pacote_tamanho: 1,
+                totalUnidades: 1,
+                price: parseFloat(pedido.total) || 0,
+                isProducao: false,
+                prazoProducao: 0
+            }];
+        }
+        
+        console.log('📦 Itens processados para edição:', itens);
+        
+        // GERA HTML DOS ITENS ORGANIZADOS
+        itens.forEach((item, index) => {
+            const preco = parseFloat(item.price) || 0;
+            const qtd = parseInt(item.quantidade) || 1;
+            const pacote = parseInt(item.pacote_tamanho) || 1;
+            const totalUnidades = qtd * pacote;
+            const isProducao = item.isProducao || false;
+            const prazo = item.prazoProducao || 0;
+            
+            const qtdTexto = `${qtd}x ${pacote} un (${totalUnidades} un)`;
+            
+            let statusLabel = '';
+            if (isProducao && prazo > 0) {
+                statusLabel = `🔨 Produção: ${prazo} dias`;
+            } else if (isProducao) {
+                statusLabel = '🔨 Produção';
+            } else {
+                statusLabel = '✅ Disponível';
+            }
+            
+            // Limpa o nome
+            let nomeLimpo = String(item.nome || 'Produto');
+            nomeLimpo = nomeLimpo.replace(/\(\d+x\s*\d+\s*un\)/g, '');
+            nomeLimpo = nomeLimpo.replace(/\(\d+\s*un\)/g, '');
+            nomeLimpo = nomeLimpo.replace(/\(Produção\s*\d*\s*dias?\)/g, '');
+            nomeLimpo = nomeLimpo.trim();
+            if (!nomeLimpo) nomeLimpo = item.nome || 'Produto';
+            
+            itensHtml += `
+                <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;font-size:13px;align-items:center;">
+                    <div style="flex:1;">
+                        <div style="font-weight:600;color:#0d1b2a;">${index+1}. ${nomeLimpo}</div>
+                        <div style="font-size:11px;color:#888;">📦 ${qtdTexto} ${statusLabel}</div>
+                        ${item.codigo ? `<div style="font-size:10px;color:#999;">Cód: ${item.codigo}</div>` : ''}
+                    </div>
+                    <div style="font-weight:700;color:#1a3a5c;font-size:14px;white-space:nowrap;">R$ ${preco.toFixed(2)}</div>
+                </div>
+            `;
+        });
+        
+    } catch (e) {
+        console.error('❌ Erro ao processar itens para edição:', e);
+        itensHtml = `
+            <div style="padding:10px;color:#888;text-align:center;">
+                <i class="fas fa-exclamation-circle"></i> Erro ao carregar itens do pedido.
+            </div>
+        `;
+    }
+    
+    const total = parseFloat(pedido.total) || 0;
+    const frete = parseFloat(pedido.frete_valor) || 0;
+    const freteNome = pedido.frete || 'Retirada na Loja';
+    const desconto = parseFloat(pedido.desconto) || 0;
+    const subtotalExibicao = total - frete + desconto;
+    
+    modal.innerHTML = `
+        <div class="modal" style="max-width:750px;max-height:90vh;overflow-y:auto;">
+            <div class="modal-header">
+                <h2>✏️ Editar Pedido #${pedido.id_pedido}</h2>
+                <button class="modal-close" onclick="fecharModalEditar()">&times;</button>
+            </div>
+            
+            <!-- INFORMAÇÕES DO CLIENTE -->
+            <div style="background:#f8f9fa;border-radius:8px;padding:15px;margin-bottom:15px;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <input type="text" id="editClienteNome" value="${pedido.cliente_nome || ''}" style="width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:6px;font-size:13px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="text" id="editClienteTelefone" value="${pedido.cliente_telefone || ''}" style="width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:6px;font-size:13px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="editClienteEmail" value="${pedido.cliente_email || ''}" style="width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:6px;font-size:13px;">
+                </div>
+                <div class="form-group">
+                    <label>Endereço de Entrega</label>
+                    <textarea id="editEndereco" rows="2" style="width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:6px;font-size:13px;">${pedido.endereco_entrega || ''}</textarea>
+                </div>
+            </div>
+            
+            <!-- PRODUTOS ORGANIZADOS -->
+            <div style="border-top:2px solid #eee;padding-top:12px;margin-top:12px;">
+                <h4 style="color:var(--primary-blue);font-size:15px;margin-bottom:8px;">🛒 Produtos do Pedido</h4>
+                <div style="max-height:250px;overflow-y:auto;border:1px solid #eee;border-radius:6px;padding:4px 12px;background:#fafafa;">
+                    ${itensHtml}
+                </div>
+            </div>
+            
+            <!-- RESUMO -->
+            <div style="margin-top:12px;padding:10px;background:#f8f9fa;border-radius:6px;">
+                <div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0;">
+                    <span>Subtotal</span>
+                    <span>R$ ${subtotalExibicao.toFixed(2)}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;padding:2px 0;border-bottom:1px dotted #ccc;padding-bottom:4px;margin-bottom:4px;">
+                    <span>Frete: ${freteNome}</span>
+                    <span>${frete === 0 ? 'Grátis' : 'R$ ' + frete.toFixed(2)}</span>
+                </div>
+                ${desconto > 0 ? `
+                <div style="display:flex;justify-content:space-between;font-size:13px;color:#27ae60;padding:2px 0;">
+                    <span>Desconto PIX</span>
+                    <span>- R$ ${desconto.toFixed(2)}</span>
+                </div>` : ''}
+                <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:var(--primary-blue);padding-top:4px;border-top:2px solid #000;">
+                    <span>TOTAL</span>
+                    <span>R$ ${total.toFixed(2)}</span>
+                </div>
+            </div>
+            
+            <!-- STATUS E OBSERVAÇÕES -->
+            <div class="form-row" style="margin-top:12px;">
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="editStatus" style="width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:6px;font-size:13px;">
+                        <option value="Pendente" ${pedido.status === 'Pendente' ? 'selected' : ''}>⏳ Pendente</option>
+                        <option value="Em andamento" ${pedido.status === 'Em andamento' ? 'selected' : ''}>🔄 Em andamento</option>
+                        <option value="Enviado" ${pedido.status === 'Enviado' ? 'selected' : ''}>📦 Enviado</option>
+                        <option value="Entregue" ${pedido.status === 'Entregue' ? 'selected' : ''}>✅ Entregue</option>
+                        <option value="Cancelado" ${pedido.status === 'Cancelado' ? 'selected' : ''}>❌ Cancelado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Total (R$)</label>
+                    <input type="number" id="editTotal" step="0.01" value="${total.toFixed(2)}" style="width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:6px;font-size:16px;font-weight:700;">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Observações</label>
+                <textarea id="editObservacoes" rows="2" style="width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:6px;font-size:13px;">${pedido.observacoes || ''}</textarea>
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn-cancel" onclick="fecharModalEditar()">Cancelar</button>
+                <button class="btn-save" onclick="salvarEdicaoPedido(${pedido.id_pedido})">
+                    <i class="fas fa-save"></i> Salvar Alterações
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+function fecharModalEditar() {
+    const modal = document.getElementById('modalEditarPedido');
+    if (modal) modal.remove();
+}
+
+async function salvarEdicaoPedido(id) {
+    const clienteNome = document.getElementById('editClienteNome').value;
+    const clienteEmail = document.getElementById('editClienteEmail').value;
+    const clienteTelefone = document.getElementById('editClienteTelefone').value;
+    const endereco = document.getElementById('editEndereco').value;
+    const status = document.getElementById('editStatus').value;
+    const total = parseFloat(document.getElementById('editTotal').value) || 0;
+    const observacoes = document.getElementById('editObservacoes').value;
+    
+    mostrarSpinner('Salvando alterações...');
+    
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                acao: 'atualizar_pedido_completo',
+                id_pedido: id,
+                cliente_nome: clienteNome,
+                cliente_email: clienteEmail,
+                cliente_telefone: clienteTelefone,
+                endereco_entrega: endereco,
+                status: status,
+                total: total,
+                observacoes: observacoes
+            })
+        });
+        
+        esconderSpinner();
+        alert('✅ Pedido atualizado com sucesso!');
+        fecharModalEditar();
+        carregarDados();
+        
+    } catch (error) {
+        console.error('Erro ao salvar:', error);
+        esconderSpinner();
+        alert('⚠️ Erro ao salvar alterações.');
+    }
+}
+
+function fecharModalEditar() {
+    const modal = document.getElementById('modalEditarPedido');
+    if (modal) modal.remove();
+}
+
+async function salvarEdicaoPedido(id) {
+    const clienteNome = document.getElementById('editClienteNome').value;
+    const clienteEmail = document.getElementById('editClienteEmail').value;
+    const clienteTelefone = document.getElementById('editClienteTelefone').value;
+    const endereco = document.getElementById('editEndereco').value;
+    const status = document.getElementById('editStatus').value;
+    const total = parseFloat(document.getElementById('editTotal').value) || 0;
+    const observacoes = document.getElementById('editObservacoes').value;
+    
+    mostrarSpinner('Salvando alterações...');
+    
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                acao: 'atualizar_pedido_completo',
+                id_pedido: id,
+                cliente_nome: clienteNome,
+                cliente_email: clienteEmail,
+                cliente_telefone: clienteTelefone,
+                endereco_entrega: endereco,
+                status: status,
+                total: total,
+                observacoes: observacoes
+            })
+        });
+        
+        esconderSpinner();
+        alert('✅ Pedido atualizado com sucesso!');
+        fecharModalEditar();
+        carregarDados();
+        
+    } catch (error) {
+        console.error('Erro ao salvar:', error);
+        esconderSpinner();
+        alert('⚠️ Erro ao salvar alterações.');
+    }
+}
+
+// ============================================================
+// FUNÇÃO PARA FINALIZAR PEDIDO VIA CHECKOUT (GERENCIADOR)
+// ============================================================
+async function finalizarPedidoCheckout() {
+    // Simula um pedido de teste para demonstrar a função
+    alert('Esta função é para ser usada no site do cliente.\nNo gerenciador, os pedidos são feitos via "Pedido Manual".');
+    
+    // Exemplo de como seria se tivesse um carrinho
+    if (carrinhoManual.length === 0) {
+        alert('⚠️ Adicione itens ao carrinho primeiro!');
+        return;
+    }
+    
+    // Aqui viria a lógica de finalização do pedido
+    // similar à finalizarPedidoManual()
+}
+
 
 // ============================================================
 // CARREGAR DADOS
@@ -2060,7 +2498,7 @@ function renderizarTodosPedidos() {
     const pedidosOrdenados = pedidos.sort((a, b) => (parseInt(b.id_pedido) || 0) - (parseInt(a.id_pedido) || 0));
     
     if (pedidosOrdenados.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:25px;color:#999;">
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:25px;color:#999;">
             <i class="fas fa-shopping-cart" style="font-size:28px;display:block;margin-bottom:8px;"></i>
             Nenhum pedido encontrado
         </td></tr>`;
@@ -2069,13 +2507,37 @@ function renderizarTodosPedidos() {
 
     tbody.innerHTML = pedidosOrdenados.map(p => {
         const statusClass = `status-${(p.status || 'pendente').toLowerCase().replace(/ /g, '_')}`;
+        
+        // Processa os itens para mostrar resumo
+        let itensResumo = p.itens || '';
+        try {
+            if (typeof p.itens === 'string') {
+                // Tenta parsear para mostrar de forma legível
+                const partes = p.itens.split('; ');
+                if (partes.length > 1) {
+                    itensResumo = partes.map(part => {
+                        const campos = part.split('|');
+                        if (campos.length >= 4) {
+                            const qtd = parseInt(campos[1]) || 1;
+                            const pacote = parseInt(campos[2]) || 1;
+                            const total = qtd * pacote;
+                            return `${campos[0]?.substring(0, 15)} (${qtd}x ${pacote} un)`;
+                        }
+                        return part.substring(0, 20);
+                    }).join(' | ');
+                }
+            }
+        } catch (e) {
+            itensResumo = p.itens ? p.itens.substring(0, 40) : '-';
+        }
+        
         return `
         <tr>
             <td><strong>#${p.id_pedido}</strong></td>
             <td>${p.cliente_nome || 'Cliente não identificado'}</td>
             <td>${p.cliente_telefone || '-'}</td>
-            <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${p.itens || ''}">
-                ${p.itens ? p.itens.substring(0, 30) + (p.itens.length > 30 ? '...' : '') : '-'}
+            <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;" title="${itensResumo}">
+                ${itensResumo || '-'}
             </td>
             <td><strong>R$ ${parseFloat(p.total || 0).toFixed(2)}</strong></td>
             <td><span class="status-badge ${statusClass}">${p.status || 'Pendente'}</span></td>
@@ -2083,6 +2545,9 @@ function renderizarTodosPedidos() {
             <td>
                 <button class="btn-sm btn-status" onclick="abrirModalStatus(${p.id_pedido}, '${p.status || 'Pendente'}')">
                     <i class="fas fa-exchange-alt"></i>
+                </button>
+                <button class="btn-sm btn-edit" onclick="editarPedido(${p.id_pedido})">
+                    <i class="fas fa-edit"></i>
                 </button>
                 <button class="btn-sm btn-print" onclick="imprimirCupom(${p.id_pedido})">
                     <i class="fas fa-print"></i>
@@ -2093,7 +2558,7 @@ function renderizarTodosPedidos() {
 }
 
 // ============================================================
-// IMPRIMIR CUPOM
+// IMPRIMIR CUPOM - COMPLETA E CORRIGIDA
 // ============================================================
 function imprimirCupom(idPedido) {
     const pedido = dados.pedidos.find(p => parseInt(p.id_pedido) === parseInt(idPedido));
@@ -2106,83 +2571,353 @@ function imprimirCupom(idPedido) {
     
     let itensHtml = '';
     let subtotal = 0;
+    let maiorPrazoProducao = 0;
     
-    try {
-        const itens = typeof pedido.itens === 'string' ? JSON.parse(pedido.itens) : pedido.itens;
-        if (Array.isArray(itens)) {
-            itens.forEach(item => {
-                const preco = parseFloat(item.price) || 0;
-                const qtd = parseInt(item.quantidade) || 0;
-                subtotal += preco;
-                const nome = (item.nome || 'Produto').substring(0, 16);
-                const isProducao = item.isProducao ? ' 🔨' : '';
-                const prazo = item.prazoProducao ? ` ${item.prazoProducao}d` : '';
-                itensHtml += `
-                    <div class="print-item">
-                        <span class="nome">${qtd}x ${nome}${isProducao}${prazo}</span>
-                        <span class="valor">R$ ${preco.toFixed(2)}</span>
-                    </div>
-                `;
-            });
-        }
-    } catch (e) {
-        itensHtml = `<div class="print-item"><span class="nome">Erro ao carregar itens</span></div>`;
+    // 1. FRETE
+    let freteNome = 'Retirada na Loja';
+    let freteValor = 0;
+    
+    if (pedido.frete && pedido.frete.trim() !== '') {
+        freteNome = pedido.frete.trim();
     }
     
-    const total = parseFloat(pedido.total) || 0;
-    const frete = parseFloat(pedido.frete_valor) || 0;
+    if (pedido.observacoes) {
+        const matchFrete = pedido.observacoes.match(/Frete:\s*([^|]+)/);
+        if (matchFrete) {
+            const nomeExtraido = matchFrete[1].trim();
+            if (nomeExtraido && nomeExtraido !== 'Retirada na Loja') {
+                freteNome = nomeExtraido;
+            }
+        }
+        const matchValor = pedido.observacoes.match(/R\$\s*([\d,.]+)/);
+        if (matchValor) {
+            freteValor = parseFloat(matchValor[1].replace(',', '.')) || 0;
+        }
+    }
+    
+    if (pedido.frete_valor) {
+        freteValor = parseFloat(pedido.frete_valor) || 0;
+    }
+    
+    // 2. PAGAMENTO
+    let pagamento = pedido.pagamento || 'Não informado';
+    if (pagamento === 'Não informado' && pedido.observacoes) {
+        const matchPag = pedido.observacoes.match(/Pagamento:\s*([^|]+)/);
+        if (matchPag) {
+            pagamento = matchPag[1].trim();
+        }
+    }
+    
+    // 3. PRAZO DE ENTREGA
+    let prazoEntrega = 0;
+    if (pedido.prazo_entrega) {
+        prazoEntrega = parseInt(pedido.prazo_entrega) || 0;
+    }
+    if (prazoEntrega === 0 && pedido.observacoes) {
+        const matchPrazo = pedido.observacoes.match(/Prazo:\s*(\d+)\s*dias/);
+        if (matchPrazo) {
+            prazoEntrega = parseInt(matchPrazo[1]) || 0;
+        }
+    }
+    
+    // ============================================================
+    // PROCESSAMENTO DOS ITENS
+    // ============================================================
+    try {
+        let itens = [];
+        let textoItens = pedido.itens || '';
+        
+        console.log('📝 Texto original dos itens:', textoItens);
+        
+        if (typeof textoItens === 'string' && textoItens.includes(' | ')) {
+            const partes = textoItens.split(' | ');
+            console.log('📝 Partes encontradas:', partes);
+            
+            partes.forEach(part => {
+                // EXTRAI O STATUS DE PRODUÇÃO
+                let isProducao = false;
+                let prazoProducao = 0;
+                let nomeLimpo = part;
+                
+                // Verifica se tem "Produção" no texto
+                const matchProd = part.match(/\(Produção\s*(\d*)\s*dias?\)/);
+                if (matchProd) {
+                    isProducao = true;
+                    prazoProducao = parseInt(matchProd[1]) || 7;
+                    nomeLimpo = nomeLimpo.replace(/\(Produção\s*\d*\s*dias?\)\s*/, '');
+                } else if (part.includes('(Produção)')) {
+                    isProducao = true;
+                    prazoProducao = 7;
+                    nomeLimpo = nomeLimpo.replace(/\(Produção\)\s*/, '');
+                }
+                
+                if (prazoProducao > maiorPrazoProducao) {
+                    maiorPrazoProducao = prazoProducao;
+                }
+                
+                // EXTRAI O PACOTE E O PREÇO
+                const matchPacote = nomeLimpo.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
+                
+                if (matchPacote) {
+                    const nome = matchPacote[1].trim();
+                    const qtdPacotes = parseInt(matchPacote[2]) || 1;
+                    const tamanhoPacote = parseInt(matchPacote[3]) || 1;
+                    const preco = parseFloat(matchPacote[4].replace(',', '.')) || 0;
+                    const totalUnidades = qtdPacotes * tamanhoPacote;
+                    
+                    let nomeFinal = nome;
+                    nomeFinal = nomeFinal.replace(/\(Produção\s*\d*\s*dias?\)/g, '');
+                    nomeFinal = nomeFinal.replace(/\(Produção\)/g, '');
+                    nomeFinal = nomeFinal.trim();
+                    if (!nomeFinal) nomeFinal = nome;
+                    
+                    itens.push({
+                        nome: nomeFinal,
+                        quantidade: qtdPacotes,
+                        pacote_tamanho: tamanhoPacote,
+                        totalUnidades: totalUnidades,
+                        price: preco,
+                        isProducao: isProducao,
+                        prazoProducao: prazoProducao
+                    });
+                } else {
+                    // FALLBACK
+                    const match2 = nomeLimpo.match(/^(.+?)\s*\((\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
+                    if (match2) {
+                        const nome = match2[1].trim();
+                        const totalUnidades = parseInt(match2[2]) || 1;
+                        const preco = parseFloat(match2[3].replace(',', '.')) || 0;
+                        
+                        const matchPacote2 = nome.match(/(\d+)x\s*(\d+)/);
+                        let qtdPacotes = 1;
+                        let tamanhoPacote = totalUnidades;
+                        if (matchPacote2) {
+                            qtdPacotes = parseInt(matchPacote2[1]) || 1;
+                            tamanhoPacote = parseInt(matchPacote2[2]) || 1;
+                        }
+                        
+                        let nomeFinal = nome;
+                        nomeFinal = nomeFinal.replace(/\(Produção\s*\d*\s*dias?\)/g, '');
+                        nomeFinal = nomeFinal.replace(/\(Produção\)/g, '');
+                        nomeFinal = nomeFinal.trim();
+                        if (!nomeFinal) nomeFinal = nome;
+                        
+                        itens.push({
+                            nome: nomeFinal,
+                            quantidade: qtdPacotes,
+                            pacote_tamanho: tamanhoPacote,
+                            totalUnidades: totalUnidades,
+                            price: preco,
+                            isProducao: isProducao,
+                            prazoProducao: prazoProducao
+                        });
+                    }
+                }
+            });
+        }
+        
+        if (itens.length === 0 && textoItens) {
+            const matchPreco = textoItens.match(/R\$\s*([\d,.]+)/);
+            const preco = matchPreco ? parseFloat(matchPreco[1].replace(',', '.')) : 0;
+            itens = [{
+                nome: String(textoItens).substring(0, 40),
+                quantidade: 1,
+                pacote_tamanho: 1,
+                totalUnidades: 1,
+                price: preco || parseFloat(pedido.total) || 0,
+                isProducao: false,
+                prazoProducao: 0
+            }];
+        }
+        
+        if (itens.length === 0) {
+            itens = [{
+                nome: 'Produto',
+                quantidade: 1,
+                pacote_tamanho: 1,
+                totalUnidades: 1,
+                price: parseFloat(pedido.total) || 0,
+                isProducao: false,
+                prazoProducao: 0
+            }];
+        }
+        
+        console.log('📦 Itens processados final:', itens);
+        
+        // ============================================================
+        // GERA HTML DOS ITENS
+        // ============================================================
+        itens.forEach((item, index) => {
+            const preco = parseFloat(item.price || 0);
+            const qtdPacotes = parseInt(item.quantidade || 1);
+            const tamanhoPacote = parseInt(item.pacote_tamanho || 1);
+            const totalUnidades = qtdPacotes * tamanhoPacote;
+            
+            const unitPrice = totalUnidades > 0 ? preco / totalUnidades : 0;
+            subtotal += preco;
+            
+            const isProducao = item.isProducao || false;
+            const prazoProducao = item.prazoProducao || 0;
+            
+            let statusEstoque = '';
+            if (isProducao && prazoProducao > 0) {
+                statusEstoque = `${prazoProducao} dias`;
+            } else if (isProducao) {
+                statusEstoque = 'Produção';
+            } else {
+                statusEstoque = 'Disponível';
+            }
+            
+            const nome = String(item.nome || 'Produto').trim();
+            const qtdTexto = `${qtdPacotes}x ${tamanhoPacote} un (${totalUnidades} un)`;
+            
+            itensHtml += `
+                <div style="display:flex;flex-direction:column;padding:2px 0;border-bottom:1px dotted #ccc;width:100%;max-width:100%;">
+                    <div style="display:flex;justify-content:space-between;width:100%;align-items:flex-start;">
+                        <div style="flex:1;min-width:0;padding-right:6px;">
+                            <span style="font-size:8.5px;font-weight:bold;color:#000;display:block;word-wrap:break-word;white-space:normal;line-height:1.3;">
+                                ${index+1}. ${nome}
+                            </span>
+                            <span style="font-size:7px;color:#333;display:block;font-weight:bold;">${qtdTexto}</span>
+                        </div>
+                        <span style="font-size:8.5px;font-weight:bold;color:#000;flex-shrink:0;white-space:nowrap;">R$ ${preco.toFixed(2)}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;width:100%;font-size:7px;color:#000;margin-top:1px;flex-wrap:wrap;gap:2px 8px;">
+                        ${unitPrice > 0 ? `<span style="color:#000;">💰 Unit: R$ ${unitPrice.toFixed(2)}</span>` : ''}
+                        <span style="color:${isProducao ? '#f39c12' : '#27ae60'};font-weight:bold;">✅ ${statusEstoque}</span>
+                    </div>
+                </div>
+            `;
+        });
+        
+    } catch (e) {
+        console.error('❌ Erro ao processar itens:', e);
+        itensHtml = `
+            <div style="display:flex;flex-direction:column;padding:2px 0;border-bottom:1px dotted #ccc;width:100%;">
+                <div style="display:flex;justify-content:space-between;width:100%;">
+                    <span style="font-size:8.5px;font-weight:bold;color:#000;">Pedido #${pedido.id_pedido}</span>
+                    <span style="font-size:8.5px;font-weight:bold;color:#000;">R$ ${(parseFloat(pedido.total) || 0).toFixed(2)}</span>
+                </div>
+                <div style="font-size:7.5px;color:#666;margin-top:1px;">
+                    ${pedido.itens ? String(pedido.itens).substring(0, 60) : 'Detalhes do pedido'}
+                </div>
+            </div>
+        `;
+        subtotal = parseFloat(pedido.total) || 0;
+        maiorPrazoProducao = 7;
+    }
+    
+    // ============================================================
+    // CÁLCULO DO PRAZO TOTAL
+    // ============================================================
+    let diasEnvio = 1;
+    if (freteNome && freteNome !== 'Retirada na Loja' && freteNome !== 'Retirada') {
+        diasEnvio = 3;
+    }
+    
+    let prazoTotal = diasEnvio + maiorPrazoProducao;
+    
+    if (prazoEntrega > 0) {
+        prazoTotal = prazoEntrega;
+    }
+    
+    const total = parseFloat(pedido.total) || subtotal;
     const status = pedido.status || 'Pendente';
     const data = pedido.data_pedido || new Date().toLocaleString();
-    const endereco = (pedido.endereco_entrega || '').substring(0, 22);
-    const pagamento = pedido.pagamento || 'Não informado';
-    const cliente = (pedido.cliente_nome || 'Não identificado').substring(0, 18);
+    const endereco = pedido.endereco_entrega || 'Retirada na Loja';
+    const cliente = (pedido.cliente_nome || 'Não identificado');
     const telefone = pedido.cliente_telefone || '';
+    const observacoes = pedido.observacoes || '';
     
+    let obsLimpa = observacoes;
+    if (obsLimpa) {
+        obsLimpa = obsLimpa.replace(/Prazo:\s*undefined\s*dias/gi, '');
+        obsLimpa = obsLimpa.replace(/\|\s*$/g, '');
+        obsLimpa = obsLimpa.trim();
+        obsLimpa = obsLimpa.replace(/\|\s*\|/g, '|');
+    }
+    
+    const dataFormatada = data.replace('T', ' ').substring(0, 16);
+    
+    // ============================================================
+    // CUPOM
+    // ============================================================
     printArea.innerHTML = `
-        <div class="print-header">
-            <h2>EMBALAGENS EXPRESS</h2>
-            <p>Pç Santuário S Geraldo,46 - BH/MG</p>
-            <p>CEP:31050-650 | Tel:(31)3487-5905</p>
-            <div class="hr"></div>
-            <p><strong>CUPOM NÃO FISCAL</strong></p>
-            <div class="print-info"><span>Pedido #${pedido.id_pedido}</span><span>${data}</span></div>
-            <div class="print-info"><span>Cliente: ${cliente}</span></div>
-            ${telefone ? `<div class="print-info"><span>Tel: ${telefone}</span></div>` : ''}
-            <div class="print-info"><span>Status: ${status}</span></div>
-            <div class="hr"></div>
+        <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:4px;margin-bottom:4px;width:100%;">
+            <h2 style="font-size:12px;margin:0;letter-spacing:0.5px;font-weight:bold;">MC EMBALAGENS BH</h2>
+            <p style="font-size:7px;margin:0.3px 0;">Pç Santuário S Geraldo,46 - BH/MG</p>
+            <p style="font-size:7px;margin:0.3px 0;">CEP:31050-650 | Tel:(31)3487-5905</p>
+            <div style="border-top:1px dashed #000;margin:2px 0;"></div>
+            <p style="font-size:8px;font-weight:bold;margin:0.3px 0;">CUPOM NÃO FISCAL</p>
+            
+            <div style="display:flex;justify-content:space-between;font-size:8.5px;font-weight:bold;padding:1.5px 0;width:100%;margin-top:2px;border-bottom:1px dotted #000;padding-bottom:2px;">
+                <span>Pedido #${pedido.id_pedido}</span>
+                <span>${dataFormatada}</span>
+            </div>
+            
+            <div style="display:flex;justify-content:space-between;font-size:8.5px;font-weight:bold;padding:1.5px 0;width:100%;">
+                <span>Cliente: ${cliente}</span>
+            </div>
+            
+            ${telefone ? `<div style="display:flex;justify-content:flex-start;font-size:7.5px;padding:0.5px 0;width:100%;"><span>Telefone: ${telefone}</span></div>` : ''}
+            
+            <div style="display:flex;justify-content:space-between;font-size:7.5px;padding:0.5px 0;width:100%;">
+                <span>Status: ${status}</span>
+                <span>Pagamento: ${pagamento}</span>
+            </div>
+            
+            <div style="border-top:1px dashed #000;margin:2px 0;"></div>
         </div>
         
-        <div style="margin:1px 0;">
-            <div style="font-weight:bold;border-bottom:1px solid #000;padding-bottom:0.5px;margin-bottom:0.5px;display:flex;justify-content:space-between;font-size:8px;">
-                <span>ITEM</span>
+        <!-- PRODUTOS -->
+        <div style="margin:2px 0;">
+            <div style="font-weight:bold;border-bottom:2px solid #000;padding-bottom:1.5px;margin-bottom:3px;display:flex;justify-content:space-between;font-size:8.5px;width:100%;background:#f5f5f5;padding:2px 4px;">
+                <span>PRODUTOS</span>
                 <span>VALOR</span>
             </div>
             ${itensHtml}
         </div>
         
-        <div class="print-subtotal">
-            <span>Subtotal</span>
-            <span>R$ ${subtotal.toFixed(2)}</span>
-        </div>
-        <div class="print-subtotal">
-            <span>Frete</span>
-            <span>${frete === 0 ? 'Grátis' : 'R$ ' + frete.toFixed(2)}</span>
-        </div>
-        <div class="print-total">
-            <span>TOTAL</span>
-            <span>R$ ${total.toFixed(2)}</span>
+        <!-- RESUMO -->
+        <div style="margin-top:4px;border-top:2px solid #000;padding-top:3px;">
+            <div style="display:flex;justify-content:space-between;padding:1.5px 0;font-size:8px;width:100%;">
+                <span>Subtotal</span>
+                <span>R$ ${subtotal.toFixed(2)}</span>
+            </div>
+            
+            <div style="display:flex;justify-content:space-between;padding:1.5px 0;font-size:8px;width:100%;border-bottom:1px dotted #000;padding-bottom:2px;">
+                <span style="font-weight:bold;">Frete: ${freteNome}</span>
+                <span style="font-weight:bold;">${freteValor === 0 ? 'Grátis' : 'R$ ' + freteValor.toFixed(2)}</span>
+            </div>
+            
+            <div style="display:flex;justify-content:space-between;padding:1px 0;font-size:7.5px;width:100%;background:#f5f5f5;padding:2px 4px;margin-top:1px;">
+                <span>Prazo total: ${prazoTotal} dias úteis</span>
+            </div>
+            
+            <div style="display:flex;justify-content:space-between;font-weight:bold;padding:3px 0;border-top:3px double #000;margin-top:2px;font-size:11px;width:100%;background:#f9f9f9;padding:3px 4px;">
+                <span>TOTAL</span>
+                <span>R$ ${total.toFixed(2)}</span>
+            </div>
         </div>
         
-        <div style="margin:1.5px 0;border-top:1px dashed #000;padding-top:1.5px;">
-            <div class="print-info"><span>End: ${endereco}</span></div>
-            <div class="print-info"><span>Pag: ${pagamento}</span></div>
-            <div class="print-info"><span>Frete: ${pedido.frete || 'N/A'}</span></div>
+        <!-- ENDEREÇO -->
+        <div style="margin:4px 0;border-top:1px dashed #000;padding-top:3px;">
+            <div style="font-size:7.5px;font-weight:bold;color:#000;margin-bottom:2px;">ENDEREÇO DE ENTREGA</div>
+            <div style="font-size:7px;padding:0.3px 0;width:100%;word-wrap:break-word;white-space:normal;line-height:1.4;">
+                ${endereco}
+            </div>
+            
+            ${obsLimpa ? `
+            <div style="font-size:6.5px;padding:0.3px 0;width:100%;margin-top:2px;border-top:1px dotted #ccc;padding-top:2px;color:#666;">
+                Obs: ${obsLimpa}
+            </div>` : ''}
         </div>
         
-        <div class="print-footer">
-            <p>Obrigado pela preferência!</p>
-            <p>@mcembalagens.bh</p>
-            <p>${new Date().toLocaleString()}</p>
+        <!-- RODAPÉ -->
+        <div style="text-align:center;border-top:2px solid #000;padding-top:3px;margin-top:3px;font-size:6.5px;width:100%;">
+            <p style="margin:0.2px 0;font-weight:bold;">Obrigado pela preferência!</p>
+            <p style="margin:0.2px 0;">@mcembalagens.bh</p>
+            <p style="margin:0.2px 0;font-size:5.5px;color:#666;">Emissão: ${new Date().toLocaleString()}</p>
         </div>
     `;
     
@@ -2194,6 +2929,10 @@ function imprimirCupom(idPedido) {
     }, 1500);
 }
 
+
+// ============================================================
+// RENDERIZAR PRODUTOS
+// ============================================================
 function renderizarProdutos() {
     const tbody = document.getElementById('produtosTable');
     const termoBusca = document.getElementById('buscaProduto')?.value?.toLowerCase() || '';
@@ -2207,7 +2946,6 @@ function renderizarProdutos() {
     // Aplicar busca por texto
     if (termoBusca) {
         produtosFiltrados = produtosFiltrados.filter(p => {
-            // Garantir que todos os campos sejam strings antes de chamar toLowerCase()
             const nome = String(p.nome || '').toLowerCase();
             const codigo = String(p.codigo_produto || '').toLowerCase();
             const descricao = String(p.descricao || '').toLowerCase();
@@ -2270,7 +3008,28 @@ function renderizarProdutos() {
         const prazo = parseInt(p.prazo_producao) || 0;
         const venderZerado = p.vender_zerado || 'NÃO';
         const ativado = p.produto_ativado || 'SIM';
-        const dataEstoque = p.data_estoque || '---';
+        
+        // ============================================================
+        // FORMATAR DATA - CORREÇÃO
+        // ============================================================
+        let dataEstoque = p.data_estoque || '---';
+        if (dataEstoque && dataEstoque !== '---') {
+            // Se for formato ISO (2026-06-23T03:00:00.000Z)
+            if (dataEstoque.includes('T') || dataEstoque.includes('Z')) {
+                try {
+                    const data = new Date(dataEstoque);
+                    if (!isNaN(data.getTime())) {
+                        const dia = String(data.getDate()).padStart(2, '0');
+                        const mes = String(data.getMonth() + 1).padStart(2, '0');
+                        const ano = data.getFullYear();
+                        dataEstoque = `${dia}/${mes}/${ano}`;
+                    }
+                } catch (e) {
+                    dataEstoque = p.data_estoque || '---';
+                }
+            }
+            // Se já estiver no formato dd/MM/yyyy, mantém
+        }
         
         return `
         <tr>
@@ -2316,7 +3075,7 @@ function renderizarProdutos() {
 }
 
 // ============================================================
-// EDITAR CAMPO DIRETO NA TABELA
+// EDITAR CAMPO DIRETO NA TABELA - RESTAURADA
 // ============================================================
 function editarCampo(id, campo, nome, valorAtual) {
     // Encontra a célula clicada
@@ -2356,41 +3115,73 @@ function editarCampo(id, campo, nome, valorAtual) {
         
         mostrarSpinner('Salvando alteração...');
         try {
+            // Busca o produto
             const produto = dados.produtos.find(p => parseInt(p.id) === id);
-            if (!produto) return;
+            if (!produto) {
+                esconderSpinner();
+                pai.innerHTML = originalHTML;
+                return;
+            }
             
+            // Gera data no formato que a planilha usa (dd/MM/yyyy)
+            const now = new Date();
+            const dia = String(now.getDate()).padStart(2, '0');
+            const mes = String(now.getMonth() + 1).padStart(2, '0');
+            const ano = now.getFullYear();
+            const dataEstoque = `${dia}/${mes}/${ano}`;
+            
+            // Mapeia o campo
             const campoMap = {
                 'estoque': 'estoque',
                 'preco_custo': 'preco_custo',
                 'prazo_producao': 'prazo_producao'
             };
             
-            const atualizacao = {};
-            atualizacao[campoMap[campo]] = novoValor;
+            // CRIA O OBJETO COMPLETO
+            const produtoAtualizado = {
+                id: produto.id,
+                codigo_produto: produto.codigo_produto || '',
+                categoria: produto.categoria || '',
+                nome: produto.nome || '',
+                descricao: produto.descricao || '',
+                imagem_principal: produto.imagem_principal || '',
+                imagens_carousel: produto.imagens_carousel || '',
+                quantidades: produto.quantidades || '',
+                pesos_medidas: produto.pesos_medidas || '',
+                estoque: campo === 'estoque' ? novoValor : (parseInt(produto.estoque) || 0),
+                prazo_producao: campo === 'prazo_producao' ? novoValor : (parseInt(produto.prazo_producao) || 0),
+                preco_custo: campo === 'preco_custo' ? novoValor : (parseFloat(produto.preco_custo) || 0),
+                preco_venda: produto.preco_venda || '',
+                preco_promocional: produto.preco_promocional || '',
+                produto_ativado: produto.produto_ativado || 'SIM',
+                vender_zerado: produto.vender_zerado || 'NÃO',
+                ncm: produto.ncm || '',
+                observacoes: produto.observacoes || '',
+                // SÓ ENVIA A DATA SE FOR ESTOQUE
+                data_estoque: campo === 'estoque' ? dataEstoque : (produto.data_estoque || '')
+            };
             
-            // Atualiza data_estoque se for estoque
-            if (campo === 'estoque') {
-                const now = new Date();
-                const dataStr = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-                atualizacao.data_estoque = dataStr;
-            }
+            console.log('📤 Enviando atualização:', produtoAtualizado);
             
+            // USA A AÇÃO QUE FUNCIONA (atualizar_produto)
             await fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    acao: 'atualizar_produto_campo',
-                    id: id,
-                    campos: atualizacao
+                    acao: 'atualizar_produto',
+                    produto: produtoAtualizado
                 })
             });
             
-            // Atualiza local
-            produto[campoMap[campo]] = novoValor;
+            // Atualiza localmente
             if (campo === 'estoque') {
-                const now = new Date();
-                produto.data_estoque = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+                produto.estoque = novoValor;
+                produto.data_estoque = dataEstoque;
+            } else if (campo === 'preco_custo') {
+                produto.preco_custo = novoValor;
+            } else if (campo === 'prazo_producao') {
+                produto.prazo_producao = novoValor;
             }
             
             esconderSpinner();
@@ -2416,7 +3207,7 @@ function editarCampo(id, campo, nome, valorAtual) {
 }
 
 // ============================================================
-// TOGGLE STATUS (Vender Zerado / Ativado)
+// TOGGLE STATUS - RESTAURADA
 // ============================================================
 function toggleStatus(id, campo, valorAtual) {
     const novoValor = valorAtual === 'SIM' ? 'NÃO' : 'SIM';
@@ -2433,25 +3224,57 @@ function toggleStatus(id, campo, valorAtual) {
         
         try {
             const produto = dados.produtos.find(p => parseInt(p.id) === id);
-            if (!produto) return;
+            if (!produto) {
+                esconderSpinner();
+                alert('Produto não encontrado!');
+                return;
+            }
             
-            const campoMap = {
-                'vender_zerado': 'vender_zerado',
-                'produto_ativado': 'produto_ativado'
+            // PRESERVA A DATA
+            const dataEstoque = produto.data_estoque || '';
+            
+            // CRIA O OBJETO COMPLETO
+            const produtoAtualizado = {
+                id: produto.id,
+                codigo_produto: produto.codigo_produto || '',
+                categoria: produto.categoria || '',
+                nome: produto.nome || '',
+                descricao: produto.descricao || '',
+                imagem_principal: produto.imagem_principal || '',
+                imagens_carousel: produto.imagens_carousel || '',
+                quantidades: produto.quantidades || '',
+                pesos_medidas: produto.pesos_medidas || '',
+                estoque: parseInt(produto.estoque) || 0,
+                prazo_producao: parseInt(produto.prazo_producao) || 0,
+                preco_custo: parseFloat(produto.preco_custo) || 0,
+                preco_venda: produto.preco_venda || '',
+                preco_promocional: produto.preco_promocional || '',
+                produto_ativado: campo === 'produto_ativado' ? novoValor : (produto.produto_ativado || 'SIM'),
+                vender_zerado: campo === 'vender_zerado' ? novoValor : (produto.vender_zerado || 'NÃO'),
+                ncm: produto.ncm || '',
+                observacoes: produto.observacoes || '',
+                data_estoque: dataEstoque
             };
             
+            console.log('📤 Enviando toggle:', produtoAtualizado);
+            
+            // USA A AÇÃO QUE FUNCIONA (atualizar_produto)
             await fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    acao: 'atualizar_produto_campo',
-                    id: id,
-                    campos: { [campoMap[campo]]: novoValor }
+                    acao: 'atualizar_produto',
+                    produto: produtoAtualizado
                 })
             });
             
-            produto[campoMap[campo]] = novoValor;
+            // Atualiza localmente
+            if (campo === 'vender_zerado') {
+                produto.vender_zerado = novoValor;
+            } else if (campo === 'produto_ativado') {
+                produto.produto_ativado = novoValor;
+            }
             
             esconderSpinner();
             renderizarProdutos();
@@ -2524,7 +3347,6 @@ function verDetalhesCliente(id) {
     clienteEditando = cliente;
     const content = document.getElementById('clienteDetalhesContent');
     
-    // Mostra todos os dados do cliente
     const campos = [
         { label: 'ID', key: 'id_cliente', readonly: true },
         { label: 'Nome', key: 'nome', readonly: false },
@@ -2568,7 +3390,6 @@ function verDetalhesCliente(id) {
 function salvarCliente() {
     if (!clienteEditando) return;
     
-    // Solicita senha antes de salvar
     acaoAposSenha = 'salvarCliente';
     senhaValidada = false;
     document.getElementById('inputSenha').value = '';
@@ -2622,7 +3443,6 @@ async function executarSalvarCliente() {
             })
         });
         
-        // Atualiza local
         Object.keys(dadosCliente).forEach(key => {
             if (key !== 'id_cliente') {
                 clienteEditando[key] = dadosCliente[key];
@@ -2866,12 +3686,27 @@ function abrirModalProduto(produto = null) {
             'produto_ativado': produto.produto_ativado || 'SIM',
             'produto_vender_zerado': produto.vender_zerado || 'NÃO',
             'produto_ncm': produto.ncm || '',
-            'produto_observacoes': produto.peso_unitario || produto.observacoes || ''  // <-- AQUI! Carrega do campo peso_unitario
+            'produto_observacoes': produto.peso_unitario || produto.observacoes || ''
         };
         
         for (const [id, valor] of Object.entries(campos)) {
             const el = document.getElementById(id);
             if (el) el.value = valor;
+        }
+        
+        // MOSTRA A DATA DO ÚLTIMO ESTOQUE NO MODAL (APENAS PARA INFORMAÇÃO)
+        if (produto.data_estoque) {
+            const estoqueLabel = document.querySelector('#produto_estoque').closest('.form-group');
+            if (estoqueLabel) {
+                let infoData = estoqueLabel.querySelector('.data-estoque-info');
+                if (!infoData) {
+                    infoData = document.createElement('span');
+                    infoData.className = 'data-estoque-info';
+                    infoData.style.cssText = 'display:block;font-size:11px;color:#888;margin-top:4px;';
+                    estoqueLabel.appendChild(infoData);
+                }
+                infoData.textContent = `🕐 Última atualização: ${produto.data_estoque}`;
+            }
         }
         
         let precoVendaInput = document.getElementById('produto_preco_venda');
@@ -2942,6 +3777,10 @@ function abrirModalProduto(produto = null) {
             const el = document.getElementById(id);
             if (el) el.value = '';
         }
+        
+        // Remove info de data se existir
+        const infoData = document.querySelector('.data-estoque-info');
+        if (infoData) infoData.remove();
         
         const catSelect = document.getElementById('produto_categoria');
         if (catSelect && dados.categorias.length > 0) {
@@ -3031,9 +3870,26 @@ async function salvarProduto(event) {
         }
     });
     
-    // PEGAR O VALOR DAS OBSERVAÇÕES
     const observacoes = document.getElementById('produto_observacoes')?.value || '';
     console.log('Observações salvas:', observacoes);
+    
+    // Gera data no formato correto
+    const now = new Date();
+    const dia = String(now.getDate()).padStart(2, '0');
+    const mes = String(now.getMonth() + 1).padStart(2, '0');
+    const ano = now.getFullYear();
+    const dataEstoque = `${dia}/${mes}/${ano}`;
+    
+    // VERIFICA SE O ESTOQUE MUDOU
+    let estoqueAntigo = 0;
+    const idAtual = document.getElementById('produto_id').value;
+    if (idAtual) {
+        const produtoExistente = dados.produtos.find(p => parseInt(p.id) === parseInt(idAtual));
+        if (produtoExistente) {
+            estoqueAntigo = parseInt(produtoExistente.estoque) || 0;
+        }
+    }
+    const estoqueNovo = parseInt(document.getElementById('produto_estoque').value) || 0;
     
     const produto = {
         id: document.getElementById('produto_id').value || null,
@@ -3045,7 +3901,7 @@ async function salvarProduto(event) {
         imagens_carousel: document.getElementById('produto_imagens_carousel').value,
         quantidades: document.getElementById('produto_quantidades').value,
         pesos_medidas: pesoMedidaParts.join(';'),
-        estoque: parseInt(document.getElementById('produto_estoque').value) || 0,
+        estoque: estoqueNovo,
         prazo_producao: parseInt(document.getElementById('produto_prazo').value) || 0,
         preco_custo: parseFloat(document.getElementById('produto_preco_custo').value) || 0,
         preco_venda: precoVendaParts.join(';'),
@@ -3053,8 +3909,10 @@ async function salvarProduto(event) {
         produto_ativado: document.getElementById('produto_ativado').value,
         vender_zerado: document.getElementById('produto_vender_zerado').value,
         ncm: document.getElementById('produto_ncm').value,
-        peso_unitario: observacoes,  // <-- AQUI! Envia as observações no campo peso_unitario (coluna K)
-        observacoes: observacoes     // Mantém também por segurança
+        peso_unitario: observacoes,
+        observacoes: observacoes,
+        // SÓ ENVIA DATA SE ESTOQUE MUDOU
+        data_estoque: estoqueNovo !== estoqueAntigo ? dataEstoque : ''
     };
 
     const acao = produto.id ? 'atualizar_produto' : 'criar_produto';
@@ -3630,11 +4488,19 @@ async function finalizarPedidoManual() {
             itens: itensPedido,
             total: total,
             endereco_entrega: 'Pedido manual - retirada na loja',
-            observacoes: 'Pedido realizado manualmente pelo gestor',
+            observacoes: 'Pedido realizado manualmente pelo gestor. ' + (document.getElementById('visObs')?.value || ''),
             frete: 'Retirada na Loja',
+            frete_valor: 0,
             pagamento: pagamento || 'À vista',
             status: 'Pendente',
-            data_pedido: new Date().toLocaleString()
+            data_pedido: new Date().toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            })
         };
         
         await fetch(API_URL, {
@@ -3727,6 +4593,7 @@ setInterval(() => {
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializa
 });
+
 </script>
 
 </body>
