@@ -2550,9 +2550,62 @@
     transform: scale(1.02);
 }
 
+
+/* ===== MODAL PIX MANUAL ===== */
+#pixManualModal .modal-content {
+    max-width: 520px;
+}
+
+#pixManualModal #pixQrCode canvas,
+#pixManualModal #pixQrCode img {
+    max-width: 200px !important;
+    max-height: 200px !important;
+    width: 100% !important;
+    height: auto !important;
+}
+
+#pixManualModal .btn-pix-copiar {
+    background: var(--primary-blue);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+#pixManualModal .btn-pix-copiar:hover {
+    background: var(--secondary-blue);
+    transform: scale(1.02);
+}
+
+#pixManualModal .btn-pix-whatsapp {
+    background: #25D366;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+#pixManualModal .btn-pix-whatsapp:hover {
+    background: #1da851;
+    transform: scale(1.02);
+}
+
         
     </style>
+<!-- ============================================================ -->
+<!-- BIBLIOTECA QR CODE PARA GERAR QR CODE PIX -->
+<!-- ============================================================ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+
 </head>
+
 <body>
 
     <!-- ============================================================ -->
@@ -2607,7 +2660,7 @@
         <section class="hero-banner">
             <div class="hero-content">
                 <h1>Caixas Kraft, Triplex, Sacolas</h1>
-                <p>Distribuição 7 direto de Fábrica para todo Brasil</p>
+                <p>Distribuição direto de Fábrica para todo Brasil</p>
             </div>
         </section>
 
@@ -3329,7 +3382,7 @@
         // ============================================================
         const API_URL = 'https://script.google.com/macros/s/AKfycbz3JgaEBh4qimu_hcRW8ep4BG2qyXnl8C49nAoxR3IS5bxsMmEN4Bi_MZy2jO98Drf9Sg/exec';
         const WHATSAPP_NUMBER = '5531984834383';
-        const PIX_KEY = '10648303000179';
+        const PIX_KEY = 'mcembalagensbh@gmail.com';
 
         // ============================================================
         // URL DO APPS SCRIPT PARA PAGAR.ME (MESMA URL)
@@ -3721,6 +3774,270 @@
             if (cep) result += ', CEP ' + cep;
             return result || 'Não informado';
         }
+
+
+
+// ============================================================
+// GERAR CÓDIGO COPIA E COLA PIX (SEM ESPAÇOS - VERSÃO QUE FUNCIONOU)
+// ============================================================
+function gerarPixCopiaCola(chave, nome, cidade, valor, descricao) {
+    // ============================================================
+    // 1. LIMPAR DADOS - REMOVER ESPAÇOS E ACENTOS
+    // ============================================================
+    var chaveLimpa = String(chave).trim();
+    
+    // Nome: remove espaços e acentos
+    var nomeLimpo = String(nome || 'MC Embalagens')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s/g, '')  // ← REMOVE TODOS OS ESPAÇOS
+        .substring(0, 25);
+    
+    // Cidade: remove espaços e acentos
+    var cidadeLimpa = String(cidade || 'Belo Horizonte')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s/g, '')  // ← REMOVE TODOS OS ESPAÇOS
+        .substring(0, 15);
+    
+    // Valor: sempre com 2 casas decimais
+    var valorFormatado = (parseFloat(valor) || 0).toFixed(2);
+    
+    // Descrição: remove espaços
+    var descricaoLimpa = String(descricao || 'Pedido')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s/g, '')  // ← REMOVE TODOS OS ESPAÇOS
+        .substring(0, 20);
+    
+    console.log('📋 Dados do PIX (sem espaços):');
+    console.log('   Chave:', chaveLimpa);
+    console.log('   Nome:', nomeLimpo);
+    console.log('   Cidade:', cidadeLimpa);
+    console.log('   Valor:', valorFormatado);
+    console.log('   Descrição:', descricaoLimpa);
+    
+    // ============================================================
+    // 2. FUNÇÃO PARA GERAR CRC16
+    // ============================================================
+    function calcularCRC16(payload) {
+        var crc = 0xFFFF;
+        for (var i = 0; i < payload.length; i++) {
+            crc ^= payload.charCodeAt(i) << 8;
+            for (var j = 0; j < 8; j++) {
+                if (crc & 0x8000) {
+                    crc = (crc << 1) ^ 0x1021;
+                } else {
+                    crc <<= 1;
+                }
+                crc &= 0xFFFF;
+            }
+        }
+        return crc.toString(16).toUpperCase().padStart(4, '0');
+    }
+    
+    // ============================================================
+    // 3. FUNÇÃO PARA FORMATAR CAMPO
+    // ============================================================
+    function formatarCampo(id, valor) {
+        if (!valor && valor !== '0') return '';
+        var str = String(valor);
+        var tamanho = String(str.length).padStart(2, '0');
+        return id + tamanho + str;
+    }
+    
+    // ============================================================
+    // 4. MONTAR PAYLOAD
+    // ============================================================
+    var payload = '';
+    
+    // 00 - Payload Format Indicator
+    payload += '000201';
+    
+    // 26 - Merchant Account Information (PIX)
+    var merchantInfo = '';
+    merchantInfo += '00' + '14' + 'br.gov.bcb.pix';
+    var chaveTamanho = String(chaveLimpa.length).padStart(2, '0');
+    merchantInfo += '01' + chaveTamanho + chaveLimpa;
+    
+    if (descricaoLimpa) {
+        var descTamanho = String(descricaoLimpa.length).padStart(2, '0');
+        merchantInfo += '02' + descTamanho + descricaoLimpa;
+    }
+    
+    var merchantTamanho = String(merchantInfo.length).padStart(2, '0');
+    payload += '26' + merchantTamanho + merchantInfo;
+    
+    // 52 - Merchant Category Code
+    payload += '52040000';
+    
+    // 53 - Moeda (BRL)
+    payload += '5303986';
+    
+    // 54 - Valor
+    if (parseFloat(valorFormatado) > 0) {
+        var valorStr = valorFormatado;
+        var valorTamanho = String(valorStr.length).padStart(2, '0');
+        payload += '54' + valorTamanho + valorStr;
+    }
+    
+    // 58 - País
+    payload += '5802BR';
+    
+    // 59 - Nome do recebedor
+    payload += formatarCampo('59', nomeLimpo);
+    
+    // 60 - Cidade
+    payload += formatarCampo('60', cidadeLimpa);
+    
+    // 62 - Campo adicional (descrição)
+    if (descricaoLimpa) {
+        var desc2Tamanho = String(descricaoLimpa.length).padStart(2, '0');
+        var campoExtra = '05' + desc2Tamanho + descricaoLimpa;
+        payload += '62' + String(campoExtra.length).padStart(2, '0') + campoExtra;
+    }
+    
+    // 63 - CRC
+    payload += '6304';
+    var crc = calcularCRC16(payload);
+    payload += crc;
+    
+    console.log('📤 Código gerado (tamanho:', payload.length, 'caracteres)');
+    
+    return payload;
+}
+// ============================================================
+// FUNÇÕES PIX MANUAL
+// ============================================================
+
+var codigoPixAtual = ''; // Guarda o código gerado para copiar
+
+// ============================================================
+// MOSTRAR MODAL PIX MANUAL COM QR CODE E COPIA E COLA
+// ============================================================
+function mostrarPixManual(pedidoId, total) {
+    var modal = document.getElementById('pixManualModal');
+    var qrContainer = document.getElementById('pixQrCode');
+    var copiaColaContainer = document.getElementById('pixManualCodigoContainer');
+    var copiaColaTexto = document.getElementById('pixManualCopiaCola');
+    var btnCopiar = document.getElementById('btnCopiarPix');
+    
+    // ============================================================
+    // ATUALIZA OS DADOS NO MODAL
+    // ============================================================
+    document.getElementById('pixManualTotal').textContent = total.toFixed(2).replace('.', ',');
+    document.getElementById('pixManualPedido').textContent = pedidoId;
+    document.getElementById('pixManualChave').textContent = PIX_KEY;
+    
+    // ============================================================
+    // GERAR CÓDIGO COPIA E COLA (SEM ESPAÇOS)
+    // ============================================================
+    var chaveLimpa = String(PIX_KEY).trim();
+    
+    var nomeSemEspaco = 'MC Embalagens'
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s/g, '');
+    
+    var cidadeSemEspaco = 'Belo Horizonte'
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s/g, '');
+    
+    var descricao = 'Pedido' + pedidoId;
+    
+    console.log('🔑 Gerando PIX para pedido #' + pedidoId);
+    console.log('   Nome:', nomeSemEspaco);
+    console.log('   Cidade:', cidadeSemEspaco);
+    console.log('   Descrição:', descricao);
+    
+    var codigoPix = gerarPixCopiaCola(
+        chaveLimpa,
+        nomeSemEspaco,
+        cidadeSemEspaco,
+        total,
+        descricao
+    );
+    
+    codigoPixAtual = codigoPix;
+    
+    copiaColaTexto.textContent = codigoPix;
+    copiaColaContainer.style.display = 'block';
+    btnCopiar.style.display = 'block';
+    
+    // ============================================================
+    // GERAR QR CODE
+    // ============================================================
+    qrContainer.innerHTML = '';
+    
+    try {
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(qrContainer, {
+                text: codigoPix,
+                width: 200,
+                height: 200,
+                colorDark: '#1a3a5c',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        } else {
+            var qrUrl = 'https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=' + encodeURIComponent(codigoPix);
+            qrContainer.innerHTML = '<img src="' + qrUrl + '" width="200" height="200" alt="QR Code PIX">';
+        }
+    } catch (e) {
+        console.warn('⚠️ Erro ao gerar QR Code:', e);
+        qrContainer.innerHTML = '<p style="color:#888;font-size:13px;">QR Code indisponível</p>';
+    }
+    
+    modal.style.display = 'block';
+}
+
+// ============================================================
+// COPIAR CÓDIGO COPIA E COLA - FUNÇÃO ORIGINAL
+// ============================================================
+function copiarCopiaColaPix() {
+    var texto = document.getElementById('pixManualCopiaCola').textContent;
+    if (!texto || texto === 'Código PIX não disponível') {
+        mostrarNotificacao('⚠️ Código PIX não disponível.', 'warning');
+        return;
+    }
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function() {
+            mostrarNotificacao('✅ Código PIX copiado!', 'success');
+        }).catch(function() {
+            fallbackCopiar(texto);
+        });
+    } else {
+        fallbackCopiar(texto);
+    }
+}
+
+function fallbackCopiar(texto) {
+    var textarea = document.createElement('textarea');
+    textarea.value = texto;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    mostrarNotificacao('✅ Código PIX copiado!', 'success');
+}
+
+// ============================================================
+// ABRIR WHATSAPP PARA ENVIAR COMPROVANTE
+// ============================================================
+function abrirWhatsAppComprovante() {
+    var pedidoId = document.getElementById('pixManualPedido').textContent;
+    var total = document.getElementById('pixManualTotal').textContent;
+    var mensagem = encodeURIComponent(
+        'Olá! Gostaria de enviar o comprovante de pagamento do pedido #' + pedidoId + '\n\n' +
+        'Valor: R$ ' + total + '\n' +
+        'Aguardo confirmação. Obrigado!'
+    );
+    window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + mensagem, '_blank');
+}
 
 // ============================================================
 // CALCULAR ENTREGA PRÓPRIA
@@ -7440,8 +7757,8 @@ function abrirCheckout() {
     });
 }
 
-        // ============================================================
-// BUSCAR CLIENTE POR EMAIL (CHECKOUT) - CORRIGIDO
+// ============================================================
+// BUSCAR CLIENTE POR EMAIL (CHECKOUT) - CORRIGIDA
 // ============================================================
 async function buscarClientePorEmailCheckout() {
     var email = document.getElementById('emailBusca').value.trim();
@@ -7467,7 +7784,6 @@ async function buscarClientePorEmailCheckout() {
     btnBuscar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando...';
     btnBuscar.disabled = true;
 
-    // Oculta a área de cadastro enquanto busca
     areaNovoCadastro.style.display = 'none';
     dadosCliente.style.display = 'none';
 
@@ -7501,6 +7817,7 @@ async function buscarClientePorEmailCheckout() {
             var enderecosContainer = document.getElementById('enderecosLista');
             enderecosContainer.innerHTML = '';
             
+            // CONSTRUIR ENDEREÇO COMPLETO
             var enderecoCompleto = '';
             if (clienteEncontrado.endereco) enderecoCompleto += clienteEncontrado.endereco;
             if (clienteEncontrado.numero) enderecoCompleto += ', ' + clienteEncontrado.numero;
@@ -7512,6 +7829,18 @@ async function buscarClientePorEmailCheckout() {
             
             var enderecoCamuflado = camuflarEndereco(enderecoCompleto);
             
+            // EXTRAIR DADOS DO ENDEREÇO
+            var enderecoData = {
+                endereco: clienteEncontrado.endereco || 'Rua Teste',
+                numero: clienteEncontrado.numero || '123',
+                bairro: clienteEncontrado.bairro || 'Centro',
+                cidade: clienteEncontrado.cidade || 'Belo Horizonte',
+                uf: clienteEncontrado.estado || 'MG',
+                cep: clienteEncontrado.cep || '30100000',
+                complemento: clienteEncontrado.complemento || ''
+            };
+            
+            // CRIA CARD DO ENDEREÇO
             var enderecoCard = document.createElement('div');
             enderecoCard.style.cssText = 'background:white;border:2px solid #ddd;border-radius:8px;padding:12px 15px;margin-bottom:8px;cursor:pointer;transition:all 0.3s;';
             enderecoCard.innerHTML = `
@@ -7521,14 +7850,58 @@ async function buscarClientePorEmailCheckout() {
                         <div style="font-size:12px;color:#888;">CEP: ${clienteEncontrado.cep || 'Não informado'}</div>
                     </div>
                     <button class="btn-selecionar-endereco" style="background:#27ae60;color:white;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap;">
-                        <i class="fas fa-check"></i> Confirmar este endereço
+                        <i class="fas fa-check"></i> Confirmar e carregar fretes
                     </button>
                 </div>
             `;
             
+            // ============================================================
+            // CLICK NO BOTÃO CONFIRMAR - CARREGA O FRETE E LIBERA
+            // ============================================================
             enderecoCard.querySelector('.btn-selecionar-endereco').onclick = function(e) {
                 e.stopPropagation();
-                selecionarEnderecoCheckout(enderecoCompleto, clienteEncontrado.cep, clienteEncontrado);
+                
+                console.log('✅ Cliente confirmou o endereço! Carregando fretes...');
+                
+                // 1. MARCA O ENDEREÇO COMO SELECIONADO E CONFIRMADO
+                checkoutState.enderecoSelecionado = {
+                    nome: clienteEncontrado.nome || 'Cliente',
+                    endereco: enderecoCompleto,
+                    enderecoCompleto: enderecoCompleto,
+                    cep: enderecoData.cep,
+                    telefone: clienteEncontrado.telefone || '',
+                    email: clienteEncontrado.email || '',
+                    documento: clienteEncontrado.cpf || '',
+                    endereco: enderecoData.endereco,
+                    numero: enderecoData.numero,
+                    bairro: enderecoData.bairro,
+                    cidade: enderecoData.cidade,
+                    uf: enderecoData.uf,
+                    complemento: enderecoData.complemento
+                };
+                
+                checkoutState.dadosConfirmados = true;
+                console.log('✅ dadosConfirmados:', checkoutState.dadosConfirmados);
+                
+                // 2. DESTACA O CARD
+                var card = e.currentTarget.closest('div');
+                card.style.borderColor = '#27ae60';
+                card.style.background = '#e8f5e9';
+                
+                // 3. ATUALIZA INDICADORES
+                document.getElementById('stepIndicator2').style.color = 'var(--primary-blue)';
+                document.getElementById('stepIndicator2').style.fontWeight = '600';
+                document.getElementById('step1Status').textContent = '✅ Completo';
+                document.getElementById('step1Status').style.color = '#27ae60';
+                
+                // 4. EXIBE A ÁREA DE FRETE
+                document.getElementById('checkoutStep2').style.display = 'block';
+                document.getElementById('step2Status').textContent = '⏳ Carregando...';
+                
+                // ============================================================
+                // 5. CARREGA O FRETE (AGORA CONFIRMADO E LIBERADO)
+                // ============================================================
+                carregarOpcoesFreteCheckout();
             };
             
             enderecosContainer.appendChild(enderecoCard);
@@ -7538,8 +7911,36 @@ async function buscarClientePorEmailCheckout() {
             document.getElementById('step1Status').textContent = '✅ Completo';
             erroEl.style.display = 'none';
             
+            // ============================================================
+            // 📌 NÃO CARREGA O FRETE AUTOMATICAMENTE
+            // O frete só será carregado quando o cliente clicar em "Confirmar"
+            // ============================================================
+            // Apenas mostra uma mensagem na área de frete
+            var container = document.getElementById('freteOpcoesContainer');
+            container.innerHTML = `
+                <div style="text-align:center;padding:30px 20px;color:#888;background:#f8f9fa;border-radius:8px;border:1px dashed #ddd;">
+                    <i class="fas fa-map-pin" style="font-size:28px;display:block;margin-bottom:10px;color:#f39c12;"></i>
+                    <p style="font-size:15px;font-weight:600;color:#666;">Clique em "Confirmar e carregar fretes"</p>
+                    <p style="font-size:13px;color:#999;">Para carregar as opções de frete</p>
+                </div>
+            `;
+            
+            // ============================================================
+            // 🔒 BLOQUEIA O PAGAMENTO
+            // ============================================================
+            document.querySelectorAll('.pagamento-opcao-checkout').forEach(function(el) {
+                el.style.opacity = '0.5';
+                el.style.pointerEvents = 'none';
+            });
+            
+            document.getElementById('btnFinalizarPedido').disabled = true;
+            document.getElementById('btnFinalizarPedido').style.opacity = '0.5';
+            document.getElementById('btnFinalizarPedido').title = 'Confirme o endereço primeiro';
+            
+            document.getElementById('step3Status').textContent = '🔒 Confirme o endereço';
+            document.getElementById('checkoutStep3Status').textContent = '🔒 Clique em "Confirmar e carregar fretes" para liberar o pagamento.';
+            
         } else {
-            // SÓ MOSTRA O CADASTRO SE NÃO ENCONTROU O CLIENTE
             checkoutState.clienteEncontrado = false;
             checkoutState.clienteData = null;
             dadosCliente.style.display = 'none';
@@ -7641,21 +8042,36 @@ function selecionarEnderecoCheckout(endereco, cep, cliente) {
 
 
 // ============================================================
-// CARREGAR OPÇÕES DE FRETE (CHECKOUT) - SEM SELEÇÃO AUTOMÁTICA
+// CARREGAR OPÇÕES DE FRETE (CHECKOUT) - CARREGA SEMPRE, BLOQUEIA PAGAMENTO
 // ============================================================
 async function carregarOpcoesFreteCheckout() {
     var container = document.getElementById('freteOpcoesContainer');
     var erroEl = document.getElementById('freteErroCheckout');
     erroEl.style.display = 'none';
-    container.innerHTML = '<div style="text-align:center;padding:20px;color:#999;"><i class="fas fa-spinner fa-spin"></i> Carregando opções de frete...</div>';
+    
+    // ============================================================
+    // MOSTRA LOADING
+    // ============================================================
+    container.innerHTML = '<div style="text-align:center;padding:30px 20px;color:#666;"><i class="fas fa-spinner fa-spin" style="font-size:24px;display:block;margin-bottom:10px;"></i> Carregando opções de frete...</div>';
     
     try {
-        var cep = checkoutState.enderecoSelecionado?.cep || '00000-000';
+        // ============================================================
+        // VERIFICA SE TEM ENDEREÇO SELECIONADO
+        // ============================================================
+        if (!checkoutState.enderecoSelecionado || !checkoutState.enderecoSelecionado.cep) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:30px 20px;color:#888;background:#f8f9fa;border-radius:8px;border:1px dashed #ddd;">
+                    <i class="fas fa-map-pin" style="font-size:28px;display:block;margin-bottom:10px;color:#f39c12;"></i>
+                    <p style="font-size:15px;font-weight:600;color:#666;">Aguardando endereço</p>
+                    <p style="font-size:13px;color:#999;">Busque um cliente ou digite o CEP manualmente</p>
+                </div>
+            `;
+            return;
+        }
+        
+        var cep = checkoutState.enderecoSelecionado.cep || '00000-000';
         document.getElementById('checkoutCepDisplay').textContent = cep;
         
-        // ============================================================
-        // CALCULA O PRAZO DE PRODUÇÃO
-        // ============================================================
         checkoutState.producaoDias = calcularPrazoProducao();
         console.log('📦 Prazo de produção calculado no checkout:', checkoutState.producaoDias, 'dias');
         
@@ -7666,6 +8082,12 @@ async function carregarOpcoesFreteCheckout() {
         var peso = calcularPesoTotal();
         var dims = calcularDimensoes();
         
+        console.log('📦 Calculando frete para CEP:', cep);
+        console.log('⚖️ Peso:', peso, 'kg, Dim:', dims.altura + 'x' + dims.largura + 'x' + dims.comprimento);
+        
+        // ============================================================
+        // SALVAR FRETE NA PLANILHA
+        // ============================================================
         await fetch(API_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -7681,19 +8103,26 @@ async function carregarOpcoesFreteCheckout() {
             })
         });
         
+        console.log('⏳ Aguardando processamento (3s)...');
         await new Promise(function(resolve) { setTimeout(resolve, 3000); });
         
+        console.log('📥 Buscando frete salvo...');
         var response = await fetch(API_URL + '?acao=buscar_ultimo_frete&_t=' + Date.now());
+        
+        if (!response.ok) {
+            throw new Error('HTTP Error: ' + response.status);
+        }
+        
         var data = await response.json();
+        console.log('📥 Dados do frete lidos da planilha:', data);
         
         container.innerHTML = '';
         
         // ============================================================
-        // CRIA AS OPÇÕES DE FRETE (COM ENTREGA PRÓPRIA)
+        // PROCESSAR OPÇÕES DE FRETE
         // ============================================================
         var opcoes = [];
         
-        // 1. Adiciona opções da API
         if (data.success && data.opcoes && data.opcoes.length > 0) {
             data.opcoes.forEach(function(op) {
                 opcoes.push({
@@ -7709,9 +8138,8 @@ async function carregarOpcoesFreteCheckout() {
         }
         
         // ============================================================
-        // ADICIONA A ENTREGA PRÓPRIA NO CHECKOUT
+        // ADICIONAR ENTREGA PRÓPRIA
         // ============================================================
-        console.log('📍 Verificando Entrega Própria para o checkout...');
         var cidade = obterCidadePorCep(cep);
         console.log('📍 Cidade encontrada:', cidade);
         
@@ -7720,13 +8148,9 @@ async function carregarOpcoesFreteCheckout() {
             for (var i = 0; i < carrinho.length; i++) {
                 totalPedido += carrinho[i].price || 0;
             }
-            console.log('💰 Total do pedido: R$', totalPedido);
-            
             var resultadoEP = calcularEntregaPropria(cidade, totalPedido);
-            console.log('📊 Resultado Entrega Própria:', resultadoEP);
             
             if (resultadoEP.encontrado) {
-                var producaoDias = checkoutState.producaoDias || 0;
                 opcoes.push({
                     id: 'ENTREGA_PROPRIA',
                     name: resultadoEP.freteGratis ? 'Entrega Própria (Grátis)' : 'Entrega Própria',
@@ -7735,24 +8159,17 @@ async function carregarOpcoesFreteCheckout() {
                     service: 'Entrega Própria',
                     _api: false,
                     is_entrega_propria: true,
-                    _cidade: cidade,
-                    _faixa: resultadoEP.faixa
+                    _cidade: cidade
                 });
-                console.log('✅ Entrega Própria ADICIONADA ao checkout!');
-            } else {
-                console.log('❌ Entrega Própria NÃO disponível:', resultadoEP.mensagem);
+                console.log('✅ Entrega Própria ADICIONADA!');
             }
-        } else {
-            console.log('❌ Cidade NÃO encontrada para o CEP:', cep);
         }
         
         // ============================================================
-        // FORMATAR E EXIBIR
+        // FORMATAR E EXIBIR OPÇÕES
         // ============================================================
         var opcoesFormatadas = formatarOpcoesFrete(opcoes, true);
         checkoutState.opcoesFrete = opcoesFormatadas;
-        
-        // RESETA O FRETE SELECIONADO (NENHUM MARCADO)
         checkoutState.freteSelecionado = null;
         
         if (opcoesFormatadas.length === 0) {
@@ -7762,12 +8179,6 @@ async function carregarOpcoesFreteCheckout() {
                 var op = opcoesFormatadas[i];
                 var div = document.createElement('div');
                 div.className = 'frete-opcao';
-                
-                // ============================================================
-                // NÃO SELECIONA NENHUMA OPÇÃO AUTOMATICAMENTE
-                // ============================================================
-                // REMOVIDO O CÓDIGO QUE SELECIONAVA A PRIMEIRA OPÇÃO
-                // if (i === 0) { ... }  ← NÃO EXISTE MAIS
                 
                 var badgeGratis = op.freteGratis ? ' ' : '';
                 var valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
@@ -7783,30 +8194,48 @@ async function carregarOpcoesFreteCheckout() {
                 var isEP = op.codigo === 'ENTREGA_PROPRIA' || op.isEntregaPropria;
                 var epBadge = isEP ? ' 🚚' : '';
                 
+                // ============================================================
+                // SE O ENDEREÇO AINDA NÃO FOI CONFIRMADO, DESABILITA O CLICK
+                // ============================================================
+                var desabilitado = !checkoutState.dadosConfirmados;
+                var estiloDesabilitado = desabilitado ? 'opacity:0.6;cursor:not-allowed;' : '';
+                
                 div.innerHTML = `
-                    <div>
-                        <div class="frete-nome">${op.nome}${badgeGratis}${epBadge}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;${estiloDesabilitado}">
                         <div>
-                            <span class="frete-prazo">${infoPrazos}</span>
+                            <div class="frete-nome">${op.nome}${badgeGratis}${epBadge}</div>
+                            <div>
+                                <span class="frete-prazo">${infoPrazos}</span>
+                            </div>
+                            ${desabilitado ? '<div style="font-size:11px;color:#f39c12;margin-top:2px;"><i class="fas fa-lock"></i> Confirme o endereço</div>' : ''}
                         </div>
+                        <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : 'R$ ' + op.valor.toFixed(2)}</div>
                     </div>
-                    <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : 'R$ ' + op.valor.toFixed(2)}</div>
                 `;
                 
-                div.onclick = function(op) {
-                    return function() {
-                        // Remove seleção de todas as opções
-                        document.querySelectorAll('#freteOpcoesContainer .frete-opcao').forEach(function(el) {
-                            el.classList.remove('selecionado');
-                        });
-                        // Marca esta como selecionada
-                        this.classList.add('selecionado');
-                        checkoutState.freteSelecionado = op;
-                        liberarPagamento();
-                        atualizarResumoFinal();
-                        mostrarNotificacao('✅ Frete selecionado!', 'success');
+                // ============================================================
+                // SÓ PERMITE CLICK SE O ENDEREÇO FOR CONFIRMADO
+                // ============================================================
+                if (!desabilitado) {
+                    div.style.cursor = 'pointer';
+                    div.onclick = function(op) {
+                        return function() {
+                            document.querySelectorAll('#freteOpcoesContainer .frete-opcao').forEach(function(el) {
+                                el.classList.remove('selecionado');
+                            });
+                            this.classList.add('selecionado');
+                            checkoutState.freteSelecionado = op;
+                            liberarPagamento();
+                            atualizarResumoFinal();
+                            mostrarNotificacao('✅ Frete selecionado!', 'success');
+                        };
+                    }(op);
+                } else {
+                    div.style.cursor = 'not-allowed';
+                    div.onclick = function() {
+                        mostrarNotificacao('⚠️ Confirme o endereço primeiro!', 'warning');
                     };
-                }(op);
+                }
                 
                 container.appendChild(div);
             }
@@ -7816,26 +8245,20 @@ async function carregarOpcoesFreteCheckout() {
         atualizarResumoFinal();
         
         // ============================================================
-        // BLOQUEIA O PAGAMENTO ATÉ O CLIENTE ESCOLHER O FRETE
+        // BLOQUEIA PAGAMENTO (ENDEREÇO AINDA NÃO CONFIRMADO)
         // ============================================================
-        // O botão de finalizar pedido e as opções de pagamento ficam bloqueados
-        // até o cliente selecionar uma opção de frete (via onclick do frete)
-        document.getElementById('step3Status').textContent = '🔒 Selecione o frete';
-        document.getElementById('checkoutStep3Status').textContent = '🔒 Escolha uma opção de frete para liberar o pagamento.';
-        
-        // Bloqueia as opções de pagamento
-        document.querySelectorAll('.pagamento-opcao-checkout').forEach(function(el) {
-            el.style.opacity = '0.5';
-            el.style.pointerEvents = 'none';
-        });
-        
-        // Bloqueia o botão finalizar
-        document.getElementById('btnFinalizarPedido').disabled = true;
-        document.getElementById('btnFinalizarPedido').style.opacity = '0.5';
-        
-        // Se já tiver um frete selecionado (caso raro), libera
-        if (checkoutState.freteSelecionado) {
-            liberarPagamento();
+        if (!checkoutState.dadosConfirmados) {
+            document.getElementById('step3Status').textContent = '🔒 Confirme o endereço';
+            document.getElementById('checkoutStep3Status').textContent = '🔒 Clique em "Confirmar este endereço" para liberar o pagamento.';
+            
+            document.querySelectorAll('.pagamento-opcao-checkout').forEach(function(el) {
+                el.style.opacity = '0.5';
+                el.style.pointerEvents = 'none';
+            });
+            
+            document.getElementById('btnFinalizarPedido').disabled = true;
+            document.getElementById('btnFinalizarPedido').style.opacity = '0.5';
+            document.getElementById('btnFinalizarPedido').title = 'Confirme o endereço primeiro';
         }
         
     } catch (error) {
@@ -7861,13 +8284,13 @@ async function carregarOpcoesFreteCheckout() {
 }
 
 
-        // ============================================================
-// LIBERAR PAGAMENTO - CORRIGIDO
-// ============================================================
 function liberarPagamento() {
-    // Remover aviso de confirmação de endereço
     var aviso = document.getElementById('avisoConfirmarEndereco');
     if (aviso) aviso.style.display = 'none';
+    
+    // Remove o destaque de erro do endereço
+    document.getElementById('step1Status').style.color = '';
+    document.getElementById('step2Status').style.color = '';
     
     document.querySelectorAll('.pagamento-opcao-checkout').forEach(function(el) {
         el.style.opacity = '1';
@@ -7878,14 +8301,41 @@ function liberarPagamento() {
     document.getElementById('checkoutStep3Status').textContent = '💳 Selecione uma forma de pagamento';
     document.getElementById('stepIndicator3').style.color = 'var(--primary-blue)';
     document.getElementById('stepIndicator3').style.fontWeight = '600';
+    document.getElementById('btnFinalizarPedido').title = '';
     
-    mostrarNotificacao('✅ Frete selecionado! Escolha a forma de pagamento.', 'success');
+    mostrarNotificacao('✅ Endereço confirmado! Escolha a forma de pagamento.', 'success');
 }
 
-        // ============================================================
-        // SELECIONAR PAGAMENTO
-        // ============================================================
-        function selecionarPagamentoCheckout(elemento, metodo) {
+ // ============================================================
+// SELECIONAR PAGAMENTO - COM VALIDAÇÕES
+// ============================================================
+function selecionarPagamentoCheckout(elemento, metodo) {
+    // ============================================================
+    // 🔧 VALIDAÇÕES ANTES DE SELECIONAR O PAGAMENTO
+    // ============================================================
+    
+    // 1. VALIDA ENDEREÇO
+    if (!checkoutState.enderecoSelecionado) {
+        mostrarNotificacao('⚠️ Confirme o endereço de entrega primeiro!', 'warning');
+        // Destaca a seção de endereço
+        document.getElementById('step1Status').textContent = '⚠️ Pendente';
+        document.getElementById('step1Status').style.color = '#e74c3c';
+        return;
+    }
+    
+    // 2. VALIDA FRETE
+    if (!checkoutState.freteSelecionado) {
+        mostrarNotificacao('⚠️ Selecione uma opção de frete primeiro!', 'warning');
+        // Destaca a seção de frete
+        document.getElementById('step2Status').textContent = '⚠️ Selecione';
+        document.getElementById('step2Status').style.color = '#e74c3c';
+        return;
+    }
+    
+    // ============================================================
+    // ✅ SE PASSOU NAS VALIDAÇÕES, SELECIONA O PAGAMENTO
+    // ============================================================
+    
     document.querySelectorAll('.pagamento-opcao-checkout').forEach(el => {
         el.style.borderColor = '#ddd';
         el.style.background = 'white';
@@ -7905,7 +8355,6 @@ function liberarPagamento() {
     let freteValor = checkoutState.freteSelecionado ? checkoutState.freteSelecionado.valor : 0;
     
     if (metodo === 'PIX') {
-        // DESCONTO APENAS SOBRE PRODUTOS (NÃO SOBRE FRETE)
         const desconto = totalProdutos * 0.03;
         const totalComDesconto = (totalProdutos - desconto) + freteValor;
         document.getElementById('checkoutStep3Status').textContent = `✅ PIX selecionado! Desconto de 3% sobre produtos (R$ ${desconto.toFixed(2)})`;
@@ -7917,6 +8366,7 @@ function liberarPagamento() {
         document.getElementById('checkoutTotalResumo').textContent = `R$ ${totalSemDesconto.toFixed(2)}`;
         document.getElementById('checkoutTotalResumo').style.color = 'var(--primary-blue)';
         document.getElementById('checkoutStep3Status').textContent = `✅ Pagamento selecionado: ${metodo}`;
+        mostrarNotificacao(`✅ ${metodo} selecionado!`, 'success');
     }
     
     document.getElementById('step3Status').textContent = '✅ Selecionado';
@@ -8060,12 +8510,16 @@ function atualizarResumoFinal() {
     btnFinalizar.disabled = true;
 
     try {
+        // ============================================================
+        // VALIDAÇÕES COM MENSAGENS CLARAS
+        // ============================================================
         if (carrinho.length === 0) {
             alert('Seu carrinho está vazio!');
             btnFinalizar.innerHTML = textoOriginal;
             btnFinalizar.disabled = false;
             return;
         }
+        
         const validacao = verificarCarrinhoValido();
         if (!validacao.valido) {
             alert(validacao.mensagem);
@@ -8073,18 +8527,27 @@ function atualizarResumoFinal() {
             btnFinalizar.disabled = false;
             return;
         }
+        
         if (!checkoutState.enderecoSelecionado) {
-            alert('⚠️ Selecione um endereço.');
+            alert('⚠️ Antes de finalizar, confirme o endereço de entrega clicando em "Confirmar este endereço".');
+            // Destaca a seção de endereço
+            document.getElementById('step1Status').textContent = '⚠️ Pendente';
+            document.getElementById('step1Status').style.color = '#e74c3c';
             btnFinalizar.innerHTML = textoOriginal;
             btnFinalizar.disabled = false;
             return;
         }
+        
         if (!checkoutState.freteSelecionado) {
-            alert('⚠️ Selecione uma opção de frete.');
+            alert('⚠️ Selecione uma opção de frete para prosseguir.');
+            // Destaca a seção de frete
+            document.getElementById('step2Status').textContent = '⚠️ Selecione';
+            document.getElementById('step2Status').style.color = '#e74c3c';
             btnFinalizar.innerHTML = textoOriginal;
             btnFinalizar.disabled = false;
             return;
         }
+        
         if (!checkoutState.pagamentoSelecionado) {
             alert('⚠️ Selecione uma forma de pagamento.');
             btnFinalizar.innerHTML = textoOriginal;
@@ -8119,9 +8582,7 @@ function atualizarResumoFinal() {
         const clienteUf = enderecoCompleto.uf || 'MG';
         const clienteCep = enderecoCompleto.cep || '30100000';
 
-        // ============================================================
-        // FORMATAR ITENS
-        // ============================================================
+        // FORMATAR ITENS COM STATUS DE PRODUÇÃO
         let totalProdutos = 0;
         const itensFormatados = carrinho.map(item => {
             const preco = item.price || 0;
@@ -8141,6 +8602,7 @@ function atualizarResumoFinal() {
             const temEstoque = !isProducao && stock > 0;
             
             let nomeCompleto = item.name || 'Produto';
+            
             if (isProducao && prazoProducao > 0) {
                 nomeCompleto = `${nomeCompleto} (Produção ${prazoProducao} dias)`;
             } else if (isProducao) {
@@ -8178,14 +8640,12 @@ function atualizarResumoFinal() {
         }
         const totalFinal = (totalProdutos - desconto) + freteValor;
 
-        // ============================================================
-        // VERIFICAR ESTOQUE
-        // ============================================================
         const itensParaBaixar = [];
         carrinho.forEach(item => {
             const product = encontrarProduto(item.productId);
             const totalUnidades = item.totalUnits || (item.quantity || 0);
             const estoqueAtual = product ? parseInt(product.stock) || 0 : 0;
+            
             const isProducao = totalUnidades > estoqueAtual;
             const baixarEstoque = !isProducao && estoqueAtual > 0;
             
@@ -8202,9 +8662,6 @@ function atualizarResumoFinal() {
 
         console.log('📦 Total de itens para baixar estoque:', itensParaBaixar.length);
 
-        // ============================================================
-        // DADOS DO PEDIDO
-        // ============================================================
         pedidoDataEnvio = {
             clienteNome: clienteNome,
             clienteEmail: clienteEmail,
@@ -8254,9 +8711,6 @@ function atualizarResumoFinal() {
             })
         };
 
-        // ============================================================
-        // SALVAR PEDIDO NA PLANILHA
-        // ============================================================
         await fetch(API_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -8275,9 +8729,6 @@ function atualizarResumoFinal() {
         if (pedidoEncontrado) {
             console.log(`✅ Pedido #${novoId} CONFIRMADO na planilha!`);
             
-            // ============================================================
-            // BAIXAR ESTOQUE
-            // ============================================================
             if (pedidoDataEnvio.itensParaBaixar && pedidoDataEnvio.itensParaBaixar.length > 0) {
                 try {
                     const atualizacoes = pedidoDataEnvio.itensParaBaixar.map(item => ({
@@ -8289,11 +8740,11 @@ function atualizarResumoFinal() {
                 } catch (error) {
                     console.error('❌ Erro ao baixar estoque:', error);
                 }
+            } else {
+                console.log('ℹ️ Nenhum item para baixar estoque.');
             }
 
-            // ============================================================
             // SALVAR DADOS DO PEDIDO NO LOCALSTORAGE
-            // ============================================================
             var dadosPedidoParaSalvar = {
                 numeroPedido: novoId,
                 data: new Date().toLocaleString('pt-BR', {
@@ -8333,9 +8784,7 @@ function atualizarResumoFinal() {
             salvarDadosPedido(dadosPedidoParaSalvar);
             console.log('💾 Dados do pedido #' + novoId + ' SALVOS com sucesso!');
 
-            // ============================================================
-            // CRIAR LINK DE PAGAMENTO NO PAGAR.ME
-            // ============================================================
+            // CRIAR LINK DE PAGAMENTO
             try {
                 console.log('🔄 Criando link de pagamento para pedido #' + novoId);
                 
@@ -8359,65 +8808,57 @@ function atualizarResumoFinal() {
 
                 console.log('📦 Itens para pagamento (com frete):', itensParaPagamento);
                 
-                var resultPagamento = await criarLinkPagamentoSite(
-                    String(novoId),
-                    clienteEmail,
-                    clienteNome,
-                    clienteDocumento || '12345678909',
-                    clienteTelefone || '31999999999',
-                    clienteEndereco,
-                    clienteNumero,
-                    clienteBairro,
-                    clienteCidade,
-                    clienteUf,
-                    clienteCep,
-                    itensParaPagamento,
-                    metodoEscolhido
-                );
+                var resultPagamento = null;
                 
-                if (resultPagamento.success) {
-                    console.log('✅ Link de pagamento criado:', resultPagamento.paymentLink);
-                    salvarCheckoutIdPedido(String(novoId), resultPagamento.checkoutId);
+                if (metodoEscolhido === 'PIX') {
+                    console.log('💳 PIX selecionado - usando modal manual');
+                    resultPagamento = { success: true };
+                } else {
+                    resultPagamento = await criarLinkPagamentoSite(
+                        String(novoId),
+                        clienteEmail,
+                        clienteNome,
+                        clienteDocumento || '12345678909',
+                        clienteTelefone || '31999999999',
+                        clienteEndereco,
+                        clienteNumero,
+                        clienteBairro,
+                        clienteCidade,
+                        clienteUf,
+                        clienteCep,
+                        itensParaPagamento,
+                        metodoEscolhido
+                    );
+                }
+                
+                // VERIFICA O MÉTODO DE PAGAMENTO
+                if (metodoEscolhido === 'PIX') {
+                    console.log('💳 Exibindo modal PIX manual para pedido #' + novoId);
+                    mostrarPixManual(novoId, totalFinal);
                     
-                    // ============================================================
-                    // VERIFICA SE É PIX E SE TEM QR CODE
-                    // ============================================================
-                    if (metodoEscolhido === 'PIX' && resultPagamento.pix && resultPagamento.pix.qrCode) {
-                        console.log('✅ Exibindo QR Code PIX diretamente no site');
-                        
-                        // Mostra o modal com QR Code
-                        mostrarPixModal(resultPagamento.pix, resultPagamento.total / 100);
-                        
-                        // Inicia monitoramento do pagamento
-                        iniciarMonitoramentoPix(resultPagamento.checkoutId);
-                        
-                        // Fecha o checkout
-                        if (typeof fecharCheckout === 'function') {
-                            fecharCheckout();
-                        } else {
-                            document.getElementById('checkoutPage').style.display = 'none';
-                            document.body.style.overflow = '';
-                        }
-                        
-                        // Limpa o carrinho
-                        carrinho = [];
-                        salvarCarrinho();
-                        atualizarBadge();
-                        if (currentProducts && currentProducts.length > 0) renderizarProdutos();
-                        
+                    if (typeof fecharCheckout === 'function') {
+                        fecharCheckout();
                     } else {
-                        // ============================================================
-                        // SE FOR CARTÃO OU BOLETO, REDIRECIONA PARA O LINK
-                        // ============================================================
-                        console.log('🔗 Redirecionando para o Pagar.me (Cartão/Boleto)');
-                        
-                        // Mostra modal de confirmação
+                        document.getElementById('checkoutPage').style.display = 'none';
+                        document.body.style.overflow = '';
+                    }
+                    
+                    carrinho = [];
+                    salvarCarrinho();
+                    atualizarBadge();
+                    if (currentProducts && currentProducts.length > 0) renderizarProdutos();
+                    
+                    mostrarNotificacao('✅ Pedido criado! Escaneie o QR Code ou copie o código PIX.', 'success');
+                    
+                } else {
+                    console.log('🔗 Redirecionando para o Pagar.me (Cartão/Boleto)');
+                    
+                    if (resultPagamento && resultPagamento.success) {
                         document.getElementById('confirmacaoNumeroPedido').textContent = `#${novoId}`;
                         document.getElementById('confirmacaoMensagem').textContent = 'Clique no botão abaixo para finalizar o pagamento.';
                         document.getElementById('btnFinalizarPagamento').style.display = 'block';
                         document.getElementById('confirmacaoModal').style.display = 'block';
                         
-                        // Adiciona evento ao botão
                         document.getElementById('btnFinalizarPagamento').onclick = function() {
                             fecharModal('confirmacaoModal');
                             if (resultPagamento && resultPagamento.success) {
@@ -8427,25 +8868,21 @@ function atualizarResumoFinal() {
                                 mostrarNotificacao('⚠️ Link de pagamento não disponível.', 'warning');
                             }
                         };
-                        
-                        // Fecha o checkout
-                        if (typeof fecharCheckout === 'function') {
-                            fecharCheckout();
-                        } else {
-                            document.getElementById('checkoutPage').style.display = 'none';
-                            document.body.style.overflow = '';
-                        }
-                        
-                        // Limpa o carrinho
-                        carrinho = [];
-                        salvarCarrinho();
-                        atualizarBadge();
-                        if (currentProducts && currentProducts.length > 0) renderizarProdutos();
+                    } else {
+                        mostrarNotificacao('⚠️ Erro ao criar link de pagamento.', 'warning');
                     }
                     
-                } else {
-                    console.warn('⚠️ Erro ao criar link de pagamento:', resultPagamento.error);
-                    mostrarNotificacao('⚠️ Pedido criado, mas houve erro no pagamento.', 'warning');
+                    if (typeof fecharCheckout === 'function') {
+                        fecharCheckout();
+                    } else {
+                        document.getElementById('checkoutPage').style.display = 'none';
+                        document.body.style.overflow = '';
+                    }
+                    
+                    carrinho = [];
+                    salvarCarrinho();
+                    atualizarBadge();
+                    if (currentProducts && currentProducts.length > 0) renderizarProdutos();
                 }
                 
             } catch (error) {
@@ -8453,9 +8890,6 @@ function atualizarResumoFinal() {
                 mostrarNotificacao('⚠️ Erro no pagamento.', 'error');
             }
 
-            // ============================================================
-            // LIMPAR LOADING
-            // ============================================================
             document.getElementById('checkoutLoading').style.display = 'none';
             document.getElementById('checkoutContent').style.display = 'block';
             
@@ -8559,41 +8993,57 @@ function atualizarResumoFinal() {
         // VERIFICAR PEDIDOS CANCELADOS
         // ============================================================
         async function verificarPedidosCancelados() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        const pedidos = data.pedidos || [];
+        const pedidosCancelados = pedidos.filter(p => p.status && p.status.toLowerCase() === 'cancelado');
+        
+        for (const pedido of pedidosCancelados) {
+            // Adicionar try/catch aqui também
             try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                const pedidos = data.pedidos || [];
-                const pedidosCancelados = pedidos.filter(p => p.status && p.status.toLowerCase() === 'cancelado');
-                if (pedidosCancelados.length > 0) {
-                    for (const pedido of pedidosCancelados) {
-                        const processados = JSON.parse(localStorage.getItem('canceladosProcessados') || '[]');
-                        if (processados.includes(pedido.id_pedido)) continue;
-                        if (pedido.itens) {
-                            const itens = typeof pedido.itens === 'string' ? JSON.parse(pedido.itens) : pedido.itens;
-                            for (const item of itens) {
-                                const product = encontrarProdutoPorNome(item.nome);
-                                if (product) {
-                                    product.stock = (product.stock || 0) + item.quantidade;
-                                    await atualizarEstoquePlanilha([{ productId: product.id, novoEstoque: product.stock }]);
-                                }
-                            }
-                        }
-                        processados.push(pedido.id_pedido);
-                        localStorage.setItem('canceladosProcessados', JSON.stringify(processados));
+                const processados = JSON.parse(localStorage.getItem('canceladosProcessados') || '[]');
+                if (processados.includes(pedido.id_pedido)) continue;
+                
+                if (pedido.itens) {
+                    // Verificar se é string JSON ou texto plano
+                    let itens = [];
+                    try {
+                        itens = typeof pedido.itens === 'string' ? JSON.parse(pedido.itens) : pedido.itens;
+                    } catch (e) {
+                        // Se não for JSON válido, tentar extrair nomes do texto
+                        console.warn('⚠️ Itens não são JSON válido, pulando:', e.message);
+                        continue;
                     }
-                    if (pedidosCancelados.length > 0 && currentProducts && currentProducts.length > 0) {
-                        renderizarProdutos();
+                    
+                    for (const item of itens) {
+                        const product = encontrarProdutoPorNome(item.nome);
+                        if (product) {
+                            product.stock = (product.stock || 0) + item.quantidade;
+                            await atualizarEstoquePlanilha([{ productId: product.id, novoEstoque: product.stock }]);
+                        }
                     }
                 }
-            } catch (error) {
-                console.error('❌ Erro ao verificar pedidos cancelados:', error);
+                processados.push(pedido.id_pedido);
+                localStorage.setItem('canceladosProcessados', JSON.stringify(processados));
+            } catch (e) {
+                console.warn('⚠️ Erro ao processar pedido cancelado:', e.message);
             }
         }
+        
+        if (pedidosCancelados.length > 0 && currentProducts && currentProducts.length > 0) {
+            renderizarProdutos();
+        }
+    } catch (error) {
+        console.error('❌ Erro ao verificar pedidos cancelados:', error);
+        // Não faz nada, apenas loga o erro
+    }
+}
 
         // ============================================================
         // CARREGAR DADOS DA PLANILHA
         // ============================================================
-        async function carregarDadosPlanilha() {
+      async function carregarDadosPlanilha() {
     if (carregando) return;
     carregando = true;
 
@@ -8614,15 +9064,22 @@ function atualizarResumoFinal() {
         }
         
         // ============================================================
-        // CONVERTE TODOS OS DADOS PARA STRING (mantido original)
+        // 🔧 FILTRA APENAS PRODUTOS ATIVOS (produto_ativado = SIM)
         // ============================================================
-        const produtosStr = data.produtos.map(p => {
-            const novoP = {};
-            for (const key in p) {
-                novoP[key] = String(p[key] || '').trim();
-            }
-            return novoP;
-        });
+        const produtosStr = data.produtos
+            .filter(p => {
+                const ativado = String(p.produto_ativado || '').toUpperCase().trim();
+                return ativado === 'SIM';
+            })
+            .map(p => {
+                const novoP = {};
+                for (const key in p) {
+                    novoP[key] = String(p[key] || '').trim();
+                }
+                return novoP;
+            });
+        
+        console.log(`📦 ${produtosStr.length} produtos ativos carregados (de ${data.produtos.length} total)`);
         
         const categoriasStr = data.categorias.map(c => {
             const novoC = {};
@@ -8633,10 +9090,9 @@ function atualizarResumoFinal() {
         });
         
         // ============================================================
-        // PROCESSAMENTO DE CADA PRODUTO INDIVIDUALMENTE (CORRIGIDO)
+        // PROCESSAMENTO DE CADA PRODUTO INDIVIDUALMENTE
         // ============================================================
         PRODUCTS_DATA.categories = categoriasStr.map(cat => {
-            // Filtra produtos desta categoria
             const produtosDaCategoria = produtosStr.filter(p => p.categoria === cat.nome);
             
             return {
@@ -8648,12 +9104,12 @@ function atualizarResumoFinal() {
                     .filter(p => (p.produto_ativado || '').toUpperCase() === 'SIM')
                     .map(p => {
                         // ============================================================
-                        // 1. QUANTIDADES - mantido original
+                        // 1. QUANTIDADES
                         // ============================================================
                         const qtyList = p.quantidades ? p.quantidades.split(',').map(q => parseInt(q.trim())).filter(q => !isNaN(q) && q > 0) : [];
                         
                         // ============================================================
-                        // 2. PREÇOS - mantido original
+                        // 2. PREÇOS
                         // ============================================================
                         const precoMap = {};
                         if (p.preco_venda) {
@@ -8666,65 +9122,47 @@ function atualizarResumoFinal() {
                         }
                         
                         // ============================================================
-                        // 3. PESOS E MEDIDAS - CORRIGIDO! Processa para CADA produto
+                        // 3. PESOS E MEDIDAS
                         // ============================================================
                         const pesoMap = {};
                         const dimsMap = {};
                         let pesoUnitario = 0;
                         let dimensoesPadrao = '';
                         
-                        // 3.1 Tenta ler da coluna 'pesos_medidas'
                         if (p.pesos_medidas && p.pesos_medidas.trim() !== '') {
-                            console.log(`📦 Processando pesos/dimensões para: ${p.nome}`);
-                            console.log(`   Dados: ${p.pesos_medidas}`);
-                            
                             p.pesos_medidas.split(';').forEach(item => {
                                 const parts = item.trim().split(':');
                                 if (parts.length === 2) {
                                     const qtd = parseInt(parts[0]);
                                     const dados = parts[1] || '';
-                                    
-                                    // Separa peso e dimensões (formato: "4.500-37x42x5")
                                     const pesoDims = dados.split('-');
                                     if (pesoDims.length === 2) {
                                         pesoMap[qtd] = pesoDims[0] || '';
                                         dimsMap[qtd] = pesoDims[1] || '';
                                     } else {
-                                        // Se não tiver dimensões, só tem peso
                                         pesoMap[qtd] = dados;
                                         dimsMap[qtd] = '';
                                     }
                                 }
                             });
-                            
-                            console.log(`   PesoMap:`, pesoMap);
-                            console.log(`   DimsMap:`, dimsMap);
                         }
                         
-                        // 3.2 Tenta ler da coluna 'peso_unitario' como fallback
                         if (p.peso_unitario && p.peso_unitario.trim() !== '') {
                             pesoUnitario = parseFloat(p.peso_unitario) || 0;
                         }
                         
-                        // 3.3 Tenta ler dimensões da coluna 'dimensoes' se existir
                         if (p.dimensoes && p.dimensoes.trim() !== '') {
                             dimensoesPadrao = p.dimensoes.trim();
                         }
                         
-                        // ============================================================
-                        // 4. MONTA AS QUANTIDADES COM PESO E DIMENSÕES CORRETOS
-                        // ============================================================
                         const quantities = qtyList.map(qty => {
-                            // Pega peso e dimensão para esta quantidade específica
                             let weight = pesoMap[qty] || '';
                             let dimensions = dimsMap[qty] || '';
                             
-                            // Se não encontrou peso específico, usa o peso unitário
                             if (!weight && pesoUnitario > 0) {
                                 weight = (pesoUnitario * qty).toFixed(3) + 'kg';
                             }
                             
-                            // Se não encontrou dimensão específica, usa a padrão
                             if (!dimensions && dimensoesPadrao) {
                                 dimensions = dimensoesPadrao;
                             }
@@ -8738,7 +9176,7 @@ function atualizarResumoFinal() {
                         });
                         
                         // ============================================================
-                        // 5. IMAGENS - mantido original
+                        // 4. IMAGENS
                         // ============================================================
                         let images = [];
                         if (p.imagens_carousel) {
@@ -8770,13 +9208,10 @@ function atualizarResumoFinal() {
                         }
                         
                         // ============================================================
-                        // 6. CONFIGURAÇÕES - mantido original
+                        // 5. CONFIGURAÇÕES
                         // ============================================================
                         const venderZerado = (p.vender_zerado || '').toUpperCase() === 'SIM';
                         
-                        // ============================================================
-                        // 7. RETORNA O PRODUTO COMPLETO
-                        // ============================================================
                         return {
                             id: parseInt(p.id) || 0,
                             name: p.nome || 'Produto sem nome',
@@ -8799,7 +9234,7 @@ function atualizarResumoFinal() {
         });
         
         // ============================================================
-        // LOG DE VERIFICAÇÃO - Mostra se o produto foi processado corretamente
+        // LOG DE VERIFICAÇÃO
         // ============================================================
         const produtoTeste = PRODUCTS_DATA.categories
             .flatMap(c => c.products)
@@ -8808,18 +9243,12 @@ function atualizarResumoFinal() {
         if (produtoTeste) {
             console.log('✅ Produto 09x09x30 processado CORRETAMENTE:');
             console.log('   Nome:', produtoTeste.name);
-            console.log('   Quantities:', produtoTeste.quantities.map(q => ({
-                qty: q.qty,
-                weight: q.weight,
-                dimensions: q.dimensions,
-                price: q.price
-            })));
             console.log('   Stock:', produtoTeste.stock);
-            console.log('   Production Days:', produtoTeste.productionDays);
             console.log('   Vender Zerado:', produtoTeste.vender_zerado);
-        } else {
-            console.warn('⚠️ Produto 09x09x30 NÃO encontrado após processamento!');
         }
+        
+        const totalProdutos = PRODUCTS_DATA.categories.reduce((acc, cat) => acc + cat.products.length, 0);
+        console.log(`📦 Total: ${totalProdutos} produtos ativos carregados`);
         
         dadosCarregados = true;
         mostrarLoading(false);
@@ -8940,6 +9369,74 @@ function init() {
 }
 
 
+// ============================================================
+// COPIAR CÓDIGO PIX MANUAL - FUNÇÃO SIMPLES E DIRETA
+// ============================================================
+function copiarPixManual() {
+    console.log('🟢 Botão Copiar PIX clicado!');
+    
+    // 1. PEGA O CÓDIGO DO ELEMENTO
+    var elemento = document.getElementById('pixManualCopiaCola');
+    var texto = elemento ? elemento.textContent : '';
+    
+    console.log('📋 Texto a copiar:', texto.substring(0, 50) + '...');
+    console.log('📋 Tamanho:', texto.length);
+    
+    if (!texto || texto.length === 0) {
+        mostrarNotificacao('⚠️ Nenhum código disponível para copiar.', 'warning');
+        return;
+    }
+    
+    // 2. TENTA COPIAR
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto)
+            .then(function() {
+                mostrarNotificacao('✅ Código PIX copiado com sucesso!', 'success');
+                console.log('✅ Código copiado via Clipboard API!');
+            })
+            .catch(function(err) {
+                console.warn('⚠️ Erro na Clipboard API:', err);
+                copiarTextoSelecaoManual(texto);
+            });
+    } else {
+        copiarTextoSelecaoManual(texto);
+    }
+}
+
+// ============================================================
+// FALLBACK PARA COPIAR TEXTO (NAVEGADORES ANTIGOS)
+// ============================================================
+function copiarTextoSelecaoManual(texto) {
+    try {
+        console.log('📋 Usando fallback para copiar...');
+        
+        var textarea = document.createElement('textarea');
+        textarea.value = texto;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        textarea.style.top = '-9999px';
+        textarea.style.width = '1px';
+        textarea.style.height = '1px';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        
+        textarea.select();
+        textarea.setSelectionRange(0, 99999);
+        
+        var sucesso = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        if (sucesso) {
+            mostrarNotificacao('✅ Código PIX copiado com sucesso!', 'success');
+            console.log('✅ Código copiado via fallback!');
+        } else {
+            mostrarNotificacao('⚠️ Não foi possível copiar. Tente manualmente.', 'warning');
+        }
+    } catch (err) {
+        console.error('❌ Erro ao copiar:', err);
+        mostrarNotificacao('⚠️ Erro ao copiar. Tente manualmente.', 'warning');
+    }
+}
 
 
         function controlarHistoricoNavegacao() {
@@ -9061,14 +9558,15 @@ function init() {
                 </div>
                 
                 <!-- BOTÕES -->
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
-                    <button onclick="copiarPixCopiaCola()" style="flex:1;background:var(--primary-blue);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;transition:all 0.3s;">
-                        <i class="fas fa-copy"></i> Copiar Código
-                    </button>
-                    <button onclick="fecharModal('pixModal')" style="flex:1;background:#e0e0e0;color:#333;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
-                        Fechar
-                    </button>
-                </div>
+                <!-- BOTÕES -->
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:15px;">
+    <button id="btnCopiarPix" style="display:none;">
+        📋 Copiar Código PIX
+    </button>
+    <button id="btnFecharPix" style="display:none;">
+        Fechar
+    </button>
+</div>
                 
                 <!-- INFORMAÇÕES -->
                 <div style="margin-top:15px;padding:12px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;font-size:13px;color:#856404;text-align:left;">
@@ -9081,6 +9579,95 @@ function init() {
     </div>
 </div>
 
+<!-- ============================================================ -->
+<!-- MODAL PIX MANUAL - QR CODE + COPIA E COLA -->
+<!-- ============================================================ -->
+<div class="modal" id="pixManualModal">
+    <div class="modal-content" style="max-width:520px;text-align:center;">
+        <span class="modal-close" onclick="fecharModal('pixManualModal')">&times;</span>
+        
+        <div style="font-size:48px;color:#25D366;margin-bottom:10px;">
+            <i class="fas fa-qrcode"></i>
+        </div>
+        <h2 style="color:var(--primary-dark);margin-bottom:5px;">Pague com PIX</h2>
+        <p style="color:#888;font-size:14px;margin-bottom:15px;">
+            Escaneie o QR Code ou copie o código abaixo
+        </p>
+        
+        <!-- VALOR -->
+        <div style="font-size:24px;font-weight:700;color:var(--primary-blue);margin:10px 0;">
+            R$ <span id="pixManualTotal">0,00</span>
+        </div>
+        
+        <!-- NÚMERO DO PEDIDO -->
+        <div style="font-size:14px;color:#888;margin-bottom:15px;">
+            Pedido #<span id="pixManualPedido">---</span>
+        </div>
+        
+        <!-- QR CODE -->
+        <div id="pixQrCodeContainer" style="text-align:center;margin:15px 0;">
+            <div id="pixQrCode" style="display:inline-block;background:white;padding:10px;border-radius:12px;border:2px solid #e8ecf0;min-width:200px;min-height:200px;">
+                <div style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;color:#999;font-size:13px;">
+                    Gerando QR Code...
+                </div>
+            </div>
+        </div>
+        
+        <!-- CHAVE PIX -->
+        <div style="background:#f8f9fa;border-radius:10px;padding:10px;border:1px solid #e8ecf0;margin:10px 0;">
+            <div style="font-size:11px;color:#888;">Chave PIX</div>
+            <div id="pixManualChave" style="font-size:16px;font-weight:700;color:var(--primary-dark);font-family:monospace;">
+                mcembalagensbh@gmail.com
+            </div>
+        </div>
+        
+        <!-- CÓDIGO COPIA E COLA -->
+        <div id="pixManualCodigoContainer" style="background:#f8f9fa;border-radius:10px;padding:12px;margin:10px 0;border:1px solid #e8ecf0;text-align:left;">
+            <div style="font-size:12px;color:#888;margin-bottom:4px;">📋 Código Copia e Cola</div>
+            <div id="pixManualCopiaCola" style="word-break:break-all;font-size:11px;color:#333;font-family:monospace;max-height:80px;overflow-y:auto;background:white;padding:8px;border-radius:6px;"></div>
+        </div>
+        
+        <!-- BOTÕES -->
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:15px;">
+            <!-- BOTÃO COPIAR (GRANDE) - COM onclick DIRETO -->
+            <button id="btnCopiarPix" onclick="copiarPixManual()" style="
+                background: #25D366;
+                color: white;
+                border: none;
+                padding: 16px 20px;
+                border-radius: 10px;
+                cursor: pointer;
+                font-weight: 700;
+                font-size: 18px;
+                width: 100%;
+                transition: all 0.3s;
+            ">
+                📋 Copiar Código PIX
+            </button>
+            
+            <!-- BOTÃO FECHAR (DISCRETO) -->
+            <button id="btnFecharPix" onclick="fecharModal('pixManualModal')" style="
+                background: transparent;
+                color: #888;
+                border: none;
+                padding: 8px;
+                cursor: pointer;
+                font-size: 13px;
+                width: 100%;
+                transition: all 0.3s;
+            ">
+                Fechar
+            </button>
+        </div>
+        
+        <!-- INFORMAÇÕES -->
+        <div style="margin-top:15px;padding:12px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;font-size:13px;color:#856404;text-align:left;">
+            ⏱️ O QR Code expira em 60 minutos.
+            <br>
+            💡 Após o pagamento, seu pedido será confirmado automaticamente em alguns minutos.
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
