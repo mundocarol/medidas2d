@@ -2540,7 +2540,7 @@
         <section class="hero-banner">
             <div class="hero-content">
                 <h1>Caixas Kraft, Triplex, Sacolas</h1>
-                <p>Distribuição 4 direto de Fábrica para todo Brasil</p>
+                <p>Distribuição 2 direto de Fábrica para todo Brasil</p>
             </div>
         </section>
 
@@ -2949,91 +2949,25 @@
         </div>
     </div>
 
-        <!-- ============================================================ -->
-    <!-- MODAL PAGAMENTO PAGAR.ME -->
-    <!-- ============================================================ -->
-    <div class="modal pagamento-modal" id="pagamentoModal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="fecharModal('pagamentoModal')">&times;</span>
-            <h2 style="margin-bottom:20px;color:var(--primary-dark);">💳 Pagamento com Pagar.me</h2>
-            
-            <div style="text-align:center;padding:30px 0;">
-                <div style="font-size:48px;color:#25D366;margin-bottom:15px;">
-                    <i class="fas fa-credit-card"></i>
-                </div>
-                <p style="font-size:16px;color:#333;font-weight:600;margin-bottom:10px;">
-                    Você será redirecionado para o Pagar.me
-                </p>
-                <p style="font-size:14px;color:#888;margin-bottom:25px;">
-                    Para finalizar seu pagamento com segurança
-                </p>
-                <button onclick="irParaPagamentoPagarMe()" style="
-                    background: #1a3a5c;
-                    color: white;
-                    border: none;
-                    padding: 14px 40px;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-weight: 600;
-                    font-size: 16px;
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 10px;
-                    transition: all 0.3s;
-                " onmouseover="this.style.background='#2a5a8c'" onmouseout="this.style.background='#1a3a5c'">
-                    <i class="fas fa-external-link-alt"></i> Ir para Pagar.me
-                </button>
-                <button onclick="fecharModal('pagamentoModal')" style="
-                    background: transparent;
-                    color: #888;
-                    border: none;
-                    padding: 10px 20px;
-                    cursor: pointer;
-                    font-size: 14px;
-                    display: block;
-                    margin: 10px auto 0;
-                ">
-                    Cancelar e voltar
-                </button>
-            </div>
-            
-            <div style="background:#f8f9fa;border-radius:8px;padding:15px;margin-top:10px;border:1px solid #eee;">
-                <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;">
-                    <span style="color:#666;">Pedido:</span>
-                    <span style="font-weight:600;color:var(--primary-dark);" id="modalPagamentoNumeroPedido">#---</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;">
-                    <span style="color:#666;">Método:</span>
-                    <span style="font-weight:600;color:var(--primary-dark);" id="modalPagamentoMetodo">---</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-size:14px;padding:4px 0;border-top:1px solid #eee;margin-top:4px;padding-top:8px;">
-                    <span style="color:#666;">Total:</span>
-                    <span style="font-weight:700;color:var(--primary-blue);font-size:16px;" id="modalPagamentoTotal">R$ 0,00</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
-       <!-- ============================================================ -->
-    <!-- MODAL CONFIRMAÇÃO - ATUALIZADO -->
     <!-- ============================================================ -->
-    <div class="modal confirmacao-modal" id="confirmacaoModal">
-        <div class="modal-content">
-            <div class="icone-grande"><i class="fas fa-check-circle"></i></div>
-            <h2 style="color:var(--success);">✅ Pedido Realizado!</h2>
-            <p style="color:#666;margin:10px 0;">Seu pedido foi confirmado com sucesso.</p>
-            <div class="numero-pedido" id="confirmacaoNumeroPedido">#13001</div>
-            <p style="color:#888;font-size:14px;">Agora você será redirecionado para o Pagar.me para finalizar o pagamento.</p>
-            <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
-                <button onclick="fecharModal('confirmacaoModal');abrirPagamentoPagarMe()" class="btn-checkout" style="background:#25D366;flex:1;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:16px;color:white;transition:all 0.3s;">
-                    <i class="fas fa-credit-card"></i> Ir para Pagar.me
-                </button>
-                <button onclick="fecharModal('confirmacaoModal')" style="flex:1;background:#e0e0e0;color:#333;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:16px;">
-                    Ver depois
-                </button>
-            </div>
+<!-- MODAL CONFIRMAÇÃO - SIMPLIFICADO -->
+<!-- ============================================================ -->
+<div class="modal confirmacao-modal" id="confirmacaoModal">
+    <div class="modal-content">
+        <div class="icone-grande"><i class="fas fa-check-circle"></i></div>
+        <h2 style="color:var(--success);">✅ Pedido Realizado!</h2>
+        <p style="color:#666;margin:10px 0;">Seu pedido foi confirmado com sucesso.</p>
+        <div class="numero-pedido" id="confirmacaoNumeroPedido">#13001</div>
+        <p style="color:#888;font-size:14px;">Clique no botão abaixo para finalizar o pagamento.</p>
+        <div style="margin-top:20px;">
+            <button id="btnFinalizarPagamento" class="btn-checkout" style="background:#25D366;border:none;padding:14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:17px;color:white;width:100%;transition:all 0.3s;">
+                <i class="fas fa-credit-card"></i> Finalizar Pagamento
+            </button>
         </div>
     </div>
+</div>
 
     <!-- ============================================================ -->
     <!-- MODAL DADOS PESSOAIS -->
@@ -4657,47 +4591,7 @@ async function verificarStatusPagamentoPagarMe(checkoutId) {
 }
 
 
-// ============================================================
-// IR PARA PAGAMENTO PAGAR.ME
-// ============================================================
-function irParaPagamentoPagarMe() {
-    // Pega os dados salvos do pedido
-    var dadosPedido = carregarDadosPedido();
-    
-    if (!dadosPedido || !dadosPedido.numeroPedido || dadosPedido.numeroPedido === 'AGUARDANDO') {
-        mostrarNotificacao('⚠️ Nenhum pedido encontrado para pagamento.', 'warning');
-        return;
-    }
-    
-    // Busca o checkoutId no localStorage
-    var pedidosPendentes = JSON.parse(localStorage.getItem('pedidosPendentesPagamento') || '{}');
-    var dadosPendente = pedidosPendentes[dadosPedido.numeroPedido];
-    
-    if (dadosPendente && dadosPendente.checkoutId) {
-        // Abre o link de pagamento
-        window.open('https://payment-link-v3.pagar.me/' + dadosPendente.checkoutId, '_blank');
-        fecharModal('pagamentoModal');
-        mostrarNotificacao('🔄 Abrindo Pagar.me...', 'info');
-    } else {
-        // Tenta recriar o link
-        recriarLinkPagamento(dadosPedido.numeroPedido);
-        fecharModal('pagamentoModal');
-    }
-}
 
-// ============================================================
-// ABRIR MODAL DE PAGAMENTO PAGAR.ME
-// ============================================================
-function abrirPagamentoPagarMe(pedidoId, metodo, total) {
-    var modal = document.getElementById('pagamentoModal');
-    
-    // Atualiza as informações no modal
-    document.getElementById('modalPagamentoNumeroPedido').textContent = '#' + (pedidoId || '---');
-    document.getElementById('modalPagamentoMetodo').textContent = metodo || 'PIX';
-    document.getElementById('modalPagamentoTotal').textContent = 'R$ ' + (total || 0).toFixed(2).replace('.', ',');
-    
-    modal.style.display = 'block';
-}
 
 
 // ============================================================
@@ -7947,7 +7841,7 @@ function atualizarResumoFinal() {
 }
 
 
-   async function finalizarPedidoCheckout() {
+  async function finalizarPedidoCheckout() {
     const btnFinalizar = document.getElementById('btnFinalizarPedido');
     const textoOriginal = btnFinalizar.innerHTML;
     btnFinalizar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando pedido...';
@@ -8240,78 +8134,70 @@ function atualizarResumoFinal() {
             console.log('💾 Dados do pedido #' + novoId + ' SALVOS com sucesso!');
 
             // ============================================================
-// CRIAR LINK DE PAGAMENTO NO PAGAR.ME
-// ============================================================
-try {
-    console.log('🔄 Criando link de pagamento para pedido #' + novoId);
-    
-    // Pega o método de pagamento escolhido
-    var metodoEscolhido = checkoutState.pagamentoSelecionado || 'PIX';
-    
-    // ============================================================
-    // PREPARA OS ITENS (INCLUINDO O FRETE)
-    // ============================================================
-    var itensParaPagamento = carrinho.map(function(item) {
-        return {
-            nome: item.name,
-            price: item.price || 0,
-            quantity: item.totalUnits || item.quantity || 1
-        };
-    });
+            // CRIAR LINK DE PAGAMENTO NO PAGAR.ME
+            // ============================================================
+            try {
+                console.log('🔄 Criando link de pagamento para pedido #' + novoId);
+                
+                var metodoEscolhido = checkoutState.pagamentoSelecionado || 'PIX';
+                
+                var itensParaPagamento = carrinho.map(function(item) {
+                    return {
+                        nome: item.name,
+                        price: item.price || 0,
+                        quantity: item.totalUnits || item.quantity || 1
+                    };
+                });
 
-    // ============================================================
-    // ADICIONA O FRETE COMO UM ITEM SEPARADO
-    // ============================================================
-    // ⚠️ NÃO DECLARE freteValor OU freteNome!
-    // Use as variáveis que JÁ EXISTEM no código (declaradas antes)
-    // freteValor e freteNome já foram declarados como const/let/var
-    
-    if (freteValor > 0) {
-        // O freteNome já existe no código - use diretamente!
-        itensParaPagamento.push({
-            nome: 'Frete (' + freteNome + ')',
-            price: freteValor,
-            quantity: 1
-        });
-    }
+                if (freteValor > 0) {
+                    itensParaPagamento.push({
+                        nome: 'Frete (' + freteNome + ')',
+                        price: freteValor,
+                        quantity: 1
+                    });
+                }
 
-    console.log('📦 Itens para pagamento (com frete):', itensParaPagamento);
-    
-    // ============================================================
-    // CHAMA O APPS SCRIPT PARA CRIAR O LINK
-    // ============================================================
-    var resultPagamento = await criarLinkPagamentoSite(
-        String(novoId),
-        clienteEmail,
-        clienteNome,
-        clienteDocumento || '12345678909',
-        itensParaPagamento,
-        metodoEscolhido
-    );
-    
-    if (resultPagamento.success) {
-        console.log('✅ Link de pagamento criado:', resultPagamento.paymentLink);
-        
-        // Salva o checkoutId para consultas futuras
-        salvarCheckoutIdPedido(String(novoId), resultPagamento.checkoutId);
-        
-        // Mostra notificação
-        mostrarNotificacao('✅ Pedido criado! Redirecionando para pagamento...', 'success');
-        
-        // Redireciona para o pagamento
-        setTimeout(function() {
-            window.open(resultPagamento.paymentLink, '_blank');
-        }, 1500);
-        
-    } else {
-        console.warn('⚠️ Erro ao criar link de pagamento:', resultPagamento.error);
-        mostrarNotificacao('⚠️ Pedido criado, mas houve erro no pagamento. Entre em contato.', 'warning');
-    }
-    
-} catch (error) {
-    console.error('❌ Erro ao criar link de pagamento:', error);
-    mostrarNotificacao('⚠️ Erro no pagamento. Entre em contato.', 'error');
-}
+                console.log('📦 Itens para pagamento (com frete):', itensParaPagamento);
+                
+                var resultPagamento = await criarLinkPagamentoSite(
+                    String(novoId),
+                    clienteEmail,
+                    clienteNome,
+                    clienteDocumento || '12345678909',
+                    itensParaPagamento,
+                    metodoEscolhido
+                );
+                
+                if (resultPagamento.success) {
+                    console.log('✅ Link de pagamento criado:', resultPagamento.paymentLink);
+                    salvarCheckoutIdPedido(String(novoId), resultPagamento.checkoutId);
+                    
+                    // ============================================================
+                    // MOSTRA CONFIRMAÇÃO E REDIRECIONA DIRETO
+                    // ============================================================
+                    document.getElementById('confirmacaoNumeroPedido').textContent = `#${novoId}`;
+                    document.getElementById('confirmacaoModal').style.display = 'block';
+                    
+                    // Adiciona evento ao botão "Finalizar Pagamento"
+                    document.getElementById('btnFinalizarPagamento').onclick = function() {
+                        fecharModal('confirmacaoModal');
+                        if (resultPagamento && resultPagamento.success) {
+                            window.open(resultPagamento.paymentLink, '_blank');
+                            mostrarNotificacao('🔄 Redirecionando para Pagar.me...', 'info');
+                        } else {
+                            mostrarNotificacao('⚠️ Link de pagamento não disponível.', 'warning');
+                        }
+                    };
+                    
+                } else {
+                    console.warn('⚠️ Erro ao criar link de pagamento:', resultPagamento.error);
+                    mostrarNotificacao('⚠️ Pedido criado, mas houve erro no pagamento.', 'warning');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro ao criar link de pagamento:', error);
+                mostrarNotificacao('⚠️ Erro no pagamento.', 'error');
+            }
 
             carrinho = [];
             salvarCarrinho();
@@ -8327,9 +8213,6 @@ try {
                 document.getElementById('checkoutPage').style.display = 'none';
                 document.body.style.overflow = '';
             }
-            
-            document.getElementById('confirmacaoNumeroPedido').textContent = `#${novoId}`;
-            document.getElementById('confirmacaoModal').style.display = 'block';
             
         } else {
             console.warn(`⚠️ Pedido #${novoId} NÃO ENCONTRADO na planilha!`);
