@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+ <!-- ============================================================ -->
+    <!-- IMPEDIR TRADUÇÃO AUTOMÁTICA DO NAVEGADOR -->
+    <!-- ============================================================ -->
+    <meta name="google" content="notranslate">
+
+
     <title>MC Embalagens BH - Sua Loja de Embalagens</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -3317,7 +3324,7 @@
         // ============================================================
         // CONFIGURAÇÃO DA API, WHATSAPP E PAGAR.ME
         // ============================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyZR4IwnC4akylOFXVD6OrzZ_8ygDXoarGRQ7P5I7DqxXR60MO8frt7Jx6NBjGYhRwKsQ/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxPc18Q6Ku8cCjGoe4Xr088KLYk4mR0IPv4ywhGvqvaf8h0UFnevabY9UlCc-kWxjfUuw/exec';
         const WHATSAPP_NUMBER = '5531984834383';
         const PIX_KEY = '10648303000179';
 
@@ -3325,7 +3332,7 @@
         // URL DO APPS SCRIPT PARA PAGAR.ME (MESMA URL)
         // ============================================================
         const APPS_SCRIPT_URL = API_URL;
-        
+
 
         // ============================================================
         // CONFIGURAÇÃO SUPERFRETE
@@ -7459,7 +7466,7 @@ async function buscarClientePorEmailCheckout() {
     }
 }
 
-        // ============================================================
+// ============================================================
 // SELECIONAR ENDEREÇO (CHECKOUT) - CORRIGIDO
 // ============================================================
 function selecionarEnderecoCheckout(endereco, cep, cliente) {
@@ -7495,19 +7502,35 @@ function selecionarEnderecoCheckout(endereco, cep, cliente) {
     document.getElementById('checkoutStep2').style.display = 'block';
     document.getElementById('step2Status').textContent = '⏳ Carregando...';
     
-    // REMOVER MENSAGEM DE AVISO DO PAGAMENTO
+    // ============================================================
+    // 🔒 BLOQUEIA TUDO IMEDIATAMENTE (ANTES DE CARREGAR FRETE)
+    // ============================================================
+    // Remove aviso de confirmação de endereço
     var avisoPagamento = document.getElementById('avisoConfirmarEndereco');
     if (avisoPagamento) avisoPagamento.style.display = 'none';
     
-    // HABILITAR OPÇÕES DE PAGAMENTO
+    // 🔒 BLOQUEIA AS OPÇÕES DE PAGAMENTO
     document.querySelectorAll('.pagamento-opcao-checkout').forEach(function(el) {
-        el.style.opacity = '1';
-        el.style.pointerEvents = 'auto';
+        el.style.opacity = '0.5';
+        el.style.pointerEvents = 'none';
     });
     
-    carregarOpcoesFreteCheckout();
+    // 🔒 BLOQUEIA O BOTÃO FINALIZAR
+    document.getElementById('btnFinalizarPedido').disabled = true;
+    document.getElementById('btnFinalizarPedido').style.opacity = '0.5';
+    document.getElementById('btnFinalizarPedido').title = 'Aguardando seleção de frete';
     
+    // 🔒 BLOQUEIA O STATUS DO PASSO 3
+    document.getElementById('step3Status').textContent = '🔒 Selecione o frete';
+    document.getElementById('checkoutStep3Status').textContent = '🔒 Escolha uma opção de frete para liberar o pagamento.';
+    
+    // Mostra notificação
     mostrarNotificacao('✅ Endereço confirmado! Carregando opções de frete...', 'success');
+    
+    // ============================================================
+    // CARREGA AS OPÇÕES DE FRETE
+    // ============================================================
+    carregarOpcoesFreteCheckout();
 }
 
 
