@@ -2540,7 +2540,7 @@
         <section class="hero-banner">
             <div class="hero-content">
                 <h1>Caixas Kraft, Triplex, Sacolas</h1>
-                <p>Distribuição xx direto de Fábrica para todo Brasil</p>
+                <p>Distribuição 1 direto de Fábrica para todo Brasil</p>
             </div>
         </section>
 
@@ -3258,7 +3258,7 @@
         // ============================================================
         // CONFIGURAÇÃO DA API, WHATSAPP E PAGAR.ME
         // ============================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbzsr5a5B4t9Y2cbkNnuEwubTpF5F6jECECYYWYdM3YL_ETfkBnTFoXFGVrg8Asz3rgATQ/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbx0U-ZJC0nW_47T8GLjtbyEau7tNgM3etXY2M2PoJl0TTuBOxQ8eA-lXqM9E_WcwL4F-Q/exec';
         const WHATSAPP_NUMBER = '5531984834383';
         const PIX_KEY = '10648303000179';
 
@@ -4458,7 +4458,7 @@ async function calcularFreteCarrinho() {
 // ============================================================
 // CRIAR LINK DE PAGAMENTO (CHAMA O APPS SCRIPT - VIA GET)
 // ============================================================
-async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clienteDocumento, itens, metodoPagamento) {
+async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clienteDocumento, clienteTelefone, clienteEndereco, clienteNumero, clienteBairro, clienteCidade, clienteUf, clienteCep, itens, metodoPagamento) {
   try {
     console.log('🔄 Criando link de pagamento para pedido #' + pedidoId);
     console.log('💳 Método escolhido:', metodoPagamento);
@@ -4477,18 +4477,27 @@ async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clien
     var itensFormatados = itens.map(function(item) {
       return {
         nome: item.nome || item.name || 'Produto',
-        price: item.price || 0,
+        price: Math.round((item.price || 0) * 100) / 100,
         quantity: item.totalUnidades || item.quantity || 1
       };
     });
     
-    // Converte para JSON e codifica
+    // ============================================================
+    // CONVERTE PARA JSON E CODIFICA
+    // ============================================================
     var dados = {
       acao: 'criar_link_pagamento',
       pedidoId: pedidoId,
       clienteEmail: clienteEmail,
       clienteNome: clienteNome,
       clienteDocumento: clienteDocumento || '12345678909',
+      clienteTelefone: clienteTelefone || '31999999999',
+      clienteEndereco: clienteEndereco || 'Rua Teste',
+      clienteNumero: clienteNumero || '123',
+      clienteBairro: clienteBairro || 'Centro',
+      clienteCidade: clienteCidade || 'Belo Horizonte',
+      clienteUf: clienteUf || 'MG',
+      clienteCep: clienteCep || '30100000',
       itens: JSON.stringify(itensFormatados),
       metodosPagamento: metodo
     };
@@ -4498,7 +4507,7 @@ async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clien
     for (var key in dados) {
       url += key + '=' + encodeURIComponent(dados[key]) + '&';
     }
-    url = url.slice(0, -1); // Remove o último '&'
+    url = url.slice(0, -1);
     
     console.log('📤 URL:', url);
     
@@ -7898,6 +7907,17 @@ function atualizarResumoFinal() {
         const clienteEmail = checkoutState.clienteData?.email || usuarioLogado?.email || checkoutState.emailBuscado || localStorage.getItem('clienteEmail') || 'cliente_nao_identificado@email.com';
         const clienteTelefone = checkoutState.clienteData?.telefone || usuarioLogado?.telefone || localStorage.getItem('clienteTelefone') || '';
         const clienteDocumento = checkoutState.clienteData?.documento || usuarioLogado?.documento || localStorage.getItem('clienteDocumento') || '';
+        
+        // ============================================================
+        // DADOS DO ENDEREÇO PARA ENVIAR AO PAGAR.ME
+        // ============================================================
+        const enderecoCompleto = checkoutState.enderecoSelecionado || {};
+        const clienteEndereco = enderecoCompleto.endereco || 'Rua Teste';
+        const clienteNumero = enderecoCompleto.numero || '123';
+        const clienteBairro = enderecoCompleto.bairro || 'Centro';
+        const clienteCidade = enderecoCompleto.cidade || 'Belo Horizonte';
+        const clienteUf = enderecoCompleto.uf || 'MG';
+        const clienteCep = enderecoCompleto.cep || '30100000';
 
         // ============================================================
         // FORMATAR ITENS COM STATUS DE PRODUÇÃO
@@ -8141,17 +8161,13 @@ function atualizarResumoFinal() {
                 
                 var metodoEscolhido = checkoutState.pagamentoSelecionado || 'PIX';
                 
-                // ============================================================
-// PREPARA OS ITENS (ARREDONDANDO VALORES)
-// ============================================================
-var itensParaPagamento = carrinho.map(function(item) {
-    var preco = item.price || 0;
-    return {
-        nome: item.name,
-        price: Math.round(preco * 100) / 100, // ← ARREDONDA PARA 2 CASAS
-        quantity: item.totalUnits || item.quantity || 1
-    };
-});
+                var itensParaPagamento = carrinho.map(function(item) {
+                    return {
+                        nome: item.name,
+                        price: item.price || 0,
+                        quantity: item.totalUnits || item.quantity || 1
+                    };
+                });
 
                 if (freteValor > 0) {
                     itensParaPagamento.push({
@@ -8163,11 +8179,21 @@ var itensParaPagamento = carrinho.map(function(item) {
 
                 console.log('📦 Itens para pagamento (com frete):', itensParaPagamento);
                 
+                // ============================================================
+                // CHAMA O APPS SCRIPT PARA CRIAR O LINK (COM DADOS COMPLETOS)
+                // ============================================================
                 var resultPagamento = await criarLinkPagamentoSite(
                     String(novoId),
                     clienteEmail,
                     clienteNome,
                     clienteDocumento || '12345678909',
+                    clienteTelefone || '31999999999',
+                    clienteEndereco,
+                    clienteNumero,
+                    clienteBairro,
+                    clienteCidade,
+                    clienteUf,
+                    clienteCep,
                     itensParaPagamento,
                     metodoEscolhido
                 );
@@ -8237,6 +8263,7 @@ var itensParaPagamento = carrinho.map(function(item) {
         btnFinalizar.disabled = false;
     }
 }
+
 
 
         function abrirCadastroDiretoCheckout() {
