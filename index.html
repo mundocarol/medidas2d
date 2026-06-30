@@ -2540,7 +2540,7 @@
         <section class="hero-banner">
             <div class="hero-content">
                 <h1>Caixas Kraft, Triplex, Sacolas</h1>
-                <p>Distribuição 2 direto de Fábrica para todo Brasil</p>
+                <p>Distribuição 1 direto de Fábrica para todo Brasil</p>
             </div>
         </section>
 
@@ -3258,7 +3258,7 @@
         // ============================================================
         // CONFIGURAÇÃO DA API, WHATSAPP E PAGAR.ME
         // ============================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxPc18Q6Ku8cCjGoe4Xr088KLYk4mR0IPv4ywhGvqvaf8h0UFnevabY9UlCc-kWxjfUuw/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzsr5a5B4t9Y2cbkNnuEwubTpF5F6jECECYYWYdM3YL_ETfkBnTFoXFGVrg8Asz3rgATQ/exec';
         const WHATSAPP_NUMBER = '5531984834383';
         const PIX_KEY = '10648303000179';
 
@@ -8141,13 +8141,17 @@ function atualizarResumoFinal() {
                 
                 var metodoEscolhido = checkoutState.pagamentoSelecionado || 'PIX';
                 
-                var itensParaPagamento = carrinho.map(function(item) {
-                    return {
-                        nome: item.name,
-                        price: item.price || 0,
-                        quantity: item.totalUnits || item.quantity || 1
-                    };
-                });
+                // ============================================================
+// PREPARA OS ITENS (ARREDONDANDO VALORES)
+// ============================================================
+var itensParaPagamento = carrinho.map(function(item) {
+    var preco = item.price || 0;
+    return {
+        nome: item.name,
+        price: Math.round(preco * 100) / 100, // ← ARREDONDA PARA 2 CASAS
+        quantity: item.totalUnits || item.quantity || 1
+    };
+});
 
                 if (freteValor > 0) {
                     itensParaPagamento.push({
