@@ -3317,7 +3317,7 @@
         // ============================================================
         // CONFIGURAÇÃO DA API, WHATSAPP E PAGAR.ME
         // ============================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx9EwdQOD_QKqXEvakyCtPdquEwzS9xMgqNfQeFb3vI85rscS4NFImZXR2RPPWVYKl8ng/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyZR4IwnC4akylOFXVD6OrzZ_8ygDXoarGRQ7P5I7DqxXR60MO8frt7Jx6NBjGYhRwKsQ/exec';
         const WHATSAPP_NUMBER = '5531984834383';
         const PIX_KEY = '10648303000179';
 
@@ -4515,7 +4515,7 @@ async function calcularFreteCarrinho() {
 
 
 // ============================================================
-// CRIAR LINK DE PAGAMENTO (CHAMA O APPS SCRIPT)
+// CRIAR LINK DE PAGAMENTO (CHAMA O APPS SCRIPT - VIA GET)
 // ============================================================
 async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clienteDocumento, itens, metodoPagamento) {
   try {
@@ -4524,13 +4524,13 @@ async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clien
     
     // Mapeia o método para o formato do Pagar.me
     var metodoMap = {
-      'PIX': ['pix'],
-      'BOLETO': ['boleto'],
-      'CARTAO': ['credit_card'],
-      'CARTÃO': ['credit_card']
+      'PIX': 'pix',
+      'BOLETO': 'boleto',
+      'CARTAO': 'credit_card',
+      'CARTÃO': 'credit_card'
     };
     
-    var metodos = metodoMap[metodoPagamento ? metodoPagamento.toUpperCase() : 'PIX'] || ['pix'];
+    var metodo = metodoMap[metodoPagamento ? metodoPagamento.toUpperCase() : 'PIX'] || 'pix';
     
     // Prepara os itens
     var itensFormatados = itens.map(function(item) {
@@ -4541,26 +4541,30 @@ async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clien
       };
     });
     
-    // Chama o Apps Script
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        acao: 'criar_link_pagamento',
-        dados: {
-          pedidoId: pedidoId,
-          clienteEmail: clienteEmail,
-          clienteNome: clienteNome,
-          clienteDocumento: clienteDocumento || '12345678909',
-          itens: itensFormatados,
-          metodosPagamento: metodos
-        }
-      })
-    });
+    // Converte para JSON e codifica
+    var dados = {
+      acao: 'criar_link_pagamento',
+      pedidoId: pedidoId,
+      clienteEmail: clienteEmail,
+      clienteNome: clienteNome,
+      clienteDocumento: clienteDocumento || '12345678909',
+      itens: JSON.stringify(itensFormatados),
+      metodosPagamento: metodo
+    };
     
+    // Monta a URL com parâmetros GET
+    var url = APPS_SCRIPT_URL + '?';
+    for (var key in dados) {
+      url += key + '=' + encodeURIComponent(dados[key]) + '&';
+    }
+    url = url.slice(0, -1); // Remove o último '&'
+    
+    console.log('📤 URL:', url);
+    
+    // Faz a requisição GET
+    const response = await fetch(url);
     const result = await response.json();
+    
     console.log('📥 Resposta do Apps Script:', result);
     return result;
     
@@ -4622,24 +4626,17 @@ function irParaPagamentoPedido(pedidoId) {
 }
 
 // ============================================================
-// VERIFICAR STATUS DO PAGAMENTO
+// VERIFICAR STATUS DO PAGAMENTO (VIA GET)
 // ============================================================
 async function verificarStatusPagamentoPagarMe(checkoutId) {
   try {
     console.log('🔍 Verificando status do checkout:', checkoutId);
     
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        acao: 'verificar_status_pagamento',
-        checkoutId: checkoutId
-      })
-    });
+    var url = APPS_SCRIPT_URL + '?acao=verificar_status_pagamento&checkoutId=' + encodeURIComponent(checkoutId);
     
+    const response = await fetch(url);
     const result = await response.json();
+    
     console.log('📥 Status do pagamento:', result);
     return result;
     
