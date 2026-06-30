@@ -2483,6 +2483,73 @@
     }
 }
 
+/* ===== MODAL PIX ===== */
+#pixModal .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top: 4px solid var(--primary-blue);
+    border-radius: 50%;
+    animation: spinPix 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spinPix {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#pixModal .modal-content {
+    max-width: 550px;
+}
+
+#pixQrCodeContainer {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    display: inline-block;
+    border: 2px solid #e8ecf0;
+    margin-bottom: 15px;
+}
+
+#pixQrCodeImage {
+    max-width: 250px;
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+#pixCopiaCola {
+    word-break: break-all;
+    font-size: 13px;
+    color: #333;
+    font-family: monospace;
+    max-height: 80px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+/* ===== BOTÃO FINALIZAR PAGAMENTO ===== */
+#btnFinalizarPagamento {
+    background: #25D366;
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+#btnFinalizarPagamento:hover {
+    background: #1da851;
+    transform: scale(1.02);
+}
+
         
     </style>
 </head>
@@ -2540,7 +2607,7 @@
         <section class="hero-banner">
             <div class="hero-content">
                 <h1>Caixas Kraft, Triplex, Sacolas</h1>
-                <p>Distribuição 1 direto de Fábrica para todo Brasil</p>
+                <p>Distribuição 8 direto de Fábrica para todo Brasil</p>
             </div>
         </section>
 
@@ -2951,7 +3018,7 @@
 
     
 
-    <!-- ============================================================ -->
+  <!-- ============================================================ -->
 <!-- MODAL CONFIRMAÇÃO - SIMPLIFICADO -->
 <!-- ============================================================ -->
 <div class="modal confirmacao-modal" id="confirmacaoModal">
@@ -2960,15 +3027,17 @@
         <h2 style="color:var(--success);">✅ Pedido Realizado!</h2>
         <p style="color:#666;margin:10px 0;">Seu pedido foi confirmado com sucesso.</p>
         <div class="numero-pedido" id="confirmacaoNumeroPedido">#13001</div>
-        <p style="color:#888;font-size:14px;">Clique no botão abaixo para finalizar o pagamento.</p>
-        <div style="margin-top:20px;">
-            <button id="btnFinalizarPagamento" class="btn-checkout" style="background:#25D366;border:none;padding:14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:17px;color:white;width:100%;transition:all 0.3s;">
+        <p style="color:#888;font-size:14px;" id="confirmacaoMensagem">Aguarde o redirecionamento para o pagamento...</p>
+        <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button id="btnFinalizarPagamento" class="btn-checkout" style="background:#25D366;flex:1;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:16px;color:white;transition:all 0.3s;display:none;">
                 <i class="fas fa-credit-card"></i> Finalizar Pagamento
+            </button>
+            <button onclick="fecharModal('confirmacaoModal')" style="flex:1;background:#e0e0e0;color:#333;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:16px;">
+                Ver depois
             </button>
         </div>
     </div>
 </div>
-
     <!-- ============================================================ -->
     <!-- MODAL DADOS PESSOAIS -->
     <!-- ============================================================ -->
@@ -3258,7 +3327,7 @@
         // ============================================================
         // CONFIGURAÇÃO DA API, WHATSAPP E PAGAR.ME
         // ============================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbx0U-ZJC0nW_47T8GLjtbyEau7tNgM3etXY2M2PoJl0TTuBOxQ8eA-lXqM9E_WcwL4F-Q/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxGlarNpCIyA0ayfojxidydof1JUXkxvFZNF_Ij_apDuvsNCVN0qxr2lcvar9VVx-lgpQ/exec';
         const WHATSAPP_NUMBER = '5531984834383';
         const PIX_KEY = '10648303000179';
 
@@ -4463,7 +4532,6 @@ async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clien
     console.log('🔄 Criando link de pagamento para pedido #' + pedidoId);
     console.log('💳 Método escolhido:', metodoPagamento);
     
-    // Mapeia o método para o formato do Pagar.me
     var metodoMap = {
       'PIX': 'pix',
       'BOLETO': 'boleto',
@@ -4473,7 +4541,6 @@ async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clien
     
     var metodo = metodoMap[metodoPagamento ? metodoPagamento.toUpperCase() : 'PIX'] || 'pix';
     
-    // Prepara os itens
     var itensFormatados = itens.map(function(item) {
       return {
         nome: item.nome || item.name || 'Produto',
@@ -4482,9 +4549,6 @@ async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clien
       };
     });
     
-    // ============================================================
-    // CONVERTE PARA JSON E CODIFICA
-    // ============================================================
     var dados = {
       acao: 'criar_link_pagamento',
       pedidoId: pedidoId,
@@ -4502,7 +4566,6 @@ async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clien
       metodosPagamento: metodo
     };
     
-    // Monta a URL com parâmetros GET
     var url = APPS_SCRIPT_URL + '?';
     for (var key in dados) {
       url += key + '=' + encodeURIComponent(dados[key]) + '&';
@@ -4511,7 +4574,6 @@ async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clien
     
     console.log('📤 URL:', url);
     
-    // Faz a requisição GET
     const response = await fetch(url);
     const result = await response.json();
     
@@ -4526,6 +4588,147 @@ async function criarLinkPagamentoSite(pedidoId, clienteEmail, clienteNome, clien
     };
   }
 }
+
+// ============================================================
+// FUNÇÕES PARA EXIBIR QR CODE PIX
+// ============================================================
+
+// ============================================================
+// MOSTRA MODAL PIX COM QR CODE
+// ============================================================
+function mostrarPixModal(pixData, total) {
+    var modal = document.getElementById('pixModal');
+    var loading = document.getElementById('pixLoading');
+    var content = document.getElementById('pixContent');
+    var qrImage = document.getElementById('pixQrCodeImage');
+    var copiaCola = document.getElementById('pixCopiaCola');
+    var totalEl = document.getElementById('pixTotal');
+    var expiraEl = document.getElementById('pixExpira');
+    
+    if (!modal) {
+        console.error('❌ Modal PIX não encontrado');
+        return;
+    }
+    
+    loading.style.display = 'block';
+    content.style.display = 'none';
+    modal.style.display = 'block';
+    
+    if (pixData && pixData.qrCode) {
+        if (pixData.qrCode.startsWith('data:image')) {
+            qrImage.src = pixData.qrCode;
+        } else {
+            qrImage.src = 'data:image/png;base64,' + pixData.qrCode;
+        }
+        qrImage.style.display = 'block';
+    } else {
+        qrImage.style.display = 'none';
+        console.warn('⚠️ QR Code não disponível na resposta');
+    }
+    
+    if (pixData && pixData.copiaCola) {
+        copiaCola.textContent = pixData.copiaCola;
+    } else {
+        copiaCola.textContent = 'Código PIX não disponível';
+    }
+    
+    totalEl.textContent = (total || 0).toFixed(2).replace('.', ',');
+    
+    if (pixData && pixData.expiresIn) {
+        expiraEl.textContent = pixData.expiresIn;
+    }
+    
+    loading.style.display = 'none';
+    content.style.display = 'block';
+}
+
+// ============================================================
+// COPIAR CÓDIGO COPIA E COLA
+// ============================================================
+function copiarPixCopiaCola() {
+    var texto = document.getElementById('pixCopiaCola').textContent;
+    if (!texto || texto === 'Código PIX não disponível') {
+        mostrarNotificacao('⚠️ Código PIX não disponível.', 'warning');
+        return;
+    }
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto).then(function() {
+            mostrarNotificacao('✅ Código PIX copiado!', 'success');
+        }).catch(function() {
+            fallbackCopiar(texto);
+        });
+    } else {
+        fallbackCopiar(texto);
+    }
+}
+
+function fallbackCopiar(texto) {
+    var textarea = document.createElement('textarea');
+    textarea.value = texto;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    mostrarNotificacao('✅ Código PIX copiado!', 'success');
+}
+
+// ============================================================
+// VERIFICAR STATUS DO PAGAMENTO
+// ============================================================
+async function verificarPagamentoPix(checkoutId) {
+    try {
+        console.log('🔍 Verificando status do PIX:', checkoutId);
+        
+        var url = APPS_SCRIPT_URL + '?acao=verificar_status_pagamento&checkoutId=' + encodeURIComponent(checkoutId);
+        
+        var response = await fetch(url);
+        var result = await response.json();
+        
+        if (result.isPaid) {
+            console.log('✅ Pagamento confirmado!');
+            mostrarNotificacao('✅ Pagamento recebido com sucesso!', 'success');
+            fecharModal('pixModal');
+            setTimeout(function() {
+                window.location.reload();
+            }, 1500);
+            return true;
+        }
+        return false;
+        
+    } catch (error) {
+        console.error('❌ Erro ao verificar status:', error);
+        return false;
+    }
+}
+
+// ============================================================
+// INICIAR MONITORAMENTO DO PAGAMENTO
+// ============================================================
+function iniciarMonitoramentoPix(checkoutId, intervalo) {
+    intervalo = intervalo || 5000;
+    var tentativas = 0;
+    var maxTentativas = 120;
+    
+    console.log('🔄 Iniciando monitoramento do PIX...');
+    
+    var intervalId = setInterval(async function() {
+        tentativas++;
+        if (tentativas > maxTentativas) {
+            clearInterval(intervalId);
+            console.log('⏰ Tempo de monitoramento esgotado');
+            mostrarNotificacao('⏰ Tempo de espera esgotado. Se já pagou, aguarde a confirmação.', 'warning');
+            return;
+        }
+        var pago = await verificarPagamentoPix(checkoutId);
+        if (pago) {
+            clearInterval(intervalId);
+        }
+    }, intervalo);
+}
+
 
 // ============================================================
 // SALVAR CHECKOUT ID NO LOCALSTORAGE
@@ -7908,9 +8111,6 @@ function atualizarResumoFinal() {
         const clienteTelefone = checkoutState.clienteData?.telefone || usuarioLogado?.telefone || localStorage.getItem('clienteTelefone') || '';
         const clienteDocumento = checkoutState.clienteData?.documento || usuarioLogado?.documento || localStorage.getItem('clienteDocumento') || '';
         
-        // ============================================================
-        // DADOS DO ENDEREÇO PARA ENVIAR AO PAGAR.ME
-        // ============================================================
         const enderecoCompleto = checkoutState.enderecoSelecionado || {};
         const clienteEndereco = enderecoCompleto.endereco || 'Rua Teste';
         const clienteNumero = enderecoCompleto.numero || '123';
@@ -7920,7 +8120,7 @@ function atualizarResumoFinal() {
         const clienteCep = enderecoCompleto.cep || '30100000';
 
         // ============================================================
-        // FORMATAR ITENS COM STATUS DE PRODUÇÃO
+        // FORMATAR ITENS
         // ============================================================
         let totalProdutos = 0;
         const itensFormatados = carrinho.map(item => {
@@ -7941,7 +8141,6 @@ function atualizarResumoFinal() {
             const temEstoque = !isProducao && stock > 0;
             
             let nomeCompleto = item.name || 'Produto';
-            
             if (isProducao && prazoProducao > 0) {
                 nomeCompleto = `${nomeCompleto} (Produção ${prazoProducao} dias)`;
             } else if (isProducao) {
@@ -7979,22 +8178,16 @@ function atualizarResumoFinal() {
         }
         const totalFinal = (totalProdutos - desconto) + freteValor;
 
+        // ============================================================
+        // VERIFICAR ESTOQUE
+        // ============================================================
         const itensParaBaixar = [];
         carrinho.forEach(item => {
             const product = encontrarProduto(item.productId);
             const totalUnidades = item.totalUnits || (item.quantity || 0);
             const estoqueAtual = product ? parseInt(product.stock) || 0 : 0;
-            
             const isProducao = totalUnidades > estoqueAtual;
-            
-            console.log(`🔍 Verificando produto: ${item.name}`);
-            console.log(`   - productId: ${item.productId}`);
-            console.log(`   - stock atual: ${estoqueAtual}`);
-            console.log(`   - totalUnidades solicitado: ${totalUnidades}`);
-            console.log(`   - isProducao: ${isProducao}`);
-            
             const baixarEstoque = !isProducao && estoqueAtual > 0;
-            console.log(`   - baixarEstoque: ${baixarEstoque}`);
             
             if (baixarEstoque) {
                 itensParaBaixar.push({
@@ -8004,19 +8197,14 @@ function atualizarResumoFinal() {
                     estoqueAtual: estoqueAtual,
                     novoEstoque: estoqueAtual - totalUnidades
                 });
-                console.log(`   ✅ Será baixado: ${totalUnidades} unidades. Novo estoque: ${estoqueAtual - totalUnidades}`);
-            } else {
-                console.log(`   ❌ NÃO será baixado.`);
-                if (isProducao) {
-                    console.log(`   🔨 Produto em produção (${totalUnidades} > ${estoqueAtual}), não baixa estoque.`);
-                } else if (estoqueAtual === 0) {
-                    console.log(`   ⚠️ Estoque zerado.`);
-                }
             }
         });
 
         console.log('📦 Total de itens para baixar estoque:', itensParaBaixar.length);
 
+        // ============================================================
+        // DADOS DO PEDIDO
+        // ============================================================
         pedidoDataEnvio = {
             clienteNome: clienteNome,
             clienteEmail: clienteEmail,
@@ -8066,6 +8254,9 @@ function atualizarResumoFinal() {
             })
         };
 
+        // ============================================================
+        // SALVAR PEDIDO NA PLANILHA
+        // ============================================================
         await fetch(API_URL, {
             method: 'POST',
             mode: 'no-cors',
@@ -8084,31 +8275,20 @@ function atualizarResumoFinal() {
         if (pedidoEncontrado) {
             console.log(`✅ Pedido #${novoId} CONFIRMADO na planilha!`);
             
+            // ============================================================
+            // BAIXAR ESTOQUE
+            // ============================================================
             if (pedidoDataEnvio.itensParaBaixar && pedidoDataEnvio.itensParaBaixar.length > 0) {
                 try {
                     const atualizacoes = pedidoDataEnvio.itensParaBaixar.map(item => ({
                         productId: item.productId,
                         novoEstoque: item.novoEstoque
                     }));
-                    
-                    console.log('📤 Enviando atualizações de estoque:', atualizacoes);
-                    
                     await atualizarEstoquePlanilha(atualizacoes);
-                    
-                    pedidoDataEnvio.itensParaBaixar.forEach(item => {
-                        const product = encontrarProduto(item.productId);
-                        if (product) {
-                            product.stock = item.novoEstoque;
-                            console.log(`📦 Produto "${product.name}" novo estoque: ${product.stock}`);
-                        }
-                    });
-                    
                     console.log('✅ Estoque baixado com sucesso!');
                 } catch (error) {
                     console.error('❌ Erro ao baixar estoque:', error);
                 }
-            } else {
-                console.log('ℹ️ Nenhum item para baixar estoque.');
             }
 
             // ============================================================
@@ -8179,9 +8359,6 @@ function atualizarResumoFinal() {
 
                 console.log('📦 Itens para pagamento (com frete):', itensParaPagamento);
                 
-                // ============================================================
-                // CHAMA O APPS SCRIPT PARA CRIAR O LINK (COM DADOS COMPLETOS)
-                // ============================================================
                 var resultPagamento = await criarLinkPagamentoSite(
                     String(novoId),
                     clienteEmail,
@@ -8203,21 +8380,68 @@ function atualizarResumoFinal() {
                     salvarCheckoutIdPedido(String(novoId), resultPagamento.checkoutId);
                     
                     // ============================================================
-                    // MOSTRA CONFIRMAÇÃO E REDIRECIONA DIRETO
+                    // VERIFICA SE É PIX E SE TEM QR CODE
                     // ============================================================
-                    document.getElementById('confirmacaoNumeroPedido').textContent = `#${novoId}`;
-                    document.getElementById('confirmacaoModal').style.display = 'block';
-                    
-                    // Adiciona evento ao botão "Finalizar Pagamento"
-                    document.getElementById('btnFinalizarPagamento').onclick = function() {
-                        fecharModal('confirmacaoModal');
-                        if (resultPagamento && resultPagamento.success) {
-                            window.open(resultPagamento.paymentLink, '_blank');
-                            mostrarNotificacao('🔄 Redirecionando para Pagar.me...', 'info');
+                    if (metodoEscolhido === 'PIX' && resultPagamento.pix && resultPagamento.pix.qrCode) {
+                        console.log('✅ Exibindo QR Code PIX diretamente no site');
+                        
+                        // Mostra o modal com QR Code
+                        mostrarPixModal(resultPagamento.pix, resultPagamento.total / 100);
+                        
+                        // Inicia monitoramento do pagamento
+                        iniciarMonitoramentoPix(resultPagamento.checkoutId);
+                        
+                        // Fecha o checkout
+                        if (typeof fecharCheckout === 'function') {
+                            fecharCheckout();
                         } else {
-                            mostrarNotificacao('⚠️ Link de pagamento não disponível.', 'warning');
+                            document.getElementById('checkoutPage').style.display = 'none';
+                            document.body.style.overflow = '';
                         }
-                    };
+                        
+                        // Limpa o carrinho
+                        carrinho = [];
+                        salvarCarrinho();
+                        atualizarBadge();
+                        if (currentProducts && currentProducts.length > 0) renderizarProdutos();
+                        
+                    } else {
+                        // ============================================================
+                        // SE FOR CARTÃO OU BOLETO, REDIRECIONA PARA O LINK
+                        // ============================================================
+                        console.log('🔗 Redirecionando para o Pagar.me (Cartão/Boleto)');
+                        
+                        // Mostra modal de confirmação
+                        document.getElementById('confirmacaoNumeroPedido').textContent = `#${novoId}`;
+                        document.getElementById('confirmacaoMensagem').textContent = 'Clique no botão abaixo para finalizar o pagamento.';
+                        document.getElementById('btnFinalizarPagamento').style.display = 'block';
+                        document.getElementById('confirmacaoModal').style.display = 'block';
+                        
+                        // Adiciona evento ao botão
+                        document.getElementById('btnFinalizarPagamento').onclick = function() {
+                            fecharModal('confirmacaoModal');
+                            if (resultPagamento && resultPagamento.success) {
+                                window.open(resultPagamento.paymentLink, '_blank');
+                                mostrarNotificacao('🔄 Redirecionando para Pagar.me...', 'info');
+                            } else {
+                                mostrarNotificacao('⚠️ Link de pagamento não disponível.', 'warning');
+                            }
+                        };
+                        
+                        // Fecha o checkout
+                        if (typeof fecharCheckout === 'function') {
+                            fecharCheckout();
+                        } else {
+                            document.getElementById('checkoutPage').style.display = 'none';
+                            document.body.style.overflow = '';
+                        }
+                        
+                        // Limpa o carrinho
+                        carrinho = [];
+                        salvarCarrinho();
+                        atualizarBadge();
+                        if (currentProducts && currentProducts.length > 0) renderizarProdutos();
+                    }
                     
                 } else {
                     console.warn('⚠️ Erro ao criar link de pagamento:', resultPagamento.error);
@@ -8229,20 +8453,11 @@ function atualizarResumoFinal() {
                 mostrarNotificacao('⚠️ Erro no pagamento.', 'error');
             }
 
-            carrinho = [];
-            salvarCarrinho();
-            atualizarBadge();
-            if (currentProducts && currentProducts.length > 0) renderizarProdutos();
-
+            // ============================================================
+            // LIMPAR LOADING
+            // ============================================================
             document.getElementById('checkoutLoading').style.display = 'none';
             document.getElementById('checkoutContent').style.display = 'block';
-            
-            if (typeof fecharCheckout === 'function') {
-                fecharCheckout();
-            } else {
-                document.getElementById('checkoutPage').style.display = 'none';
-                document.body.style.overflow = '';
-            }
             
         } else {
             console.warn(`⚠️ Pedido #${novoId} NÃO ENCONTRADO na planilha!`);
@@ -8806,6 +9021,67 @@ function init() {
         console.log('🚀 MC Embalagens BH - Loja Virtual');
         console.log('📦 Versão com todas as melhorias implementadas!');
     </script>
+
+    <!-- ============================================================ -->
+<!-- MODAL PIX - QR CODE DIRETO -->
+<!-- ============================================================ -->
+<div class="modal" id="pixModal">
+    <div class="modal-content" style="max-width:550px;">
+        <span class="modal-close" onclick="fecharModal('pixModal')">&times;</span>
+        <h2 style="text-align:center;color:var(--primary-dark);margin-bottom:5px;">
+            <i class="fas fa-qrcode" style="color:#25D366;"></i> Pague com PIX
+        </h2>
+        <p style="text-align:center;color:#888;font-size:14px;margin-bottom:15px;">
+            Escaneie o QR Code ou copie o código
+        </p>
+        
+        <div id="pixContainer" style="text-align:center;padding:10px 0;">
+            <!-- LOADING -->
+            <div id="pixLoading" style="padding:30px;">
+                <div class="spinner" style="width:40px;height:40px;border:4px solid #e0e0e0;border-top:4px solid var(--primary-blue);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 15px;"></div>
+                <p style="color:#666;">Gerando QR Code...</p>
+            </div>
+            
+            <!-- CONTEÚDO -->
+            <div id="pixContent" style="display:none;">
+                <!-- QR CODE -->
+                <div id="pixQrCodeContainer" style="background:white;padding:15px;border-radius:12px;display:inline-block;border:2px solid #e8ecf0;margin-bottom:15px;">
+                    <img id="pixQrCodeImage" src="" alt="QR Code PIX" style="max-width:250px;width:100%;height:auto;display:block;">
+                </div>
+                
+                <!-- VALOR -->
+                <div style="font-size:22px;font-weight:700;color:var(--primary-blue);margin:10px 0;">
+                    R$ <span id="pixTotal">0,00</span>
+                </div>
+                
+                <!-- CÓDIGO COPIA E COLA -->
+                <div style="background:#f8f9fa;border-radius:8px;padding:12px;margin:10px 0;border:1px solid #e8ecf0;text-align:left;">
+                    <div style="font-size:12px;color:#888;margin-bottom:4px;">📋 Código Copia e Cola</div>
+                    <div id="pixCopiaCola" style="word-break:break-all;font-size:13px;color:#333;font-family:monospace;max-height:80px;overflow-y:auto;"></div>
+                </div>
+                
+                <!-- BOTÕES -->
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:15px;">
+                    <button onclick="copiarPixCopiaCola()" style="flex:1;background:var(--primary-blue);color:white;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;transition:all 0.3s;">
+                        <i class="fas fa-copy"></i> Copiar Código
+                    </button>
+                    <button onclick="fecharModal('pixModal')" style="flex:1;background:#e0e0e0;color:#333;border:none;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                        Fechar
+                    </button>
+                </div>
+                
+                <!-- INFORMAÇÕES -->
+                <div style="margin-top:15px;padding:12px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;font-size:13px;color:#856404;text-align:left;">
+                    ⏱️ O QR Code expira em <span id="pixExpira">60</span> minutos.
+                    <br>
+                    💡 Após o pagamento, seu pedido será confirmado automaticamente.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 </body>
 </html>
 
