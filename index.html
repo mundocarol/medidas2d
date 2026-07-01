@@ -95,6 +95,222 @@
             }
         }
 
+
+/* ===== CARROSSEL DE BANNERS - LARGURA COMO REFERÊNCIA ===== */
+.banner-carousel {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    margin-bottom: 30px;
+    background: transparent;
+}
+
+.banner-carousel .slides-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 150px;
+    overflow: hidden;
+    background: transparent;
+}
+
+/* ===== CADA SLIDE ===== */
+.banner-carousel .slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+}
+
+.banner-carousel .slide.active {
+    opacity: 1;
+    position: relative; /* <- Só o ativo fica visível */
+}
+
+/* ===== IMAGEM - LARGURA 100%, ALTURA AUTOMÁTICA ===== */
+.banner-carousel .slide img {
+    width: 100%;
+    height: auto; /* <- Altura se ajusta automaticamente */
+    display: block;
+}
+
+/* ===== CONTEÚDO SOBRE A IMAGEM ===== */
+.banner-carousel .slide .slide-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 30px 40px;
+    background: transparent;
+    color: white;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.banner-carousel .slide .slide-content h2 {
+    font-size: clamp(20px, 3vw, 40px);
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.banner-carousel .slide .slide-content p {
+    font-size: clamp(12px, 1.5vw, 20px);
+    opacity: 0.95;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    max-width: 60%;
+}
+
+.banner-carousel .slide .slide-content .btn-banner {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 10px 28px;
+    background: #25D366;
+    color: white;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: clamp(12px, 1vw, 16px);
+    text-decoration: none;
+    transition: all 0.3s;
+    align-self: flex-start;
+    pointer-events: auto;
+}
+
+.banner-carousel .slide .slide-content .btn-banner:hover {
+    transform: scale(1.05);
+    background: #1da851;
+}
+
+/* ===== CONTROLES ===== */
+.banner-carousel .controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.banner-carousel .controls .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.banner-carousel .controls .dot.active {
+    background: white;
+    border-color: rgba(255,255,255,0.8);
+    transform: scale(1.2);
+}
+
+.banner-carousel .controls .dot:hover {
+    background: rgba(255,255,255,0.8);
+}
+
+.banner-carousel .arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.4);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 20px;
+    border-radius: 50%;
+    transition: all 0.3s;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+}
+
+.banner-carousel .arrow:hover {
+    background: rgba(0,0,0,0.7);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.banner-carousel .arrow.prev {
+    left: 15px;
+}
+
+.banner-carousel .arrow.next {
+    right: 15px;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 768px) {
+    .banner-carousel .slide .slide-content {
+        padding: 20px 24px;
+    }
+    
+    .banner-carousel .slide .slide-content p {
+        max-width: 80%;
+    }
+    
+    .banner-carousel .arrow {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+    
+    .banner-carousel .arrow.prev {
+        left: 6px;
+    }
+    
+    .banner-carousel .arrow.next {
+        right: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .banner-carousel .slide .slide-content {
+        padding: 14px 16px;
+    }
+    
+    .banner-carousel .slide .slide-content h2 {
+        font-size: 16px;
+        text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+    
+    .banner-carousel .slide .slide-content p {
+        font-size: 11px;
+        max-width: 90%;
+        text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    }
+    
+    .banner-carousel .slide .slide-content .btn-banner {
+        padding: 6px 16px;
+        font-size: 11px;
+        margin-top: 6px;
+    }
+    
+    .banner-carousel .controls .dot {
+        width: 8px;
+        height: 8px;
+    }
+}
+
         .header-actions {
             display: flex;
             gap: 12px;
@@ -2596,6 +2812,10 @@
     transform: scale(1.02);
 }
 
+
+
+
+
         
     </style>
 <!-- ============================================================ -->
@@ -2657,12 +2877,25 @@
     <!-- MAIN CONTENT -->
     <!-- ============================================================ -->
     <main class="main-content">
-        <section class="hero-banner">
-            <div class="hero-content">
-                <h1>Caixas Kraft, Triplex, Sacolas</h1>
-                <p>Distribuição direto de Fábrica para todo Brasil</p>
-            </div>
-        </section>
+        <!-- ============================================================ -->
+<!-- CARROSSEL DE BANNERS -->
+<!-- ============================================================ -->
+<section class="banner-carousel" id="bannerCarousel">
+    <div class="slides-wrapper" id="bannerSlides">
+        <!-- Os slides são inseridos dinamicamente via JavaScript -->
+    </div>
+    
+    <!-- Setas de navegação -->
+    <button class="arrow prev" onclick="mudarBanner(-1)" aria-label="Anterior">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+    <button class="arrow next" onclick="mudarBanner(1)" aria-label="Próximo">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+    
+    <!-- Indicadores (dots) -->
+    <div class="controls" id="bannerDots"></div>
+</section>
 
         <section class="categories-section" id="categoriesSection">
             <h2 class="section-title">Nossas Categorias</h2>
@@ -10040,6 +10273,206 @@ function copiarTextoSelecaoManual(texto) {
 
         console.log('🚀 MC Embalagens BH - Loja Virtual');
         console.log('📦 Versão com todas as melhorias implementadas!');
+
+
+
+        // ============================================================
+// CONFIGURAÇÃO DOS BANNERS - EDITAR AQUI!
+// ============================================================
+const BANNERS_CONFIG = [
+    {
+        id: 1,
+        imagem: 'https://cdn.awsli.com.br/1608/1608652/arquivos/gemini_generated_image_s85ug5s85ug5s85u.png',
+        titulo: '',
+        subtitulo: '',
+        link: '',
+        btnTexto: '',
+        ativo: true
+    },
+    {
+        id: 2,
+        imagem: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-caixa-kraft-com-visor.png',
+        titulo: '',
+        subtitulo: '',
+        link: '',
+        btnTexto: '',
+        ativo: true
+    },
+    {
+        id: 3,
+        imagem: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-caixas-kraft.png',
+        titulo: '',
+        subtitulo: '',
+        link: '',
+        btnTexto: '',
+        ativo: true
+    }
+];
+
+// ============================================================
+// ESTADO DO CARROSSEL
+// ============================================================
+let bannerAtual = 0;
+let intervalBanner = null;
+const BANNER_INTERVALO = 5000; // 5 segundos
+
+// ============================================================
+// INICIALIZAR CARROSSEL
+// ============================================================
+function initBannerCarousel() {
+    const slidesWrapper = document.getElementById('bannerSlides');
+    const dotsContainer = document.getElementById('bannerDots');
+    
+    if (!slidesWrapper) return;
+    
+    // Filtra apenas banners ativos
+    const bannersAtivos = BANNERS_CONFIG.filter(b => b.ativo !== false);
+    
+    if (bannersAtivos.length === 0) {
+        // Fallback: mostra um banner padrão
+        slidesWrapper.innerHTML = `
+            <div class="slide active">
+                <img src="https://via.placeholder.com/1200x400/1a3a5c/ffffff?text=MC+Embalagens+BH" alt="MC Embalagens BH">
+                <div class="slide-content">
+                    <h2>MC Embalagens BH</h2>
+                    <p>Sua loja de embalagens</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    // ============================================================
+    // CRIA OS SLIDES
+    // ============================================================
+    let slidesHTML = '';
+    bannersAtivos.forEach((banner, index) => {
+        const activeClass = index === 0 ? 'active' : '';
+        const imgSrc = banner.imagem || 'https://via.placeholder.com/1200x400/1a3a5c/ffffff?text=MC+Embalagens+BH';
+        
+        slidesHTML += `
+            <div class="slide ${activeClass}" data-index="${index}" onclick="clicarBanner(${index})">
+                <img src="${imgSrc}" alt="${banner.titulo || 'Banner'}" loading="lazy">
+                <div class="slide-content">
+                    ${banner.titulo ? `<h2>${banner.titulo}</h2>` : ''}
+                    ${banner.subtitulo ? `<p>${banner.subtitulo}</p>` : ''}
+                    ${banner.btnTexto ? `<span class="btn-banner">${banner.btnTexto}</span>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    slidesWrapper.innerHTML = slidesHTML;
+    
+    // ============================================================
+    // CRIA OS DOTS (indicadores)
+    // ============================================================
+    if (dotsContainer) {
+        let dotsHTML = '';
+        bannersAtivos.forEach((_, index) => {
+            const activeClass = index === 0 ? 'active' : '';
+            dotsHTML += `<span class="dot ${activeClass}" onclick="irParaBanner(${index})"></span>`;
+        });
+        dotsContainer.innerHTML = dotsHTML;
+    }
+    
+    // ============================================================
+    // INICIA O AUTOPLAY
+    // ============================================================
+    iniciarAutoplay();
+    
+    // Pausa o autoplay quando o mouse está sobre o carrossel
+    const carousel = document.getElementById('bannerCarousel');
+    if (carousel) {
+        carousel.addEventListener('mouseenter', pausarAutoplay);
+        carousel.addEventListener('mouseleave', iniciarAutoplay);
+        carousel.addEventListener('touchstart', pausarAutoplay);
+        carousel.addEventListener('touchend', iniciarAutoplay);
+    }
+}
+
+// ============================================================
+// FUNÇÕES DE CONTROLE DO CARROSSEL
+// ============================================================
+
+function mudarBanner(direcao) {
+    const slides = document.querySelectorAll('#bannerSlides .slide');
+    const dots = document.querySelectorAll('#bannerDots .dot');
+    const total = slides.length;
+    
+    if (total === 0) return;
+    
+    // Remove classe active do slide atual
+    slides[bannerAtual].classList.remove('active');
+    if (dots[bannerAtual]) dots[bannerAtual].classList.remove('active');
+    
+    // Calcula o próximo índice
+    bannerAtual = (bannerAtual + direcao + total) % total;
+    
+    // Adiciona classe active no novo slide
+    slides[bannerAtual].classList.add('active');
+    if (dots[bannerAtual]) dots[bannerAtual].classList.add('active');
+}
+
+function irParaBanner(index) {
+    const slides = document.querySelectorAll('#bannerSlides .slide');
+    const dots = document.querySelectorAll('#bannerDots .dot');
+    const total = slides.length;
+    
+    if (total === 0 || index === bannerAtual) return;
+    
+    // Remove classe active do slide atual
+    slides[bannerAtual].classList.remove('active');
+    if (dots[bannerAtual]) dots[bannerAtual].classList.remove('active');
+    
+    // Vai para o índice desejado
+    bannerAtual = index;
+    
+    // Adiciona classe active no novo slide
+    slides[bannerAtual].classList.add('active');
+    if (dots[bannerAtual]) dots[bannerAtual].classList.add('active');
+}
+
+function clicarBanner(index) {
+    const banner = BANNERS_CONFIG.filter(b => b.ativo !== false)[index];
+    if (banner && banner.link && banner.link !== '#') {
+        window.open(banner.link, '_blank');
+    } else if (banner) {
+        mostrarNotificacao(`Bem Vindo a MC Embalagens`, 'info');
+    }
+}
+
+// ============================================================
+// AUTOPLAY
+// ============================================================
+
+function iniciarAutoplay() {
+    pausarAutoplay();
+    const slides = document.querySelectorAll('#bannerSlides .slide');
+    if (slides.length > 1) {
+        intervalBanner = setInterval(() => {
+            mudarBanner(1);
+        }, BANNER_INTERVALO);
+    }
+}
+
+function pausarAutoplay() {
+    if (intervalBanner) {
+        clearInterval(intervalBanner);
+        intervalBanner = null;
+    }
+}
+
+// ============================================================
+// INICIALIZAR CARROSSEL AO CARREGAR A PÁGINA
+// ============================================================
+
+// Inicializa o carrossel quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(initBannerCarousel, 100);
+});
+
+
     </script>
 
     <!-- ============================================================ -->
