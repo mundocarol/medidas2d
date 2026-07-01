@@ -10195,6 +10195,8 @@ function copiarTextoSelecaoManual(texto) {
 }
 
 
+
+
         function controlarHistoricoNavegacao() {
             window.addEventListener('popstate', function(event) {
                 if (historicoNavegacao.length > 1) {
@@ -10275,124 +10277,8 @@ function copiarTextoSelecaoManual(texto) {
         console.log('📦 Versão com todas as melhorias implementadas!');
 
 
-
-        // ============================================================
-// CONFIGURAÇÃO DOS BANNERS - EDITAR AQUI!
 // ============================================================
-const BANNERS_CONFIG = [
-    {
-        id: 1,
-        imagem: 'https://cdn.awsli.com.br/1608/1608652/arquivos/gemini_generated_image_s85ug5s85ug5s85u.png',
-        titulo: '',
-        subtitulo: '',
-        link: '',
-        btnTexto: '',
-        ativo: true
-    },
-    {
-        id: 2,
-        imagem: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-caixa-kraft-com-visor.png',
-        titulo: '',
-        subtitulo: '',
-        link: '',
-        btnTexto: '',
-        ativo: true
-    },
-    {
-        id: 3,
-        imagem: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-caixas-kraft.png',
-        titulo: '',
-        subtitulo: '',
-        link: '',
-        btnTexto: '',
-        ativo: true
-    }
-];
-
-// ============================================================
-// ESTADO DO CARROSSEL
-// ============================================================
-let bannerAtual = 0;
-let intervalBanner = null;
-const BANNER_INTERVALO = 5000; // 5 segundos
-
-// ============================================================
-// INICIALIZAR CARROSSEL
-// ============================================================
-function initBannerCarousel() {
-    const slidesWrapper = document.getElementById('bannerSlides');
-    const dotsContainer = document.getElementById('bannerDots');
-    
-    if (!slidesWrapper) return;
-    
-    // Filtra apenas banners ativos
-    const bannersAtivos = BANNERS_CONFIG.filter(b => b.ativo !== false);
-    
-    if (bannersAtivos.length === 0) {
-        // Fallback: mostra um banner padrão
-        slidesWrapper.innerHTML = `
-            <div class="slide active">
-                <img src="https://via.placeholder.com/1200x400/1a3a5c/ffffff?text=MC+Embalagens+BH" alt="MC Embalagens BH">
-                <div class="slide-content">
-                    <h2>MC Embalagens BH</h2>
-                    <p>Sua loja de embalagens</p>
-                </div>
-            </div>
-        `;
-        return;
-    }
-    
-    // ============================================================
-    // CRIA OS SLIDES
-    // ============================================================
-    let slidesHTML = '';
-    bannersAtivos.forEach((banner, index) => {
-        const activeClass = index === 0 ? 'active' : '';
-        const imgSrc = banner.imagem || 'https://via.placeholder.com/1200x400/1a3a5c/ffffff?text=MC+Embalagens+BH';
-        
-        slidesHTML += `
-            <div class="slide ${activeClass}" data-index="${index}" onclick="clicarBanner(${index})">
-                <img src="${imgSrc}" alt="${banner.titulo || 'Banner'}" loading="lazy">
-                <div class="slide-content">
-                    ${banner.titulo ? `<h2>${banner.titulo}</h2>` : ''}
-                    ${banner.subtitulo ? `<p>${banner.subtitulo}</p>` : ''}
-                    ${banner.btnTexto ? `<span class="btn-banner">${banner.btnTexto}</span>` : ''}
-                </div>
-            </div>
-        `;
-    });
-    
-    slidesWrapper.innerHTML = slidesHTML;
-    
-    // ============================================================
-    // CRIA OS DOTS (indicadores)
-    // ============================================================
-    if (dotsContainer) {
-        let dotsHTML = '';
-        bannersAtivos.forEach((_, index) => {
-            const activeClass = index === 0 ? 'active' : '';
-            dotsHTML += `<span class="dot ${activeClass}" onclick="irParaBanner(${index})"></span>`;
-        });
-        dotsContainer.innerHTML = dotsHTML;
-    }
-    
-    // ============================================================
-    // INICIA O AUTOPLAY
-    // ============================================================
-    iniciarAutoplay();
-    
-    // Pausa o autoplay quando o mouse está sobre o carrossel
-    const carousel = document.getElementById('bannerCarousel');
-    if (carousel) {
-        carousel.addEventListener('mouseenter', pausarAutoplay);
-        carousel.addEventListener('mouseleave', iniciarAutoplay);
-        carousel.addEventListener('touchstart', pausarAutoplay);
-        carousel.addEventListener('touchend', iniciarAutoplay);
-    }
-}
-
-// ============================================================
-// FUNÇÕES DE CONTROLE DO CARROSSEL
+// FUNÇÕES DO CARROSSEL - DEFINIDAS PRIMEIRO
 // ============================================================
 
 function mudarBanner(direcao) {
@@ -10402,14 +10288,11 @@ function mudarBanner(direcao) {
     
     if (total === 0) return;
     
-    // Remove classe active do slide atual
     slides[bannerAtual].classList.remove('active');
     if (dots[bannerAtual]) dots[bannerAtual].classList.remove('active');
     
-    // Calcula o próximo índice
     bannerAtual = (bannerAtual + direcao + total) % total;
     
-    // Adiciona classe active no novo slide
     slides[bannerAtual].classList.add('active');
     if (dots[bannerAtual]) dots[bannerAtual].classList.add('active');
 }
@@ -10421,30 +10304,24 @@ function irParaBanner(index) {
     
     if (total === 0 || index === bannerAtual) return;
     
-    // Remove classe active do slide atual
     slides[bannerAtual].classList.remove('active');
     if (dots[bannerAtual]) dots[bannerAtual].classList.remove('active');
     
-    // Vai para o índice desejado
     bannerAtual = index;
     
-    // Adiciona classe active no novo slide
     slides[bannerAtual].classList.add('active');
     if (dots[bannerAtual]) dots[bannerAtual].classList.add('active');
 }
 
 function clicarBanner(index) {
-    const banner = BANNERS_CONFIG.filter(b => b.ativo !== false)[index];
+    const bannersAtivos = BANNERS_CONFIG.filter(b => b.ativo !== false);
+    const banner = bannersAtivos[index];
     if (banner && banner.link && banner.link !== '#') {
         window.open(banner.link, '_blank');
     } else if (banner) {
-        mostrarNotificacao(`Bem Vindo a MC Embalagens`, 'info');
+        mostrarNotificacao('', 'info');
     }
 }
-
-// ============================================================
-// AUTOPLAY
-// ============================================================
 
 function iniciarAutoplay() {
     pausarAutoplay();
@@ -10464,14 +10341,153 @@ function pausarAutoplay() {
 }
 
 // ============================================================
+// ESTADO DO CARROSSEL
+// ============================================================
+let bannerAtual = 0;
+let intervalBanner = null;
+const BANNER_INTERVALO = 5000; // 5 segundos
+
+// ============================================================
+// CONFIGURAÇÃO DOS BANNERS - PC E MOBILE
+// ============================================================
+const BANNERS_CONFIG = [
+    {
+        id: 1,
+        imagem_pc: 'https://cdn.awsli.com.br/1608/1608652/arquivos/bannr-fabrica-mc-embalagens-pc.png',
+        imagem_mobile: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-da-fabrica-mc-embalagens.png',
+        titulo: '',
+        subtitulo: '',
+        link: '',
+        btnTexto: '',
+        ativo: true
+    },
+    {
+        id: 2,
+        imagem_pc: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-caixa-kraft-com-visor.png',
+        imagem_mobile: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-caixas-com-visor-mobile.png',
+        titulo: '',
+        subtitulo: '',
+        link: '',
+        btnTexto: '',
+        ativo: true
+    },
+    {
+        id: 3,
+        imagem_pc: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-caixas-kraft.png',
+        imagem_mobile: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-caixas-com-visor-fechadas.png',
+        titulo: '',
+        subtitulo: '',
+        link: '',
+        btnTexto: '',
+        ativo: true
+    }
+];
+
+// ============================================================
+// INICIALIZAR CARROSSEL - COM SUPORTE PC/MOBILE
+// ============================================================
+function initBannerCarousel() {
+    const slidesWrapper = document.getElementById('bannerSlides');
+    const dotsContainer = document.getElementById('bannerDots');
+    
+    if (!slidesWrapper) return;
+    
+    const bannersAtivos = BANNERS_CONFIG.filter(b => b.ativo !== false);
+    
+    if (bannersAtivos.length === 0) {
+        slidesWrapper.innerHTML = `
+            <div class="slide active">
+                <img src="https://via.placeholder.com/1200x400/1a3a5c/ffffff?text=MC+Embalagens+BH" alt="MC Embalagens BH">
+                <div class="slide-content">
+                    <h2>MC Embalagens BH</h2>
+                    <p>Sua loja de embalagens</p>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    function getImagemBanner(banner) {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile && banner.imagem_mobile) {
+            return banner.imagem_mobile;
+        }
+        return banner.imagem_pc || banner.imagem;
+    }
+    
+    let slidesHTML = '';
+    bannersAtivos.forEach((banner, index) => {
+        const activeClass = index === 0 ? 'active' : '';
+        const imgSrc = getImagemBanner(banner);
+        
+        slidesHTML += `
+            <div class="slide ${activeClass}" data-index="${index}" onclick="clicarBanner(${index})">
+                <img src="${imgSrc}" alt="${banner.titulo || 'Banner'}" loading="lazy">
+                <div class="slide-content">
+                    ${banner.titulo ? `<h2>${banner.titulo}</h2>` : ''}
+                    ${banner.subtitulo ? `<p>${banner.subtitulo}</p>` : ''}
+                    ${banner.btnTexto ? `<span class="btn-banner">${banner.btnTexto}</span>` : ''}
+                </div>
+            </div>
+        `;
+    });
+    
+    slidesWrapper.innerHTML = slidesHTML;
+    
+    if (dotsContainer) {
+        let dotsHTML = '';
+        bannersAtivos.forEach((_, index) => {
+            const activeClass = index === 0 ? 'active' : '';
+            dotsHTML += `<span class="dot ${activeClass}" onclick="irParaBanner(${index})"></span>`;
+        });
+        dotsContainer.innerHTML = dotsHTML;
+    }
+    
+    iniciarAutoplay();
+    
+    const carousel = document.getElementById('bannerCarousel');
+    if (carousel) {
+        carousel.addEventListener('mouseenter', pausarAutoplay);
+        carousel.addEventListener('mouseleave', iniciarAutoplay);
+        carousel.addEventListener('touchstart', pausarAutoplay);
+        carousel.addEventListener('touchend', iniciarAutoplay);
+    }
+}
+
+// ============================================================
+// ATUALIZAR BANNERS AO REDIMENSIONAR A TELA
+// ============================================================
+let timeoutResize = null;
+window.addEventListener('resize', function() {
+    clearTimeout(timeoutResize);
+    timeoutResize = setTimeout(function() {
+        const slidesWrapper = document.getElementById('bannerSlides');
+        if (!slidesWrapper) return;
+        
+        const bannersAtivos = BANNERS_CONFIG.filter(b => b.ativo !== false);
+        const slides = slidesWrapper.querySelectorAll('.slide');
+        
+        slides.forEach((slide, index) => {
+            const banner = bannersAtivos[index];
+            if (!banner) return;
+            
+            const isMobile = window.innerWidth <= 768;
+            const imgSrc = isMobile && banner.imagem_mobile ? banner.imagem_mobile : (banner.imagem_pc || banner.imagem);
+            
+            const img = slide.querySelector('img');
+            if (img) {
+                img.src = imgSrc;
+            }
+        });
+    }, 300);
+});
+
+// ============================================================
 // INICIALIZAR CARROSSEL AO CARREGAR A PÁGINA
 // ============================================================
-
-// Inicializa o carrossel quando a página carregar
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initBannerCarousel, 100);
 });
-
 
     </script>
 
