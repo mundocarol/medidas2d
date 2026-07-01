@@ -3380,7 +3380,7 @@
         // ============================================================
         // CONFIGURAÇÃO DA API, WHATSAPP E PAGAR.ME
         // ============================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbz3JgaEBh4qimu_hcRW8ep4BG2qyXnl8C49nAoxR3IS5bxsMmEN4Bi_MZy2jO98Drf9Sg/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyUs5x6HG9tSJsVJBkQ98VdmlOJ56ZiWcbeTJbUur1I9yWvjEBPiBiFEEWO7kLjxb70nA/exec';
         const WHATSAPP_NUMBER = '5531984834383';
         const PIX_KEY = 'mcembalagensbh@gmail.com';
 
@@ -5065,34 +5065,70 @@ function salvarCheckoutIdPedido(pedidoId, checkoutId) {
 }
 
 // ============================================================
-// IR PARA PAGAMENTO DO PEDIDO
+// IR PARA PAGAMENTO DO PEDIDO (COM MÉTODO ESPECÍFICO)
 // ============================================================
-function irParaPagamentoPedido(pedidoId) {
-  var pedidosPendentes = JSON.parse(localStorage.getItem('pedidosPendentesPagamento') || '{}');
-  var dados = pedidosPendentes[pedidoId];
-  
-  if (dados && dados.checkoutId) {
-    // Verifica status primeiro
-    verificarStatusPagamentoPagarMe(dados.checkoutId).then(function(result) {
-      if (result.isPaid) {
-        mostrarNotificacao('✅ Este pedido já foi pago!', 'success');
-        fecharDetalhesPedido();
-        carregarPedidosCliente(usuarioLogado ? usuarioLogado.email : '');
+function irParaPagamentoPedido(pedidoId, metodo) {
+    console.log('🔄 Ir para pagamento do pedido #' + pedidoId + ' | Método: ' + metodo);
+    
+    var pedidosPendentes = JSON.parse(localStorage.getItem('pedidosPendentesPagamento') || '{}');
+    var dados = pedidosPendentes[pedidoId];
+    
+    // ============================================================
+    // SE FOR PIX, USA O MODAL MANUAL
+    // ============================================================
+    if (metodo === 'PIX') {
+        // Busca os dados do pedido para obter o total
+        fetch(API_URL)
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                var pedidos = data.pedidos || [];
+                var pedido = pedidos.find(function(p) { 
+                    return parseInt(p.id_pedido) === parseInt(pedidoId); 
+                });
+                
+                if (pedido) {
+                    var total = parseFloat(pedido.total) || 0;
+                    console.log('💳 Abrindo PIX para pedido #' + pedidoId + ' - Total: R$ ' + total.toFixed(2));
+                    fecharDetalhesPedido();
+                    setTimeout(function() {
+                        mostrarPixManual(pedidoId, total);
+                    }, 300);
+                } else {
+                    mostrarNotificacao('❌ Pedido não encontrado.', 'error');
+                }
+            })
+            .catch(function(error) {
+                console.error('❌ Erro ao buscar pedido:', error);
+                mostrarNotificacao('❌ Erro ao buscar dados do pedido.', 'error');
+            });
         return;
-      }
-      
-      // Se não foi pago, abre o link de pagamento
-      if (result.success && result.paymentLink) {
-        window.open(result.paymentLink, '_blank');
-        mostrarNotificacao('🔄 Redirecionando para pagamento...', 'info');
-      } else {
+    }
+    
+    // ============================================================
+    // CARTÃO OU BOLETO - USA O LINK DO PAGAR.ME
+    // ============================================================
+    if (dados && dados.checkoutId) {
+        // Verifica status primeiro
+        verificarStatusPagamentoPagarMe(dados.checkoutId).then(function(result) {
+            if (result.isPaid) {
+                mostrarNotificacao('✅ Este pedido já foi pago!', 'success');
+                fecharDetalhesPedido();
+                carregarPedidosCliente(usuarioLogado ? usuarioLogado.email : '');
+                return;
+            }
+            
+            // Se não foi pago, abre o link de pagamento
+            if (result.success && result.paymentLink) {
+                window.open(result.paymentLink, '_blank');
+                mostrarNotificacao('🔄 Redirecionando para pagamento...', 'info');
+            } else {
+                recriarLinkPagamento(pedidoId);
+            }
+        });
+    } else {
+        mostrarNotificacao('⚠️ Link de pagamento não encontrado.', 'warning');
         recriarLinkPagamento(pedidoId);
-      }
-    });
-  } else {
-    mostrarNotificacao('⚠️ Link de pagamento não encontrado.', 'warning');
-    recriarLinkPagamento(pedidoId);
-  }
+    }
 }
 
 // ============================================================
@@ -5124,77 +5160,77 @@ async function verificarStatusPagamentoPagarMe(checkoutId) {
 
 
 // ============================================================
-// RECRIAR LINK DE PAGAMENTO
+// RECRIAR LINK DE PAGAMENTO (COM MÉTODO ESPECÍFICO)
 // ============================================================
 async function recriarLinkPagamento(pedidoId) {
-  try {
-    mostrarNotificacao('🔄 Recriando link de pagamento...', 'info');
-    
-    // Busca os dados do pedido
-    const response = await fetch(API_URL);
-    const data = await response.json();
-    const pedidos = data.pedidos || [];
-    const pedido = pedidos.find(function(p) { 
-      return parseInt(p.id_pedido) === parseInt(pedidoId); 
-    });
-    
-    if (!pedido) {
-      mostrarNotificacao('❌ Pedido não encontrado.', 'error');
-      return;
-    }
-    
-    // Extrai os itens
-    var itens = [];
-    var total = parseFloat(pedido.total) || 0;
-    
     try {
-      var itensTexto = pedido.itens || '';
-      if (itensTexto.includes(' | ')) {
-        itens = itensTexto.split(' | ').map(function(part) {
-          var match = part.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
-          if (match) {
-            return {
-              nome: match[1].trim(),
-              price: parseFloat(match[4].replace(',', '.')) || 0,
-              quantity: parseInt(match[2]) * parseInt(match[3]) || 1
-            };
-          }
-          return { nome: part, price: 0, quantity: 1 };
+        mostrarNotificacao('🔄 Recriando link de pagamento...', 'info');
+        
+        // Busca os dados do pedido
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        const pedidos = data.pedidos || [];
+        const pedido = pedidos.find(function(p) { 
+            return parseInt(p.id_pedido) === parseInt(pedidoId); 
         });
-      }
-    } catch (e) {
-      console.error('Erro ao parsear itens:', e);
+        
+        if (!pedido) {
+            mostrarNotificacao('❌ Pedido não encontrado.', 'error');
+            return;
+        }
+        
+        // Extrai os itens
+        var itens = [];
+        var total = parseFloat(pedido.total) || 0;
+        
+        try {
+            var itensTexto = pedido.itens || '';
+            if (itensTexto.includes(' | ')) {
+                itens = itensTexto.split(' | ').map(function(part) {
+                    var match = part.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
+                    if (match) {
+                        return {
+                            nome: match[1].trim(),
+                            price: parseFloat(match[4].replace(',', '.')) || 0,
+                            quantity: parseInt(match[2]) * parseInt(match[3]) || 1
+                        };
+                    }
+                    return { nome: part, price: 0, quantity: 1 };
+                });
+            }
+        } catch (e) {
+            console.error('Erro ao parsear itens:', e);
+        }
+        
+        // Determina o método de pagamento
+        var metodo = 'PIX';
+        if (pedido.pagamento) {
+            var pag = String(pedido.pagamento).toUpperCase();
+            if (pag === 'CARTAO' || pag === 'CARTÃO') metodo = 'CARTAO';
+            else if (pag === 'BOLETO') metodo = 'BOLETO';
+        }
+        
+        var result = await criarLinkPagamentoSite(
+            pedidoId,
+            pedido.cliente_email || '',
+            pedido.cliente_nome || 'Cliente',
+            '',
+            itens,
+            metodo
+        );
+        
+        if (result.success) {
+            salvarCheckoutIdPedido(pedidoId, result.checkoutId);
+            window.open(result.paymentLink, '_blank');
+            mostrarNotificacao('✅ Link de pagamento recriado!', 'success');
+        } else {
+            mostrarNotificacao('❌ Erro ao recriar link: ' + result.error, 'error');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao recriar link:', error);
+        mostrarNotificacao('❌ Erro ao recriar link de pagamento.', 'error');
     }
-    
-    // Determina o método de pagamento (se tiver)
-    var metodo = 'PIX';
-    if (pedido.pagamento) {
-      var pag = String(pedido.pagamento).toUpperCase();
-      if (pag === 'CARTAO' || pag === 'CARTÃO') metodo = 'CARTAO';
-      else if (pag === 'BOLETO') metodo = 'BOLETO';
-    }
-    
-    var result = await criarLinkPagamentoSite(
-      pedidoId,
-      pedido.cliente_email || '',
-      pedido.cliente_nome || 'Cliente',
-      '',
-      itens,
-      metodo
-    );
-    
-    if (result.success) {
-      salvarCheckoutIdPedido(pedidoId, result.checkoutId);
-      window.open(result.paymentLink, '_blank');
-      mostrarNotificacao('✅ Link de pagamento recriado!', 'success');
-    } else {
-      mostrarNotificacao('❌ Erro ao recriar link: ' + result.error, 'error');
-    }
-    
-  } catch (error) {
-    console.error('❌ Erro ao recriar link:', error);
-    mostrarNotificacao('❌ Erro ao recriar link de pagamento.', 'error');
-  }
 }
 
 // ============================================================
@@ -5222,6 +5258,28 @@ function mostrarMensagemAtendente(cep) {
         </button>
     `;
     resultadoEl.appendChild(mensagemDiv);
+}
+
+
+// ============================================================
+// RECUPERAR DADOS DE PAGAMENTO SALVOS
+// ============================================================
+function recuperarDadosPagamento(pedidoId) {
+    try {
+        var pagamentosSalvos = JSON.parse(localStorage.getItem('pagamentosPedidos') || '{}');
+        var dados = pagamentosSalvos[pedidoId] || null;
+        
+        if (dados) {
+            console.log('📂 Dados de pagamento recuperados para pedido #' + pedidoId + ':', dados);
+        } else {
+            console.log('ℹ️ Nenhum dado de pagamento encontrado para pedido #' + pedidoId);
+        }
+        
+        return dados;
+    } catch (error) {
+        console.error('❌ Erro ao recuperar dados de pagamento:', error);
+        return null;
+    }
 }
 
 // ============================================================
@@ -7018,7 +7076,10 @@ function ajustarPacoteCarrinho(index, delta) {
             }
         }
 
-   function mostrarDetalhesPedido(pedido) {
+ // ============================================================
+// MOSTRAR DETALHES DO PEDIDO - CORRIGIDO (RASTREIO)
+// ============================================================
+function mostrarDetalhesPedido(pedido) {
     var modalAntigo = document.getElementById('detalhesPedidoModal');
     if (modalAntigo) modalAntigo.remove();
     
@@ -7028,143 +7089,257 @@ function ajustarPacoteCarrinho(index, delta) {
     modal.style.display = 'block';
     modal.style.zIndex = '3000';
     
+    // ============================================================
+    // LER DADOS DIRETAMENTE DA PLANILHA
+    // ============================================================
+    var pedidoObj = pedido;
+    if (typeof pedido === 'string') {
+        try { pedidoObj = JSON.parse(pedido); } catch(e) { pedidoObj = pedido; }
+    }
+    
+    // ============================================================
+    // DADOS BÁSICOS DA PLANILHA
+    // ============================================================
+    var idPedido = pedidoObj?.id_pedido || '???';
+    var status = pedidoObj?.status || 'Pendente';
+    var total = parseFloat(pedidoObj?.total || 0) || 0;
+    var data = pedidoObj?.data_pedido || '';
+    var clienteNome = pedidoObj?.cliente_nome || 'Não identificado';
+    var observacoes = pedidoObj?.observacoes || '';
+    var itensTexto = pedidoObj?.itens || '';
+    
+    var dataFormatada = data.replace('T', ' ').substring(0, 16);
+    
+    // ============================================================
+    // 🔧 EXTRAIR TUDO DAS OBSERVAÇÕES (CORRIGIDO)
+    // ============================================================
+    
+    // 1. EXTRAIR FRETE
+    var freteNome = 'Retirada na Loja';
+    var freteValor = 0;
+    var freteMatch = observacoes.match(/Frete:\s*([^(]+?)\s*\(R\$\s*([\d,.]+)\)/i);
+    if (freteMatch) {
+        freteNome = freteMatch[1].trim();
+        freteValor = parseFloat(freteMatch[2].replace(',', '.')) || 0;
+    }
+    
+    // 2. EXTRAIR PAGAMENTO
+    var pagamento = 'Não informado';
+    var pagamentoMatch = observacoes.match(/Pagamento:\s*([^|]+)/i);
+    if (pagamentoMatch) {
+        pagamento = pagamentoMatch[1].trim();
+    }
+    
+    // 3. EXTRAIR PRAZO
+    var prazoEntrega = 0;
+    var prazoMatch = observacoes.match(/Prazo:\s*(\d+)\s*dias?/i);
+    if (prazoMatch) {
+        prazoEntrega = parseInt(prazoMatch[1]) || 0;
+    }
+    
+    // ============================================================
+    // 🔧 EXTRAIR CÓDIGO DE RASTREIO (CORRIGIDO)
+    // ============================================================
+    var codigoRastreio = 'Não informado';
+    var observacoesLimpa = observacoes;
+    
+    // Tenta vários formatos de rastreio
+    var rastreioMatch = observacoes.match(/\|\s*Rastreio:\s*([A-Za-z0-9]+)/i);
+    if (!rastreioMatch) {
+        // Tenta sem o "Rastreio:"
+        rastreioMatch = observacoes.match(/\|\s*([A-Za-z0-9]{8,})/i);
+    }
+    if (!rastreioMatch) {
+        // Tenta formato BR123456789AR
+        rastreioMatch = observacoes.match(/\b([A-Z]{2}\d{9,12}[A-Z]{2})\b/i);
+    }
+    if (!rastreioMatch) {
+        // Tenta qualquer código alfanumérico com mais de 6 caracteres
+        rastreioMatch = observacoes.match(/\b([A-Za-z0-9]{6,})\b/);
+    }
+    
+    if (rastreioMatch) {
+        codigoRastreio = rastreioMatch[1].toUpperCase();
+        // Remove o rastreio das observações para não duplicar
+        observacoesLimpa = observacoesLimpa.replace(rastreioMatch[0], '').trim();
+        observacoesLimpa = observacoesLimpa.replace(/\s*\|\s*$/, '').trim();
+        observacoesLimpa = observacoesLimpa.replace(/^\s*\|\s*/, '').trim();
+    }
+    
+    console.log('📊 Dados extraídos das observações:');
+    console.log('  Frete:', freteNome, 'R$', freteValor);
+    console.log('  Pagamento:', pagamento);
+    console.log('  Prazo:', prazoEntrega);
+    console.log('  Rastreio:', codigoRastreio);
+    console.log('  Observações limpas:', observacoesLimpa);
+    
+    // ============================================================
+    // STATUS E CORES
+    // ============================================================
+    var statusLower = String(status).toLowerCase();
+    var isCancelado = statusLower === 'cancelado';
+    var isPendente = statusLower === 'pendente' || statusLower === 'pending' || statusLower === '';
+    
+    var statusColors = {
+        'pendente': '#f39c12',
+        'em andamento': '#3498db',
+        'enviado': '#2ecc71',
+        'entregue': '#27ae60',
+        'cancelado': '#e74c3c'
+    };
+    var statusColor = statusColors[statusLower] || '#888';
+    
+    // ============================================================
+    // STATUS DO PAGAMENTO
+    // ============================================================
+    var statusPagamentoExibido = isPendente ? 'Não informado' : '✅ Confirmado';
+    var corPagamento = isPendente ? '#888' : '#27ae60';
+    
+    // ============================================================
+    // PROCESSAR ITENS DA PLANILHA
+    // ============================================================
     var itensHtml = '';
     var totalItens = 0;
     var totalProdutos = 0;
     
     try {
-        var textoItens = '';
-        
-        if (typeof pedido === 'string') {
-            try {
-                pedido = JSON.parse(pedido);
-            } catch (e) {
-                console.warn('⚠️ Pedido é uma string, tentando usar como texto');
-            }
-        }
-        
-        if (pedido && typeof pedido === 'object') {
-            textoItens = pedido.itens || '';
-        } else {
-            textoItens = pedido || '';
-        }
-        
-        console.log('📝 Parseando itens do pedido #' + (pedido?.id_pedido || '') + ':', textoItens);
+        console.log('📝 Processando itens do pedido #' + idPedido + ':', itensTexto);
         
         var itens = [];
         
-        if (typeof textoItens === 'string' && textoItens.includes(' | ')) {
-            var partes = textoItens.split(' | ');
+        // ============================================================
+        // EXTRAIR ITENS DO TEXTO DA PLANILHA
+        // ============================================================
+        if (typeof itensTexto === 'string' && itensTexto.includes(' | ')) {
+            var partes = itensTexto.split(' | ');
             partes.forEach(function(part) {
+                // 🔧 CORREÇÃO: Extrai (1x 50 un) ou (1x 100 un) etc
                 var match = part.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
+                
+                if (!match) {
+                    match = part.match(/^(.+?)\s*\((\d+)x\s*(\d+)\)\s*-\s*R\$\s*([\d,.]+)/);
+                }
+                
                 if (match) {
                     var nomeCompleto = match[1].trim();
-                    var qtd = parseInt(match[2]) || 1;
-                    var pacote = parseInt(match[3]) || 1;
+                    var qtdPacotes = parseInt(match[2]) || 1;
+                    var tamanhoPacote = parseInt(match[3]) || 1;
                     var preco = parseFloat(match[4].replace(',', '.')) || 0;
-                    var totalUnidades = qtd * pacote;
+                    var totalUnidades = qtdPacotes * tamanhoPacote;
                     
-                    var isProducao = nomeCompleto.includes('Produção');
-                    var prazoMatch = nomeCompleto.match(/Produção\s*(\d*)\s*dias?/);
-                    var prazo = prazoMatch ? parseInt(prazoMatch[1]) : 0;
-                    var isDisponivel = nomeCompleto.includes('Disponível');
-                    
-                    console.log('🔍 Item encontrado:', {
-                        nome: nomeCompleto,
-                        isProducao: isProducao,
-                        prazo: prazo,
-                        isDisponivel: isDisponivel
-                    });
+                    var isProducao = part.toLowerCase().includes('produção');
+                    var prazoProd = 0;
+                    var prazoProdMatch = part.match(/Produção\s*(\d+)\s*dias?/i);
+                    if (prazoProdMatch) {
+                        prazoProd = parseInt(prazoProdMatch[1]) || 7;
+                    }
                     
                     var nomeLimpo = nomeCompleto;
-                    nomeLimpo = nomeLimpo.replace(/\(Produção\s*\d*\s*dias?\)/g, '');
-                    nomeLimpo = nomeLimpo.replace(/\(Produção\)/g, '');
-                    nomeLimpo = nomeLimpo.replace(/\(Disponível\)/g, '');
+                    nomeLimpo = nomeLimpo.replace(/\s*\*\s*.*$/, '');
+                    nomeLimpo = nomeLimpo.replace(/\s*Cod\s*-\s*\d+$/i, '');
                     nomeLimpo = nomeLimpo.trim();
                     if (!nomeLimpo) nomeLimpo = nomeCompleto;
                     
                     itens.push({
                         nome: nomeLimpo,
-                        nomeCompleto: nomeCompleto,
-                        quantidade: qtd,
-                        pacote_tamanho: pacote,
+                        qtdPacotes: qtdPacotes,
+                        tamanhoPacote: tamanhoPacote,
                         totalUnidades: totalUnidades,
                         price: preco,
                         isProducao: isProducao,
-                        prazoProducao: prazo,
-                        isDisponivel: isDisponivel
+                        prazoProducao: prazoProd
                     });
                 } else {
-                    itens.push({
-                        nome: part,
-                        quantidade: 1,
-                        pacote_tamanho: 1,
-                        totalUnidades: 1,
-                        price: 0,
-                        isProducao: false,
-                        prazoProducao: 0,
-                        isDisponivel: false
-                    });
+                    var matchSimples = part.match(/^(.+?)\s*-\s*R\$\s*([\d,.]+)/);
+                    if (matchSimples) {
+                        itens.push({
+                            nome: matchSimples[1].trim(),
+                            qtdPacotes: 1,
+                            tamanhoPacote: 1,
+                            totalUnidades: 1,
+                            price: parseFloat(matchSimples[2].replace(',', '.')) || 0,
+                            isProducao: false,
+                            prazoProducao: 0
+                        });
+                    } else {
+                        itens.push({
+                            nome: part.substring(0, 40),
+                            qtdPacotes: 1,
+                            tamanhoPacote: 1,
+                            totalUnidades: 1,
+                            price: 0,
+                            isProducao: false,
+                            prazoProducao: 0
+                        });
+                    }
                 }
             });
-        } else if (typeof textoItens === 'string' && textoItens) {
-            var matchPreco = textoItens.match(/R\$\s*([\d,.]+)/);
-            var preco = matchPreco ? parseFloat(matchPreco[1].replace(',', '.')) : 0;
-            itens.push({
-                nome: textoItens.substring(0, 40),
-                quantidade: 1,
-                pacote_tamanho: 1,
-                totalUnidades: 1,
-                price: preco || 0,
-                isProducao: textoItens.includes('Produção'),
-                prazoProducao: textoItens.includes('Produção') ? (textoItens.match(/Produção\s*(\d*)\s*dias?/) ? parseInt(textoItens.match(/Produção\s*(\d*)\s*dias?/)[1]) : 7) : 0,
-                isDisponivel: textoItens.includes('Disponível')
-            });
+        } else if (typeof itensTexto === 'string' && itensTexto) {
+            var matchUnico = itensTexto.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
+            if (matchUnico) {
+                itens.push({
+                    nome: matchUnico[1].trim(),
+                    qtdPacotes: parseInt(matchUnico[2]) || 1,
+                    tamanhoPacote: parseInt(matchUnico[3]) || 1,
+                    totalUnidades: parseInt(matchUnico[2]) * parseInt(matchUnico[3]),
+                    price: parseFloat(matchUnico[4].replace(',', '.')) || 0,
+                    isProducao: itensTexto.toLowerCase().includes('produção'),
+                    prazoProducao: itensTexto.match(/Produção\s*(\d+)\s*dias?/i) ? parseInt(itensTexto.match(/Produção\s*(\d+)\s*dias?/i)[1]) : 0
+                });
+            } else {
+                var matchPreco = itensTexto.match(/R\$\s*([\d,.]+)/);
+                itens.push({
+                    nome: itensTexto.substring(0, 40),
+                    qtdPacotes: 1,
+                    tamanhoPacote: 1,
+                    totalUnidades: 1,
+                    price: matchPreco ? parseFloat(matchPreco[1].replace(',', '.')) : 0,
+                    isProducao: itensTexto.toLowerCase().includes('produção'),
+                    prazoProducao: itensTexto.match(/Produção\s*(\d+)\s*dias?/i) ? parseInt(itensTexto.match(/Produção\s*(\d+)\s*dias?/i)[1]) : 0
+                });
+            }
         }
         
         if (itens.length === 0) {
             itens.push({
                 nome: 'Produto',
-                quantidade: 1,
-                pacote_tamanho: 1,
+                qtdPacotes: 1,
+                tamanhoPacote: 1,
                 totalUnidades: 1,
-                price: parseFloat(pedido?.total || 0) || 0,
+                price: parseFloat(pedidoObj?.total || 0) || 0,
                 isProducao: false,
-                prazoProducao: 0,
-                isDisponivel: false
+                prazoProducao: 0
             });
         }
         
-        console.log('📦 Itens processados final:', itens);
-        
+        // ============================================================
+        // MONTAR HTML DOS ITENS
+        // ============================================================
         totalItens = itens.length;
         itens.forEach(function(item, index) {
             var preco = parseFloat(item.price) || 0;
-            var qtd = parseInt(item.quantidade) || 1;
-            var pacote = parseInt(item.pacote_tamanho) || 1;
-            var totalUnidades = qtd * pacote;
+            var qtdPacotes = parseInt(item.qtdPacotes) || 1;
+            var tamanhoPacote = parseInt(item.tamanhoPacote) || 1;
+            var totalUnidades = qtdPacotes * tamanhoPacote;
             var isProducao = item.isProducao || false;
             var prazo = item.prazoProducao || 0;
             totalProdutos += preco;
             
-            var qtdTexto = qtd + 'x ' + pacote + ' un (' + totalUnidades + ' un)';
+            var qtdTexto = qtdPacotes + 'x ' + tamanhoPacote + ' un (' + totalUnidades + ' un)';
             
             var statusProduto = '';
             if (isProducao && prazo > 0) {
                 statusProduto = '<span style="font-size:11px;color:#f39c12;">🔨 Produção: ' + prazo + ' dias</span>';
             } else if (isProducao) {
                 statusProduto = '<span style="font-size:11px;color:#f39c12;">🔨 Produção</span>';
-            } else if (item.isDisponivel) {
-                statusProduto = '<span style="font-size:11px;color:#27ae60;">✅ Disponível</span>';
             } else {
-                if (item.nomeCompleto && item.nomeCompleto.includes('Produção')) {
-                    statusProduto = '<span style="font-size:11px;color:#f39c12;">🔨 Produção</span>';
-                } else {
-                    statusProduto = '<span style="font-size:11px;color:#27ae60;">✅ Disponível</span>';
-                }
+                statusProduto = '<span style="font-size:11px;color:#27ae60;">✅ Disponível</span>';
             }
             
             var nomeLimpo = item.nome || 'Produto';
+            if (nomeLimpo.length > 55) {
+                nomeLimpo = nomeLimpo.substring(0, 55) + '...';
+            }
             
             itensHtml += `
                 <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;align-items:center;">
@@ -7186,84 +7361,156 @@ function ajustarPacoteCarrinho(index, delta) {
                 Não foi possível carregar os itens do pedido.
             </div>
         `;
-        totalProdutos = parseFloat(pedido?.total || 0) || 0;
+        totalProdutos = parseFloat(pedidoObj?.total || 0) || 0;
     }
     
-    var pedidoObj = pedido;
-    if (typeof pedido === 'string') {
-        try {
-            pedidoObj = JSON.parse(pedido);
-        } catch (e) {
-            pedidoObj = pedido;
-        }
-    }
-    
-    var total = parseFloat(pedidoObj?.total || 0) || 0;
-    var frete = parseFloat(pedidoObj?.frete_valor || 0) || 0;
-    var freteNome = pedidoObj?.frete || 'Retirada na Loja';
-    var status = pedidoObj?.status || 'Pendente';
-    var data = pedidoObj?.data_pedido || '';
-    var pagamento = pedidoObj?.pagamento || 'Não informado';
-    var observacoes = pedidoObj?.observacoes || '';
-    var prazoEntrega = pedidoObj?.prazo_entrega || 0;
-    var idPedido = pedidoObj?.id_pedido || '???';
-    var clienteNome = pedidoObj?.cliente_nome || 'Não identificado';
-    
-    var dataFormatada = data.replace('T', ' ').substring(0, 16);
-    
-    var statusColors = {
-        'pendente': '#f39c12',
-        'em andamento': '#3498db',
-        'enviado': '#2ecc71',
-        'entregue': '#27ae60',
-        'cancelado': '#e74c3c'
-    };
-    var statusColor = statusColors[status.toLowerCase()] || '#888';
-    
     // ============================================================
-    // VERIFICA SE PEDIDO ESTÁ PENDENTE PARA MOSTRAR BOTÃO "PAGAR AGORA"
+    // BOTÕES DE PAGAMENTO
     // ============================================================
-    var statusLower = String(status).toLowerCase();
-    var isPendente = statusLower === 'pendente' || statusLower === 'pending' || statusLower === '';
-    
-    var pedidosPendentes = JSON.parse(localStorage.getItem('pedidosPendentesPagamento') || '{}');
-    var dadosPendente = pedidosPendentes[idPedido];
-    
     var botaoPagarHtml = '';
-    if (isPendente && dadosPendente) {
-        botaoPagarHtml = `
-            <div style="margin-top:15px;padding:15px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-                    <div>
-                        <strong style="color:#856404;">⚠️ Pagamento pendente</strong>
-                        <p style="font-size:13px;color:#856404;margin:4px 0 0 0;">
-                            Clique no botão para efetuar o pagamento.
-                        </p>
-                    </div>
-                    <button onclick="irParaPagamentoPedido('${idPedido}')" style="
+    
+    if (!isCancelado && isPendente) {
+        var metodoEscolhido = pagamento || 'PIX';
+        var metodoUpper = metodoEscolhido.toUpperCase();
+        
+        var botaoUnico = '';
+        
+        if (metodoUpper === 'PIX') {
+            botaoUnico = `
+                <button onclick="irParaPagamentoPedido('${idPedido}', 'PIX')" style="
+                    background: #25D366;
+                    color: white;
+                    border: none;
+                    padding: 14px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 16px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    width: 100%;
+                    justify-content: center;
+                ">
+                    <i class="fas fa-qrcode"></i> Pagar com PIX
+                </button>
+            `;
+        } else if (metodoUpper === 'CARTAO' || metodoUpper === 'CARTÃO') {
+            botaoUnico = `
+                <button onclick="irParaPagamentoPedido('${idPedido}', 'CARTAO')" style="
+                    background: #1a3a5c;
+                    color: white;
+                    border: none;
+                    padding: 14px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 16px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    width: 100%;
+                    justify-content: center;
+                ">
+                    <i class="fas fa-credit-card"></i> Pagar com Cartão
+                </button>
+            `;
+        } else if (metodoUpper === 'BOLETO') {
+            botaoUnico = `
+                <button onclick="irParaPagamentoPedido('${idPedido}', 'BOLETO')" style="
+                    background: #f39c12;
+                    color: white;
+                    border: none;
+                    padding: 14px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 16px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    width: 100%;
+                    justify-content: center;
+                ">
+                    <i class="fas fa-barcode"></i> Pagar com Boleto
+                </button>
+            `;
+        } else {
+            botaoUnico = `
+                <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                    <button onclick="irParaPagamentoPedido('${idPedido}', 'PIX')" style="
                         background: #25D366;
                         color: white;
                         border: none;
-                        padding: 10px 25px;
+                        padding: 12px 20px;
                         border-radius: 8px;
                         cursor: pointer;
                         font-weight: 600;
                         font-size: 15px;
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
+                        flex:1;
                     ">
-                        <i class="fas fa-credit-card"></i> Pagar Agora
+                        <i class="fas fa-qrcode"></i> PIX
+                    </button>
+                    <button onclick="irParaPagamentoPedido('${idPedido}', 'CARTAO')" style="
+                        background: #1a3a5c;
+                        color: white;
+                        border: none;
+                        padding: 12px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 15px;
+                        flex:1;
+                    ">
+                        <i class="fas fa-credit-card"></i> Cartão
+                    </button>
+                    <button onclick="irParaPagamentoPedido('${idPedido}', 'BOLETO')" style="
+                        background: #f39c12;
+                        color: white;
+                        border: none;
+                        padding: 12px 20px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        font-size: 15px;
+                        flex:1;
+                    ">
+                        <i class="fas fa-barcode"></i> Boleto
                     </button>
                 </div>
+            `;
+        }
+        
+        botaoPagarHtml = `
+            <div style="margin-top:15px;padding:15px;background:#fff3cd;border-radius:8px;border-left:4px solid #f39c12;">
+                <div style="margin-bottom:10px;">
+                    <strong style="color:#856404;">⚠️ Pagamento pendente</strong>
+                    <p style="font-size:13px;color:#856404;margin:4px 0 0 0;">
+                        Método escolhido: <strong style="color:#1a3a5c;">${metodoEscolhido}</strong>
+                    </p>
+                </div>
+                ${botaoUnico}
+            </div>
+        `;
+    } else if (isCancelado) {
+        botaoPagarHtml = `
+            <div style="margin-top:15px;padding:15px;background:#fde8e8;border-radius:8px;border-left:4px solid #e74c3c;">
+                <strong style="color:#721c24;">❌ Pedido Cancelado</strong>
+                <p style="font-size:13px;color:#721c24;margin:4px 0 0 0;">
+                    Este pedido foi cancelado e não requer pagamento.
+                </p>
             </div>
         `;
     }
     
+    // ============================================================
+    // MONTAR HTML DO MODAL
+    // ============================================================
     modal.innerHTML = `
         <div class="modal-content" style="max-width:700px;max-height:90vh;overflow-y:auto;">
             <span class="modal-close" onclick="fecharDetalhesPedido()">&times;</span>
             
+            <!-- CABEÇALHO -->
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:8px;">
                 <h2 style="color:var(--primary-dark);margin:0;font-size:20px;">📦 Pedido #${idPedido}</h2>
                 <span style="background:${statusColor};color:white;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;">
@@ -7271,6 +7518,7 @@ function ajustarPacoteCarrinho(index, delta) {
                 </span>
             </div>
             
+            <!-- INFORMAÇÕES GERAIS -->
             <div style="background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:15px;font-size:14px;display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;">
                 <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;">
                     <span style="color:#555;">Data</span>
@@ -7282,24 +7530,51 @@ function ajustarPacoteCarrinho(index, delta) {
                 </div>
                 <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;">
                     <span style="color:#555;">Pagamento</span>
-                    <span style="font-weight:600;">${pagamento}</span>
+                    <span style="font-weight:600;color:${corPagamento};">${statusPagamentoExibido}</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #eee;">
                     <span style="color:#555;">Frete</span>
-                    <span style="font-weight:600;">${freteNome} ${frete === 0 ? '(Grátis)' : '(R$ ' + frete.toFixed(2) + ')'}</span>
+                    <span style="font-weight:600;">${freteNome} ${freteValor === 0 ? '(Grátis)' : '(R$ ' + freteValor.toFixed(2) + ')'}</span>
                 </div>
-                ${prazoEntrega > 0 ? `
                 <div style="display:flex;justify-content:space-between;padding:4px 0;grid-column:1/-1;">
                     <span style="color:#555;">Prazo de entrega</span>
-                    <span style="font-weight:600;">${prazoEntrega} dias úteis</span>
-                </div>` : ''}
+                    <span style="font-weight:600;">${prazoEntrega > 0 ? prazoEntrega + ' dias úteis' : 'Não informado'}</span>
+                </div>
             </div>
             
-            <h4 style="margin-bottom:10px;color:var(--primary-dark);font-size:16px;">🛒 Produtos (${totalItens} itens)</h4>
+            <!-- CÓDIGO DE RASTREIO EM DESTAQUE -->
+            <div style="background:#e8f5e9;border-radius:8px;padding:12px 16px;margin-bottom:15px;border-left:4px solid #27ae60;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                <div>
+                    <span style="font-size:12px;color:#2e7d32;font-weight:600;">📦 CÓDIGO DE RASTREIO</span>
+                    <div style="font-size:18px;font-weight:700;color:#1a3a5c;font-family:monospace;letter-spacing:1px;">
+                        ${codigoRastreio}
+                    </div>
+                </div>
+                ${codigoRastreio !== 'Não informado' ? `
+                <button onclick="copiarRastreio('${codigoRastreio}')" style="
+                    background: #1a3a5c;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 13px;
+                ">
+                    <i class="fas fa-copy"></i> Copiar
+                </button>
+                ` : `
+                <span style="font-size:12px;color:#888;">⏳ Aguardando código</span>
+                `}
+            </div>
+            
+            <!-- PRODUTOS -->
+            <h4 style="margin-bottom:10px;color:var(--primary-dark);font-size:16px;">🛒 Produtos (${totalItens} item${totalItens > 1 ? 'ens' : ''})</h4>
             <div style="max-height:280px;overflow-y:auto;border:1px solid #eee;border-radius:8px;padding:4px 12px;background:white;">
                 ${itensHtml}
             </div>
             
+            <!-- TOTAIS -->
             <div style="margin-top:15px;padding-top:12px;border-top:2px solid #eee;">
                 <div style="display:flex;justify-content:space-between;font-weight:600;font-size:14px;">
                     <span>Subtotal</span>
@@ -7307,7 +7582,7 @@ function ajustarPacoteCarrinho(index, delta) {
                 </div>
                 <div style="display:flex;justify-content:space-between;font-size:13px;color:#888;">
                     <span>Frete</span>
-                    <span>${frete === 0 ? 'Grátis' : 'R$ ' + frete.toFixed(2)}</span>
+                    <span>${freteValor === 0 ? 'Grátis' : 'R$ ' + freteValor.toFixed(2)}</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:700;color:var(--primary-blue);padding-top:8px;border-top:1px solid #eee;margin-top:6px;">
                     <span>TOTAL</span>
@@ -7315,13 +7590,16 @@ function ajustarPacoteCarrinho(index, delta) {
                 </div>
             </div>
             
-            ${observacoes ? `
+            <!-- OBSERVAÇÕES -->
+            ${observacoesLimpa ? `
             <div style="margin-top:12px;padding:10px;background:#fff8e1;border-radius:6px;font-size:13px;color:#856404;">
-                <strong>📝 Observações:</strong> ${observacoes}
+                <strong>📝 Observações:</strong> ${observacoesLimpa}
             </div>` : ''}
             
+            <!-- BOTÕES DE PAGAMENTO -->
             ${botaoPagarHtml}
             
+            <!-- BOTÃO FECHAR -->
             <button onclick="fecharDetalhesPedido()" class="btn-checkout" style="margin-top:15px;background:#6c757d;border:none;color:white;padding:12px;border-radius:8px;cursor:pointer;font-weight:600;width:100%;font-size:16px;">
                 <i class="fas fa-times"></i> Fechar
             </button>
@@ -7334,6 +7612,230 @@ function ajustarPacoteCarrinho(index, delta) {
 
 
 
+
+
+function copiarRastreio(codigo) {
+    if (!codigo || codigo === 'Não informado') return;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(codigo)
+            .then(function() {
+                mostrarNotificacao('✅ Código de rastreio copiado: ' + codigo, 'success');
+            })
+            .catch(function() {
+                fallbackCopiar(codigo);
+            });
+    } else {
+        fallbackCopiar(codigo);
+    }
+}
+
+
+
+function fallbackCopiarRastreio(codigo) {
+    var textarea = document.createElement('textarea');
+    textarea.value = codigo;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    mostrarNotificacao('✅ Código de rastreio copiado: ' + codigo, 'success');
+}
+
+
+
+// ============================================================
+// ABRIR PIX SALVO (USA QR CODE E CÓPIA COLA ORIGINAIS)
+// ============================================================
+function abrirPixSalvo(pedidoId) {
+    try {
+        var pagamentosSalvos = JSON.parse(localStorage.getItem('pagamentosPedidos') || '{}');
+        var dados = pagamentosSalvos[pedidoId];
+        
+        if (!dados) {
+            mostrarNotificacao('⚠️ Dados PIX não encontrados.', 'warning');
+            return;
+        }
+        
+        if (dados.pixQrCode && dados.pixCopiaCola) {
+            // Fecha o modal de detalhes
+            fecharDetalhesPedido();
+            
+            // Abre o modal PIX com os dados salvos
+            setTimeout(function() {
+                mostrarPixComDadosSalvos(pedidoId, dados);
+            }, 300);
+        } else {
+            mostrarNotificacao('⚠️ QR Code PIX não disponível.', 'warning');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao abrir PIX:', error);
+        mostrarNotificacao('❌ Erro ao abrir PIX.', 'error');
+    }
+}
+
+// ============================================================
+// MOSTRAR PIX COM DADOS SALVOS
+// ============================================================
+function mostrarPixComDadosSalvos(pedidoId, dados) {
+    var modal = document.createElement('div');
+    modal.id = 'pixSalvoModal';
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.style.zIndex = '9999';
+    
+    // Busca o total do pedido
+    fetch(API_URL)
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            var pedidos = data.pedidos || [];
+            var pedido = pedidos.find(function(p) { 
+                return parseInt(p.id_pedido) === parseInt(pedidoId); 
+            });
+            
+            var total = pedido ? parseFloat(pedido.total) || 0 : 0;
+            var metodo = dados.metodo || 'PIX';
+            
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:520px;text-align:center;">
+                    <span class="modal-close" onclick="fecharModal('pixSalvoModal')">&times;</span>
+                    
+                    <div style="font-size:48px;color:#25D366;margin-bottom:10px;">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <h2 style="color:var(--primary-dark);margin-bottom:5px;">Pague com PIX</h2>
+                    <p style="color:#888;font-size:14px;margin-bottom:15px;">
+                        Escaneie o QR Code ou copie o código abaixo
+                    </p>
+                    
+                    <div style="font-size:24px;font-weight:700;color:var(--primary-blue);margin:10px 0;">
+                        R$ ${total.toFixed(2).replace('.', ',')}
+                    </div>
+                    
+                    <div style="font-size:14px;color:#888;margin-bottom:15px;">
+                        Pedido #${pedidoId} - ${metodo}
+                    </div>
+                    
+                    <!-- QR CODE -->
+                    <div style="text-align:center;margin:15px 0;">
+                        <div style="display:inline-block;background:white;padding:10px;border-radius:12px;border:2px solid #e8ecf0;">
+                            <img src="${dados.pixQrCode}" alt="QR Code PIX" style="max-width:200px;width:100%;height:auto;">
+                        </div>
+                    </div>
+                    
+                    <!-- CÓDIGO COPIA E COLA -->
+                    <div style="background:#f8f9fa;border-radius:10px;padding:12px;margin:10px 0;border:1px solid #e8ecf0;text-align:left;">
+                        <div style="font-size:12px;color:#888;margin-bottom:4px;">📋 Código Copia e Cola</div>
+                        <div style="word-break:break-all;font-size:11px;color:#333;font-family:monospace;max-height:80px;overflow-y:auto;background:white;padding:8px;border-radius:6px;">
+                            ${dados.pixCopiaCola}
+                        </div>
+                    </div>
+                    
+                    <button onclick="copiarPixManualTexto('${dados.pixCopiaCola.replace(/'/g, "\\'")}')" style="
+                        background: #25D366;
+                        color: white;
+                        border: none;
+                        padding: 14px 20px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-weight: 700;
+                        font-size: 16px;
+                        width: 100%;
+                        margin-top: 10px;
+                        transition: all 0.3s;
+                    ">
+                        📋 Copiar Código PIX
+                    </button>
+                    
+                    <button onclick="fecharModal('pixSalvoModal')" style="
+                        background: transparent;
+                        color: #888;
+                        border: none;
+                        padding: 10px;
+                        cursor: pointer;
+                        font-size: 13px;
+                        width: 100%;
+                        margin-top: 5px;
+                    ">
+                        Fechar
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        })
+        .catch(function(error) {
+            console.error('❌ Erro ao buscar pedido:', error);
+            mostrarNotificacao('❌ Erro ao carregar dados do pedido.', 'error');
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width:520px;text-align:center;">
+                    <span class="modal-close" onclick="fecharModal('pixSalvoModal')">&times;</span>
+                    <div style="padding:30px;">
+                        <i class="fas fa-exclamation-circle" style="font-size:48px;color:#e74c3c;display:block;margin-bottom:15px;"></i>
+                        <p style="color:#666;">Erro ao carregar dados do pedido.</p>
+                        <p style="font-size:13px;color:#888;">Tente novamente ou entre em contato com o atendente.</p>
+                        <button onclick="fecharModal('pixSalvoModal')" style="
+                            background: #1a3a5c;
+                            color: white;
+                            border: none;
+                            padding: 12px 20px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-weight: 600;
+                            margin-top: 15px;
+                        ">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        });
+}
+
+// ============================================================
+// COPIAR TEXTO DO PIX MANUAL
+// ============================================================
+function copiarPixManualTexto(texto) {
+    if (!texto) {
+        mostrarNotificacao('⚠️ Nenhum código disponível.', 'warning');
+        return;
+    }
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(texto)
+            .then(function() {
+                mostrarNotificacao('✅ Código PIX copiado!', 'success');
+            })
+            .catch(function() {
+                fallbackCopiar(texto);
+            });
+    } else {
+        fallbackCopiar(texto);
+    }
+}
+
+// ============================================================
+// ABRIR LINK DE PAGAMENTO SALVO (CARTÃO/BOLETO)
+// ============================================================
+function abrirLinkPagamentoSalvo(pedidoId) {
+    try {
+        var pagamentosSalvos = JSON.parse(localStorage.getItem('pagamentosPedidos') || '{}');
+        var dados = pagamentosSalvos[pedidoId];
+        
+        if (dados && dados.paymentLink) {
+            window.open(dados.paymentLink, '_blank');
+            mostrarNotificacao('🔄 Abrindo pagamento...', 'info');
+        } else {
+            mostrarNotificacao('⚠️ Link de pagamento não encontrado.', 'warning');
+        }
+    } catch (error) {
+        console.error('❌ Erro ao abrir link:', error);
+        mostrarNotificacao('❌ Erro ao abrir pagamento.', 'error');
+    }
+}
 
 
         function fecharDetalhesPedido() {
@@ -8783,6 +9285,27 @@ function atualizarResumoFinal() {
 
             salvarDadosPedido(dadosPedidoParaSalvar);
             console.log('💾 Dados do pedido #' + novoId + ' SALVOS com sucesso!');
+
+            // ============================================================
+// DENTRO DE finalizarPedidoCheckout - APÓS SALVAR O PEDIDO
+// ============================================================
+
+// Salva os dados de pagamento associados ao pedido
+var dadosPagamento = {
+    checkoutId: resultPagamento?.checkoutId || null,
+    paymentLink: resultPagamento?.paymentLink || null,
+    pixQrCode: resultPagamento?.pixQrCode || null,
+    pixCopiaCola: resultPagamento?.pixCopiaCola || null,
+    metodo: checkoutState.pagamentoSelecionado,
+    geradoEm: Date.now()
+};
+
+// Salva no localStorage
+var pagamentosSalvos = JSON.parse(localStorage.getItem('pagamentosPedidos') || '{}');
+pagamentosSalvos[novoId] = dadosPagamento;
+localStorage.setItem('pagamentosPedidos', JSON.stringify(pagamentosSalvos));
+
+console.log('💾 Dados de pagamento salvos para pedido #' + novoId);
 
             // CRIAR LINK DE PAGAMENTO
             try {
