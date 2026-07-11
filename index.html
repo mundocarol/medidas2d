@@ -9,6 +9,65 @@
     <!-- ============================================================ -->
     <meta name="google" content="notranslate">
 
+<!-- ===== GOOGLE ANALYTICS E GOOGLE ADS ===== -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-TNZN0LDZFP"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  // ============================================
+  // CONFIGURAÇÃO DO GOOGLE ANALYTICS 4 (GA4)
+  // ============================================
+  gtag('config', 'G-TNZN0LDZFP');
+
+  // ============================================
+  // CONFIGURAÇÃO DO GOOGLE ADS
+  // ============================================
+  gtag('config', 'AW-312776714');
+  
+  // ============================================
+  // CONFIGURAÇÃO ADICIONAL
+  // ============================================
+  gtag('set', 'allow_google_signals', true);
+  gtag('set', 'allow_ad_personalization_signals', true);
+
+  // ============================================
+  // FUNÇÃO PARA CONVERSÃO DO GOOGLE ADS
+  // ============================================
+  function enviarConversaoGoogleAds(valor, pedidoId) {
+    if (!valor && valor !== 0) return;
+    gtag('event', 'conversion', {
+      'send_to': 'AW-312776714/mgNSCOOyi7wYEIqwkpUB',
+      'value': parseFloat(valor) || 0,
+      'currency': 'BRL',
+      'transaction_id': String(pedidoId || '')
+    });
+    console.log('✅ Conversão Google Ads enviada! Pedido #' + pedidoId + ' - R$ ' + valor);
+  }
+
+  // ============================================
+  // FUNÇÃO PARA EVENTO DE COMPRA GA4
+  // ============================================
+  function enviarCompraGA4(itens, total, pedidoId) {
+    if (!itens || itens.length === 0) return;
+    gtag('event', 'purchase', {
+      'transaction_id': String(pedidoId || ''),
+      'value': parseFloat(total) || 0,
+      'currency': 'BRL',
+      'items': itens.map(function(item) {
+        return {
+          'item_name': item.nome || 'Produto',
+          'price': parseFloat(item.price || 0),
+          'quantity': parseInt(item.quantidade || 1)
+        };
+      })
+    });
+    console.log('✅ Evento purchase GA4 enviado! Pedido #' + pedidoId);
+  }
+</script>
+    
 
     <title>MC Embalagens BH - Sua Loja de Embalagens</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -9238,7 +9297,7 @@ function atualizarResumoFinal() {
 }
 
 
-  async function finalizarPedidoCheckout() {
+ async function finalizarPedidoCheckout() {
     const btnFinalizar = document.getElementById('btnFinalizarPedido');
     const textoOriginal = btnFinalizar.innerHTML;
     btnFinalizar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando pedido...';
@@ -9246,7 +9305,7 @@ function atualizarResumoFinal() {
 
     try {
         // ============================================================
-        // VALIDAÇÕES COM MENSAGENS CLARAS
+        // VALIDAÇÕES
         // ============================================================
         if (carrinho.length === 0) {
             alert('Seu carrinho está vazio!');
@@ -9265,7 +9324,6 @@ function atualizarResumoFinal() {
         
         if (!checkoutState.enderecoSelecionado) {
             alert('⚠️ Antes de finalizar, confirme o endereço de entrega clicando em "Confirmar este endereço".');
-            // Destaca a seção de endereço
             document.getElementById('step1Status').textContent = '⚠️ Pendente';
             document.getElementById('step1Status').style.color = '#e74c3c';
             btnFinalizar.innerHTML = textoOriginal;
@@ -9275,7 +9333,6 @@ function atualizarResumoFinal() {
         
         if (!checkoutState.freteSelecionado) {
             alert('⚠️ Selecione uma opção de frete para prosseguir.');
-            // Destaca a seção de frete
             document.getElementById('step2Status').textContent = '⚠️ Selecione';
             document.getElementById('step2Status').style.color = '#e74c3c';
             btnFinalizar.innerHTML = textoOriginal;
@@ -9464,6 +9521,9 @@ function atualizarResumoFinal() {
         if (pedidoEncontrado) {
             console.log(`✅ Pedido #${novoId} CONFIRMADO na planilha!`);
             
+            // ============================================================
+            // ⭐ BAIXAR ESTOQUE
+            // ============================================================
             if (pedidoDataEnvio.itensParaBaixar && pedidoDataEnvio.itensParaBaixar.length > 0) {
                 try {
                     const atualizacoes = pedidoDataEnvio.itensParaBaixar.map(item => ({
@@ -9479,7 +9539,9 @@ function atualizarResumoFinal() {
                 console.log('ℹ️ Nenhum item para baixar estoque.');
             }
 
-            // SALVAR DADOS DO PEDIDO NO LOCALSTORAGE
+            // ============================================================
+            // ⭐ SALVAR DADOS DO PEDIDO NO LOCALSTORAGE
+            // ============================================================
             var dadosPedidoParaSalvar = {
                 numeroPedido: novoId,
                 data: new Date().toLocaleString('pt-BR', {
@@ -9520,27 +9582,46 @@ function atualizarResumoFinal() {
             console.log('💾 Dados do pedido #' + novoId + ' SALVOS com sucesso!');
 
             // ============================================================
-// DENTRO DE finalizarPedidoCheckout - APÓS SALVAR O PEDIDO
-// ============================================================
+            // ⭐⭐⭐ ENVIAR CONVERSÕES PARA GOOGLE ADS E GA4 ⭐⭐⭐
+            // ============================================================
+            try {
+                console.log('📤 Enviando conversões para Google...');
+                
+                // Google Ads - Conversão de Compra
+                if (typeof enviarConversaoGoogleAds === 'function') {
+                    enviarConversaoGoogleAds(totalFinal, novoId);
+                    console.log('✅ Google Ads conversão enviada!');
+                }
+                
+                // Google Analytics 4 - Evento Purchase
+                if (typeof enviarCompraGA4 === 'function') {
+                    enviarCompraGA4(itensFormatados, totalFinal, novoId);
+                    console.log('✅ GA4 purchase enviado!');
+                }
+            } catch (error) {
+                console.warn('⚠️ Erro ao enviar conversões para o Google:', error);
+            }
 
-// Salva os dados de pagamento associados ao pedido
-var dadosPagamento = {
-    checkoutId: resultPagamento?.checkoutId || null,
-    paymentLink: resultPagamento?.paymentLink || null,
-    pixQrCode: resultPagamento?.pixQrCode || null,
-    pixCopiaCola: resultPagamento?.pixCopiaCola || null,
-    metodo: checkoutState.pagamentoSelecionado,
-    geradoEm: Date.now()
-};
+            // ============================================================
+            // ⭐ SALVAR DADOS DE PAGAMENTO
+            // ============================================================
+            var dadosPagamento = {
+                checkoutId: resultPagamento?.checkoutId || null,
+                paymentLink: resultPagamento?.paymentLink || null,
+                pixQrCode: resultPagamento?.pixQrCode || null,
+                pixCopiaCola: resultPagamento?.pixCopiaCola || null,
+                metodo: checkoutState.pagamentoSelecionado,
+                geradoEm: Date.now()
+            };
 
-// Salva no localStorage
-var pagamentosSalvos = JSON.parse(localStorage.getItem('pagamentosPedidos') || '{}');
-pagamentosSalvos[novoId] = dadosPagamento;
-localStorage.setItem('pagamentosPedidos', JSON.stringify(pagamentosSalvos));
+            var pagamentosSalvos = JSON.parse(localStorage.getItem('pagamentosPedidos') || '{}');
+            pagamentosSalvos[novoId] = dadosPagamento;
+            localStorage.setItem('pagamentosPedidos', JSON.stringify(pagamentosSalvos));
+            console.log('💾 Dados de pagamento salvos para pedido #' + novoId);
 
-console.log('💾 Dados de pagamento salvos para pedido #' + novoId);
-
-            // CRIAR LINK DE PAGAMENTO
+            // ============================================================
+            // ⭐ CRIAR LINK DE PAGAMENTO
+            // ============================================================
             try {
                 console.log('🔄 Criando link de pagamento para pedido #' + novoId);
                 
@@ -9587,7 +9668,6 @@ console.log('💾 Dados de pagamento salvos para pedido #' + novoId);
                     );
                 }
                 
-                // VERIFICA O MÉTODO DE PAGAMENTO
                 if (metodoEscolhido === 'PIX') {
                     console.log('💳 Exibindo modal PIX manual para pedido #' + novoId);
                     mostrarPixManual(novoId, totalFinal);
@@ -10488,6 +10568,79 @@ window.addEventListener('resize', function() {
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(initBannerCarousel, 100);
 });
+
+        // ============================================================
+// ENVIAR CONVERSÃO PARA O GOOGLE ADS
+// ============================================================
+function enviarConversaoGoogleAds(valor, pedidoId) {
+    try {
+        if (!valor && valor !== 0) {
+            console.warn('⚠️ Valor da conversão não informado');
+            return;
+        }
+        
+        console.log('📤 Enviando conversão para Google Ads:', {
+            valor: valor,
+            pedidoId: pedidoId,
+            send_to: 'AW-312776714/mgNSCOOyi7wYEIqwkpUB'
+        });
+        
+        gtag('event', 'conversion', {
+            'send_to': 'AW-312776714/mgNSCOOyi7wYEIqwkpUB',
+            'value': parseFloat(valor) || 0,
+            'currency': 'BRL',
+            'transaction_id': String(pedidoId || '')
+        });
+        
+        console.log('✅ Conversão Google Ads enviada! Pedido #' + pedidoId + ' - R$ ' + valor);
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Erro ao enviar conversão Google Ads:', error);
+        return false;
+    }
+}
+
+        // ============================================================
+// ENVIAR EVENTO DE COMPRA PARA O GOOGLE ANALYTICS 4 (GA4)
+// ============================================================
+function enviarCompraGA4(itens, total, pedidoId) {
+    try {
+        if (!itens || itens.length === 0) {
+            console.warn('⚠️ Nenhum item para enviar no purchase');
+            return;
+        }
+        
+        console.log('📤 Enviando evento purchase para GA4:', {
+            itens: itens.length,
+            total: total,
+            pedidoId: pedidoId
+        });
+        
+        // Formata os itens para o padrão do GA4
+        var itensFormatados = itens.map(function(item) {
+            return {
+                'item_name': item.nome || item.name || 'Produto',
+                'price': parseFloat(item.price || 0),
+                'quantity': parseInt(item.quantidade || item.quantity || 1)
+            };
+        });
+        
+        gtag('event', 'purchase', {
+            'transaction_id': String(pedidoId || ''),
+            'value': parseFloat(total) || 0,
+            'currency': 'BRL',
+            'items': itensFormatados
+        });
+        
+        console.log('✅ Evento purchase GA4 enviado! Pedido #' + pedidoId + ' - R$ ' + total);
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Erro ao enviar evento purchase GA4:', error);
+        return false;
+    }
+}
 
     </script>
 
