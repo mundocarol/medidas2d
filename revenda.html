@@ -2202,19 +2202,19 @@
                         <i class="fas fa-user"></i>
                     </button>
                     <div class="user-dropdown-content" id="userDropdown">
-                        <div class="dropdown-item login-item" onclick="abrirLogin()">
-                            <i class="fas fa-sign-in-alt"></i> Entrar / Cadastrar
-                        </div>
-                        <div class="dropdown-item" onclick="abrirDadosPessoais()" style="display:none;">
-                            <i class="fas fa-user-circle"></i> Dados Pessoais
-                        </div>
-                        <div class="dropdown-item" onclick="abrirMeusPedidos()" style="display:none;">
-                            <i class="fas fa-box"></i> Meus Pedidos
-                        </div>
-                        <div class="dropdown-item sair" onclick="sairConta()" style="display:none;">
-                            <i class="fas fa-sign-out-alt"></i> Sair da Conta
-                        </div>
-                    </div>
+    <div class="dropdown-item login-item" onclick="abrirLogin()">
+        <i class="fas fa-sign-in-alt"></i> Entrar / Cadastrar
+    </div>
+    <div class="dropdown-item" onclick="abrirDadosPessoais()" style="display:none;">
+        <i class="fas fa-user-circle"></i> Dados Pessoais
+    </div>
+    <div class="dropdown-item" onclick="abrirMeusPedidos()" style="display:none;">
+        <i class="fas fa-box"></i> Meus Pedidos
+    </div>
+    <div class="dropdown-item sair" onclick="sairConta()" style="display:none;">
+        <i class="fas fa-sign-out-alt"></i> Sair da Conta
+    </div>
+</div>
                 </div>
             </div>
         </div>
@@ -3586,17 +3586,43 @@
             document.getElementById('panelCadastro').classList.toggle('active', tab === 'cadastro');
         }
 
-        function toggleUserMenu() {
-            document.getElementById('userDropdown').classList.toggle('show');
-        }
+   function toggleUserMenu() {
+    const dropdown = document.getElementById('userDropdown');
+    if (!dropdown) {
+        console.log('❌ Dropdown não encontrado');
+        return;
+    }
+    
+    console.log('🔄 toggleUserMenu - estado atual:', dropdown.style.display);
+    
+    // Alterna a classe show
+    dropdown.classList.toggle('show');
+    
+    // Se tiver a classe show, garante que o display seja block
+    if (dropdown.classList.contains('show')) {
+        dropdown.style.display = 'block';
+        console.log('✅ Dropdown ABERTO');
+    } else {
+        dropdown.style.display = 'none';
+        console.log('✅ Dropdown FECHADO');
+    }
+}
 
-        document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('userDropdown');
-            const btn = document.getElementById('btnUserMenu');
-            if (dropdown && !dropdown.contains(e.target) && !btn.contains(e.target)) {
-                dropdown.classList.remove('show');
-            }
-        });
+// ============================================================
+// FECHA DROPDOWN AO CLICAR FORA
+// ============================================================
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('userDropdown');
+    const btn = document.getElementById('btnUserMenu');
+    
+    // Se clicou fora do dropdown E fora do botão, fecha
+    if (dropdown && btn && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+        dropdown.classList.remove('show');
+        dropdown.style.display = 'none';
+    }
+});
+
+
 
         // ============================================================
         // VERIFICAR ACESSO REVENDEDOR
@@ -3836,152 +3862,345 @@
             }
         }
 
-        async function fazerLoginRevenda() {
-            const email = document.getElementById('loginEmailLogin').value.trim();
-            const senha = document.getElementById('loginSenhaLogin').value;
-            const msgEl = document.getElementById('loginMessage');
-            
-            if (!email) {
-                msgEl.className = 'login-message error';
-                msgEl.textContent = '⚠️ Digite seu email.';
-                return;
-            }
-            if (!senha) {
-                msgEl.className = 'login-message error';
-                msgEl.textContent = '⚠️ Digite sua senha.';
-                return;
-            }
-            
-            const btn = document.querySelector('#panelLogin .btn-login-action');
-            const textoOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
-            btn.disabled = true;
-            msgEl.className = 'login-message';
-            msgEl.textContent = '🔄 Verificando credenciais...';
-            
-            try {
-                const response = await fetch(API_URL);
-                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-                const data = await response.json();
-                const clientes = data.clientes || [];
-                const emailLower = email.toLowerCase().trim();
-                const cliente = clientes.find(c => {
-                    const cEmail = String(c.email || '').toLowerCase().trim();
-                    return cEmail === emailLower;
-                });
-                
-                if (!cliente) {
-                    msgEl.className = 'login-message error';
-                    msgEl.textContent = '❌ Email não encontrado. Faça seu cadastro.';
-                    btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
-                    return;
-                }
-                
-                const senhaCliente = String(cliente.senha || '');
-                if (senhaCliente !== senha) {
-                    msgEl.className = 'login-message error';
-                    msgEl.textContent = '❌ Senha incorreta. Tente novamente.';
-                    btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
-                    return;
-                }
-                
-                const resultado = parseObservacaoRevendedor(cliente.observacoes || '');
-                
-                if (!resultado.isRevendedor) {
-                    msgEl.className = 'login-message error';
-                    msgEl.innerHTML = `
-                        ❌ Acesso negado.<br>
-                        <span style="font-size:13px;color:#856404;">
-                            Seu cadastro ainda não foi liberado como revendedor.<br>
-                            Aguarde a análise em até 24 horas úteis.
-                        </span>
-                        <br><br>
-                        <a href="#" onclick="abrirWhatsAppAtendente(); return false;" style="color:#25D366;font-weight:600;text-decoration:none;">
-                            <i class="fab fa-whatsapp"></i> Fale com nossa equipe
-                        </a>
-                    `;
-                    btn.innerHTML = textoOriginal;
-                    btn.disabled = false;
-                    return;
-                }
-                
-                usuarioLogado = {
-                    email: String(cliente.email),
-                    nome: String(cliente.nome || 'Revendedor'),
-                    documento: String(cliente.documento || ''),
-                    telefone: String(cliente.telefone || ''),
-                    endereco: String(cliente.endereco || ''),
-                    cep: String(cliente.cep || ''),
-                    tipoPessoa: String(cliente.tipo_pessoa || 'FISICA'),
-                    senha: String(cliente.senha || ''),
-                    isRevendedor: true,
-                    opcoesBoleto: resultado.opcoes,
-                    obsInterna: resultado.obsInterna
-                };
-                
-                localStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
-                sessionStorage.setItem('tipoCliente', 'REVENDEDOR');
-                sessionStorage.setItem('opcoesBoleto', JSON.stringify(resultado.opcoes));
-                
-                atualizarInterfaceUsuario();
-                atualizarNomeClienteHeader();
-                document.getElementById('revendedorBadge').classList.add('show');
-                
-                msgEl.className = 'login-message success';
-                msgEl.textContent = '✅ Login realizado com sucesso! Bem-vindo, revendedor!';
-                
-                mostrarInterfaceRevendedor(true);
-                document.getElementById('bloqueioBanner').style.display = 'none';
-                document.getElementById('aguardandoBanner').style.display = 'none';
-                
-                carregarPedidosCliente(email);
-                
-                if (currentProducts && currentProducts.length > 0) { renderizarProdutos(); }
-                
-                setTimeout(() => { fecharModal('loginModal'); }, 1500);
-                
-            } catch (error) {
-                msgEl.className = 'login-message error';
-                msgEl.textContent = '❌ Erro ao conectar. Tente novamente.';
-            } finally {
-                btn.innerHTML = textoOriginal;
-                btn.disabled = false;
-            }
-        }
 
-        function atualizarInterfaceUsuario() {
-            const dropdown = document.getElementById('userDropdown');
+     async function fazerLoginRevenda() {
+    const email = document.getElementById('loginEmailLogin').value.trim();
+    const senha = document.getElementById('loginSenhaLogin').value;
+    const msgEl = document.getElementById('loginMessage');
+    
+    if (!email) {
+        msgEl.className = 'login-message error';
+        msgEl.textContent = '⚠️ Digite seu email.';
+        return;
+    }
+    if (!senha) {
+        msgEl.className = 'login-message error';
+        msgEl.textContent = '⚠️ Digite sua senha.';
+        return;
+    }
+    
+    const btn = document.querySelector('#panelLogin .btn-login-action');
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+    btn.disabled = true;
+    msgEl.className = 'login-message';
+    msgEl.textContent = '🔄 Verificando credenciais...';
+    
+    try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        const data = await response.json();
+        const clientes = data.clientes || [];
+        const emailLower = email.toLowerCase().trim();
+        const cliente = clientes.find(c => {
+            const cEmail = String(c.email || '').toLowerCase().trim();
+            return cEmail === emailLower;
+        });
+        
+        if (!cliente) {
+            msgEl.className = 'login-message error';
+            msgEl.textContent = '❌ Email não encontrado. Faça seu cadastro.';
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+            return;
+        }
+        
+        const senhaCliente = String(cliente.senha || '');
+        if (senhaCliente !== senha) {
+            msgEl.className = 'login-message error';
+            msgEl.textContent = '❌ Senha incorreta. Tente novamente.';
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+            return;
+        }
+        
+        const resultado = parseObservacaoRevendedor(cliente.observacoes || '');
+        
+        if (!resultado.isRevendedor) {
+            msgEl.className = 'login-message error';
+            msgEl.innerHTML = `
+                ❌ Acesso negado.<br>
+                <span style="font-size:13px;color:#856404;">
+                    Seu cadastro ainda não foi liberado como revendedor.<br>
+                    Aguarde a análise em até 24 horas úteis.
+                </span>
+                <br><br>
+                <a href="#" onclick="abrirWhatsAppAtendente(); return false;" style="color:#25D366;font-weight:600;text-decoration:none;">
+                    <i class="fab fa-whatsapp"></i> Fale com nossa equipe
+                </a>
+            `;
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+            return;
+        }
+        
+        usuarioLogado = {
+            email: String(cliente.email),
+            nome: String(cliente.nome || 'Revendedor'),
+            documento: String(cliente.documento || ''),
+            telefone: String(cliente.telefone || ''),
+            endereco: String(cliente.endereco || ''),
+            cep: String(cliente.cep || ''),
+            tipoPessoa: String(cliente.tipo_pessoa || 'FISICA'),
+            senha: String(cliente.senha || ''),
+            isRevendedor: true,
+            opcoesBoleto: resultado.opcoes,
+            obsInterna: resultado.obsInterna
+        };
+        
+        localStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
+        sessionStorage.setItem('tipoCliente', 'REVENDEDOR');
+        sessionStorage.setItem('opcoesBoleto', JSON.stringify(resultado.opcoes));
+        
+        // 🔥🔥🔥 CORREÇÃO: CHAMA AS FUNÇÕES DE ATUALIZAÇÃO 🔥🔥🔥
+        console.log('🔄 Atualizando interface após login...');
+        atualizarInterfaceUsuario();
+        atualizarNomeClienteHeader();
+        
+        // 🔥 FORÇA A ATUALIZAÇÃO DO DROPDOWN MANUALMENTE
+        const dropdown = document.getElementById('userDropdown');
+        if (dropdown) {
             const loginItem = dropdown.querySelector('.login-item');
-            const dadosItem = dropdown.querySelector('.dropdown-item:not(.login-item):not(.sair)');
+            const dadosItem = dropdown.querySelector('.dropdown-item:nth-child(2)');
             const pedidosItem = dropdown.querySelector('.dropdown-item:nth-child(3)');
             const sairItem = dropdown.querySelector('.sair');
             const btnUser = document.getElementById('btnUserMenu');
             
-            if (usuarioLogado && usuarioLogado.isRevendedor) {
-                if (loginItem) loginItem.style.display = 'none';
-                if (dadosItem) dadosItem.style.display = 'flex';
-                if (pedidosItem) pedidosItem.style.display = 'flex';
-                if (sairItem) sairItem.style.display = 'flex';
-                btnUser.innerHTML = '<i class="fas fa-user-check" style="color:#27ae60;"></i>';
-                document.getElementById('revendedorBadge').classList.add('show');
-            } else if (usuarioLogado) {
-                if (loginItem) loginItem.style.display = 'none';
-                if (dadosItem) dadosItem.style.display = 'flex';
-                if (pedidosItem) pedidosItem.style.display = 'flex';
-                if (sairItem) sairItem.style.display = 'flex';
-                btnUser.innerHTML = '<i class="fas fa-user"></i>';
-                document.getElementById('revendedorBadge').classList.remove('show');
-            } else {
-                if (loginItem) loginItem.style.display = 'flex';
-                if (dadosItem) dadosItem.style.display = 'none';
-                if (pedidosItem) pedidosItem.style.display = 'none';
-                if (sairItem) sairItem.style.display = 'none';
-                btnUser.innerHTML = '<i class="fas fa-user"></i>';
-                document.getElementById('revendedorBadge').classList.remove('show');
+            if (loginItem) loginItem.style.display = 'none';
+            if (dadosItem) dadosItem.style.display = 'flex';
+            if (pedidosItem) pedidosItem.style.display = 'flex';
+            if (sairItem) sairItem.style.display = 'flex';
+            if (btnUser) btnUser.innerHTML = '<i class="fas fa-user-check" style="color:#27ae60;"></i>';
+            
+            dropdown.style.display = 'none';
+            console.log('✅ Dropdown atualizado manualmente!');
+        }
+        
+        document.getElementById('revendedorBadge').classList.add('show');
+        
+        msgEl.className = 'login-message success';
+        msgEl.textContent = '✅ Login realizado com sucesso! Bem-vindo, revendedor!';
+        
+        mostrarInterfaceRevendedor(true);
+        document.getElementById('bloqueioBanner').style.display = 'none';
+        document.getElementById('aguardandoBanner').style.display = 'none';
+        
+        carregarPedidosCliente(email);
+        
+        if (currentProducts && currentProducts.length > 0) { renderizarProdutos(); }
+        
+        setTimeout(() => { fecharModal('loginModal'); }, 1500);
+        
+    } catch (error) {
+        console.error('❌ Erro no login:', error);
+        msgEl.className = 'login-message error';
+        msgEl.textContent = '❌ Erro ao conectar. Tente novamente.';
+    } finally {
+        btn.innerHTML = textoOriginal;
+        btn.disabled = false;
+    }
+}
+
+
+
+function forcarAtualizacaoUsuario() {
+    console.log('🔄 FORÇANDO ATUALIZAÇÃO DO USUÁRIO...');
+    
+    // 1. Verifica se há usuário logado
+    const usuarioSalvo = localStorage.getItem('usuarioLogado');
+    if (usuarioSalvo) {
+        try {
+            usuarioLogado = JSON.parse(usuarioSalvo);
+            console.log('✅ Usuário carregado:', usuarioLogado.email);
+        } catch (e) {
+            usuarioLogado = null;
+            console.log('❌ Erro ao carregar usuário');
+        }
+    } else {
+        usuarioLogado = null;
+        console.log('❌ Nenhum usuário logado');
+    }
+    
+    // 2. Atualiza a interface do usuário
+    if (typeof atualizarInterfaceUsuario === 'function') {
+        atualizarInterfaceUsuario();
+        console.log('✅ atualizarInterfaceUsuario() executada');
+    }
+    
+    // 3. Atualiza o nome no header
+    if (typeof atualizarNomeClienteHeader === 'function') {
+        atualizarNomeClienteHeader();
+        console.log('✅ atualizarNomeClienteHeader() executada');
+    }
+    
+    // 4. Atualiza o badge de revendedor
+    const badge = document.getElementById('revendedorBadge');
+    if (badge) {
+        if (usuarioLogado && usuarioLogado.isRevendedor) {
+            badge.classList.add('show');
+            console.log('✅ Badge REVENDEDOR visível');
+        } else {
+            badge.classList.remove('show');
+            console.log('❌ Badge REVENDEDOR oculto');
+        }
+    }
+    
+    // 5. Atualiza o dropdown manualmente
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) {
+        const loginItem = dropdown.querySelector('.login-item');
+        const dadosItem = dropdown.querySelector('.dropdown-item:nth-child(2)');
+        const pedidosItem = dropdown.querySelector('.dropdown-item:nth-child(3)');
+        const sairItem = dropdown.querySelector('.sair');
+        const btnUser = document.getElementById('btnUserMenu');
+        
+        if (usuarioLogado && usuarioLogado.isRevendedor) {
+            if (loginItem) loginItem.style.display = 'none';
+            if (dadosItem) dadosItem.style.display = 'flex';
+            if (pedidosItem) pedidosItem.style.display = 'flex';
+            if (sairItem) sairItem.style.display = 'flex';
+            if (btnUser) btnUser.innerHTML = '<i class="fas fa-user-check" style="color:#27ae60;"></i>';
+            console.log('✅ Dropdown atualizado: REVENDEDOR');
+        } else if (usuarioLogado) {
+            if (loginItem) loginItem.style.display = 'none';
+            if (dadosItem) dadosItem.style.display = 'flex';
+            if (pedidosItem) pedidosItem.style.display = 'flex';
+            if (sairItem) sairItem.style.display = 'flex';
+            if (btnUser) btnUser.innerHTML = '<i class="fas fa-user"></i>';
+            console.log('✅ Dropdown atualizado: USUÁRIO COMUM');
+        } else {
+            if (loginItem) loginItem.style.display = 'flex';
+            if (dadosItem) dadosItem.style.display = 'none';
+            if (pedidosItem) pedidosItem.style.display = 'none';
+            if (sairItem) sairItem.style.display = 'none';
+            if (btnUser) btnUser.innerHTML = '<i class="fas fa-user"></i>';
+            console.log('✅ Dropdown atualizado: NÃO LOGADO');
+        }
+    }
+    
+    // 6. Fecha o dropdown se estiver aberto
+    if (dropdown) {
+        dropdown.classList.remove('show');
+        dropdown.style.display = 'none';
+    }
+    
+    console.log('✅ ATUALIZAÇÃO CONCLUÍDA!');
+}
+
+
+     function atualizarInterfaceUsuario() {
+    console.log('🔄 atualizarInterfaceUsuario() CHAMADA');
+    
+    // 🔥 GARANTE QUE usuarioLogado ESTÁ CARREGADO
+    if (!usuarioLogado) {
+        const usuarioSalvo = localStorage.getItem('usuarioLogado');
+        if (usuarioSalvo) {
+            try {
+                usuarioLogado = JSON.parse(usuarioSalvo);
+                console.log('✅ usuarioLogado carregado do localStorage');
+            } catch (e) {
+                console.log('❌ Erro ao carregar usuarioLogado');
             }
         }
+    }
+    
+    console.log('📋 usuarioLogado:', usuarioLogado);
+    
+    const dropdown = document.getElementById('userDropdown');
+    if (!dropdown) {
+        console.log('❌ Dropdown não encontrado!');
+        return;
+    }
+    
+    // Busca os itens do dropdown
+    const loginItem = dropdown.querySelector('.login-item');
+    const dadosItem = dropdown.querySelector('.dropdown-item:nth-child(2)');
+    const pedidosItem = dropdown.querySelector('.dropdown-item:nth-child(3)');
+    const sairItem = dropdown.querySelector('.sair');
+    const btnUser = document.getElementById('btnUserMenu');
+    
+    console.log('📋 Itens encontrados:', {
+        loginItem: !!loginItem,
+        dadosItem: !!dadosItem,
+        pedidosItem: !!pedidosItem,
+        sairItem: !!sairItem
+    });
+    
+    // 🔥 VERIFICA SE ESTÁ LOGADO COMO REVENDEDOR
+    if (usuarioLogado && usuarioLogado.isRevendedor) {
+        console.log('✅ USUÁRIO LOGADO COMO REVENDEDOR');
+        
+        // Mostra itens de usuário logado
+        if (loginItem) loginItem.style.display = 'none';
+        if (dadosItem) dadosItem.style.display = 'flex';
+        if (pedidosItem) pedidosItem.style.display = 'flex';
+        if (sairItem) sairItem.style.display = 'flex';
+        
+        // Atualiza ícone do usuário
+        if (btnUser) {
+            btnUser.innerHTML = '<i class="fas fa-user-check" style="color:#27ae60;"></i>';
+        }
+        
+        // Mostra badge revendedor
+        const badge = document.getElementById('revendedorBadge');
+        if (badge) badge.classList.add('show');
+        
+        // Oculta as tabs de login no modal
+        const loginTabs = document.querySelector('.login-tabs');
+        if (loginTabs) loginTabs.style.display = 'none';
+        
+        // 🔥 GARANTE QUE O DROPDOWN FIQUE VISÍVEL QUANDO ABERTO
+        dropdown.style.display = 'none'; // Começa fechado
+        
+        console.log('✅ Interface atualizada para REVENDEDOR');
+        
+    } else if (usuarioLogado) {
+        console.log('⚠️ USUÁRIO LOGADO MAS NÃO É REVENDEDOR');
+        
+        if (loginItem) loginItem.style.display = 'none';
+        if (dadosItem) dadosItem.style.display = 'flex';
+        if (pedidosItem) pedidosItem.style.display = 'flex';
+        if (sairItem) sairItem.style.display = 'flex';
+        
+        if (btnUser) {
+            btnUser.innerHTML = '<i class="fas fa-user"></i>';
+        }
+        
+        const badge = document.getElementById('revendedorBadge');
+        if (badge) badge.classList.remove('show');
+        
+        const loginTabs = document.querySelector('.login-tabs');
+        if (loginTabs) loginTabs.style.display = 'none';
+        
+        dropdown.style.display = 'none';
+        
+        console.log('✅ Interface atualizada para USUÁRIO COMUM');
+        
+    } else {
+        console.log('❌ USUÁRIO NÃO LOGADO');
+        
+        if (loginItem) loginItem.style.display = 'flex';
+        if (dadosItem) dadosItem.style.display = 'none';
+        if (pedidosItem) pedidosItem.style.display = 'none';
+        if (sairItem) sairItem.style.display = 'none';
+        
+        if (btnUser) {
+            btnUser.innerHTML = '<i class="fas fa-user"></i>';
+        }
+        
+        const badge = document.getElementById('revendedorBadge');
+        if (badge) badge.classList.remove('show');
+        
+        const loginTabs = document.querySelector('.login-tabs');
+        if (loginTabs) loginTabs.style.display = 'flex';
+        
+        dropdown.style.display = 'none';
+        
+        console.log('✅ Interface atualizada para NÃO LOGADO');
+    }
+    
+    console.log('✅ atualizarInterfaceUsuario() FINALIZADA');
+}
 
         function sairConta() {
             if (confirm('Tem certeza que deseja sair da sua conta?')) {
@@ -4766,7 +4985,7 @@ function abrirCarrinho() {
         // ============================================================
         // RENDERIZAR PRODUTOS - COM PREÇOS POR QUANTIDADE
         // ============================================================
-        function renderizarProdutos() {
+     function renderizarProdutos() {
     const grid = document.getElementById('productsGrid');
     if (!grid) return;
     grid.innerHTML = '';
@@ -4836,12 +5055,11 @@ function abrirCarrinho() {
             `;
         });
         
-        // 🔥 CORREÇÃO: Oculta estoque para revendedores
+        // 🔥 CORREÇÃO: Revendedor NÃO vê NADA de estoque ou produção na lista
         let stockInfo = '';
         if (ehRevendedor) {
-            stockInfo = `<div class="stock-info" style="color:#888;font-size:11px;">
-                <i class="fas fa-box"></i> Disponível para revenda
-            </div>`;
+            // 🔥 REVENDEDOR: NÃO MOSTRA NADA - Vazio
+            stockInfo = '';
         } else if (estaEsgotado) {
             stockInfo = `<div class="stock-info esgotado"><i class="fas fa-times-circle"></i> Produto esgotado</div>`;
         } else if (mostrarPrazo) {
@@ -7488,6 +7706,317 @@ fecharCheckout();
         console.log('📦 Desconto aplicado:', DESCONTO_REVENDEDOR * 100 + '%');
         console.log('💰 Pedido mínimo: R$ ' + PEDIDO_MINIMO_REVENDEDOR.toFixed(2));
         console.log('📋 Use "REVENDA" na observação do cliente para liberar acesso');
+
+        // ============================================================
+// FECHA DROPDOWN AO CLICAR FORA
+// ============================================================
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('userDropdown');
+    const btn = document.getElementById('btnUserMenu');
+    
+    if (dropdown && btn && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+        dropdown.classList.remove('show');
+        dropdown.style.display = 'none';
+    }
+});
+
+// ============================================================
+// 🔥 SOLUÇÃO DEFINITIVA PARA O DROPDOWN
+// ============================================================
+
+// 1. SOBRESCREVE A FUNÇÃO toggleUserMenu
+function toggleUserMenu() {
+    console.log('🔄 toggleUserMenu CHAMADO!');
+    const dropdown = document.getElementById('userDropdown');
+    if (!dropdown) {
+        console.log('❌ Dropdown não encontrado');
+        return;
+    }
+    
+    // Alterna a visibilidade
+    if (dropdown.style.display === 'block') {
+        dropdown.style.display = 'none';
+        dropdown.classList.remove('show');
+        console.log('✅ Dropdown FECHADO');
+    } else {
+        dropdown.style.display = 'block';
+        dropdown.classList.add('show');
+        console.log('✅ Dropdown ABERTO');
+    }
+}
+
+// 2. SOBRESCREVE A FUNÇÃO atualizarInterfaceUsuario
+function atualizarInterfaceUsuario() {
+    console.log('🔄 atualizarInterfaceUsuario CHAMADA!');
+    
+    // Recarrega o usuário do localStorage
+    const usuarioSalvo = localStorage.getItem('usuarioLogado');
+    if (usuarioSalvo) {
+        try {
+            usuarioLogado = JSON.parse(usuarioSalvo);
+            console.log('✅ usuarioLogado carregado:', usuarioLogado.email);
+        } catch(e) {
+            console.log('❌ Erro ao carregar usuarioLogado');
+        }
+    }
+    
+    const dropdown = document.getElementById('userDropdown');
+    if (!dropdown) {
+        console.log('❌ Dropdown não encontrado');
+        return;
+    }
+    
+    const loginItem = dropdown.querySelector('.login-item');
+    const dadosItem = dropdown.querySelector('.dropdown-item:nth-child(2)');
+    const pedidosItem = dropdown.querySelector('.dropdown-item:nth-child(3)');
+    const sairItem = dropdown.querySelector('.sair');
+    const btnUser = document.getElementById('btnUserMenu');
+    const badge = document.getElementById('revendedorBadge');
+    
+    console.log('📋 usuarioLogado:', usuarioLogado);
+    console.log('📋 isRevendedor:', usuarioLogado?.isRevendedor);
+    
+    // 🔥 FORÇA A ATUALIZAÇÃO
+    if (usuarioLogado && usuarioLogado.isRevendedor) {
+        console.log('✅ FORÇANDO MODO REVENDEDOR');
+        
+        if (loginItem) loginItem.style.display = 'none';
+        if (dadosItem) dadosItem.style.display = 'flex';
+        if (pedidosItem) pedidosItem.style.display = 'flex';
+        if (sairItem) sairItem.style.display = 'flex';
+        if (btnUser) btnUser.innerHTML = '<i class="fas fa-user-check" style="color:#27ae60;"></i>';
+        if (badge) badge.classList.add('show');
+        
+        dropdown.style.display = 'none';
+        dropdown.classList.remove('show');
+        
+        // Oculta tabs de login
+        const loginTabs = document.querySelector('.login-tabs');
+        if (loginTabs) loginTabs.style.display = 'none';
+        
+        console.log('✅ Interface atualizada para REVENDEDOR');
+        
+    } else if (usuarioLogado) {
+        console.log('⚠️ USUÁRIO COMUM');
+        
+        if (loginItem) loginItem.style.display = 'none';
+        if (dadosItem) dadosItem.style.display = 'flex';
+        if (pedidosItem) pedidosItem.style.display = 'flex';
+        if (sairItem) sairItem.style.display = 'flex';
+        if (btnUser) btnUser.innerHTML = '<i class="fas fa-user"></i>';
+        if (badge) badge.classList.remove('show');
+        
+        dropdown.style.display = 'none';
+        dropdown.classList.remove('show');
+        
+        console.log('✅ Interface atualizada para USUÁRIO COMUM');
+        
+    } else {
+        console.log('❌ USUÁRIO NÃO LOGADO');
+        
+        if (loginItem) loginItem.style.display = 'flex';
+        if (dadosItem) dadosItem.style.display = 'none';
+        if (pedidosItem) pedidosItem.style.display = 'none';
+        if (sairItem) sairItem.style.display = 'none';
+        if (btnUser) btnUser.innerHTML = '<i class="fas fa-user"></i>';
+        if (badge) badge.classList.remove('show');
+        
+        dropdown.style.display = 'none';
+        dropdown.classList.remove('show');
+        
+        const loginTabs = document.querySelector('.login-tabs');
+        if (loginTabs) loginTabs.style.display = 'flex';
+        
+        console.log('✅ Interface atualizada para NÃO LOGADO');
+    }
+}
+
+// 3. CRIA UMA FUNÇÃO PARA FORÇAR A CORREÇÃO
+function corrigirDropdownAgora() {
+    console.log('🔧 CORRIGINDO DROPDOWN AGORA...');
+    
+    // Recarrega o usuário
+    const usuarioSalvo = localStorage.getItem('usuarioLogado');
+    if (usuarioSalvo) {
+        try {
+            usuarioLogado = JSON.parse(usuarioSalvo);
+            console.log('✅ usuarioLogado recarregado:', usuarioLogado.email);
+        } catch(e) {
+            console.log('❌ Erro ao recarregar');
+        }
+    }
+    
+    // Força a atualização
+    atualizarInterfaceUsuario();
+    
+    // Abre o dropdown para testar
+    const dropdown = document.getElementById('userDropdown');
+    if (dropdown) {
+        dropdown.style.display = 'block';
+        dropdown.classList.add('show');
+        console.log('✅ Dropdown aberto para teste');
+    }
+    
+    console.log('🔧 CORREÇÃO CONCLUÍDA!');
+    console.log('📊 usuarioLogado:', usuarioLogado);
+    console.log('📊 É revendedor?', usuarioLogado?.isRevendedor ? '✅ SIM' : '❌ NÃO');
+}
+
+// 4. EXECUTA A CORREÇÃO AUTOMATICAMENTE
+console.log('🚀 Executando correção automática...');
+corrigirDropdownAgora();
+
+// 5. ADICIONA EVENTO DE CLIQUE PARA FECHAR
+document.addEventListener('click', function(e) {
+    const dropdown = document.getElementById('userDropdown');
+    const btn = document.getElementById('btnUserMenu');
+    
+    if (dropdown && btn && !dropdown.contains(e.target) && !btn.contains(e.target)) {
+        dropdown.style.display = 'none';
+        dropdown.classList.remove('show');
+    }
+});
+
+console.log('✅ SOLUÇÃO DEFINITIVA APLICADA!');
+console.log('👉 Clique no ícone do usuário para testar.');
+
+// ============================================================
+// 🔥 SOLUÇÃO DEFINITIVA PARA OCULTAR ESTOQUE - PARA TODOS OS USUÁRIOS
+// ============================================================
+
+// 1. FUNÇÃO PARA OCULTAR O ESTOQUE DOS PRODUTOS NA TELA PRINCIPAL
+function ocultarEstoqueProdutos() {
+    console.log('🔄 OCULTANDO ESTOQUE DOS PRODUTOS (para todos os usuários)...');
+    
+    // 🔥 NÃO VERIFICA SE É REVENDEDOR - OCULTA PARA TODOS
+    
+    // Busca TODOS os produtos na tela principal
+    const produtos = document.querySelectorAll('.product-card');
+    
+    if (produtos.length === 0) {
+        console.log('⚠️ Nenhum produto encontrado na tela');
+        return;
+    }
+    
+    console.log(`📦 ${produtos.length} produtos encontrados`);
+    
+    let removidos = 0;
+    
+    produtos.forEach((produto, index) => {
+        // 🔥 Busca o elemento de estoque dentro do produto
+        const stockInfo = produto.querySelector('.stock-info');
+        
+        if (stockInfo) {
+            // 🔥 OCULTA O ESTOQUE (remove da tela)
+            stockInfo.style.display = 'none';
+            removidos++;
+            console.log(`   ✅ Produto ${index+1}: estoque oculto`);
+        }
+    });
+    
+    console.log(`✅ ${removidos} estoques ocultos com sucesso!`);
+}
+
+// 2. FUNÇÃO PARA OBSERVAR MUDANÇAS NA PÁGINA (quando abrir categorias)
+function observarMudancasProdutos() {
+    console.log('🔄 Iniciando observador de produtos...');
+    
+    // Observa mudanças no DOM
+    const observer = new MutationObserver(function(mutations) {
+        for (const mutation of mutations) {
+            // Se adicionou novos nós (produtos)
+            if (mutation.addedNodes.length > 0) {
+                // Verifica se algum produto foi adicionado
+                for (const node of mutation.addedNodes) {
+                    if (node.classList && node.classList.contains('product-card')) {
+                        console.log('🔄 Novos produtos detectados!');
+                        setTimeout(ocultarEstoqueProdutos, 100);
+                        break;
+                    }
+                }
+            }
+        }
+    });
+    
+    // Observa mudanças na grade de produtos
+    const grid = document.getElementById('productsGrid');
+    if (grid) {
+        observer.observe(grid, {
+            childList: true,
+            subtree: true
+        });
+        console.log('✅ Observador de produtos ativado');
+    } else {
+        console.log('⚠️ Grade de produtos não encontrada');
+    }
+}
+
+// 3. FUNÇÃO PARA FORÇAR A OCULTAÇÃO AGORA
+function forcarOcultarEstoque() {
+    console.log('🔧 FORÇANDO OCULTAÇÃO DO ESTOQUE...');
+    
+    // Pequeno delay para garantir que os produtos foram carregados
+    setTimeout(function() {
+        ocultarEstoqueProdutos();
+    }, 300);
+    
+    // Executa novamente após 1 segundo (para garantir)
+    setTimeout(function() {
+        ocultarEstoqueProdutos();
+    }, 1000);
+    
+    // Executa novamente após 2 segundos (para garantir)
+    setTimeout(function() {
+        ocultarEstoqueProdutos();
+    }, 2000);
+}
+
+// 4. SOBRESCREVE A FUNÇÃO renderizarProdutos para ocultar estoque
+// Mantém a função original, mas adiciona a ocultação depois
+const renderizarProdutosOriginal = window.renderizarProdutos;
+
+if (typeof renderizarProdutosOriginal === 'function') {
+    window.renderizarProdutos = function() {
+        console.log('🔄 renderizarProdutos() chamada - aplicando correção...');
+        
+        // Chama a função original
+        renderizarProdutosOriginal();
+        
+        // Oculta o estoque após renderizar
+        setTimeout(ocultarEstoqueProdutos, 200);
+    };
+    console.log('✅ renderizarProdutos() sobrescrita com sucesso!');
+}
+
+// 5. ADICIONA EVENTO PARA QUANDO CATEGORIAS SÃO ABERTAS
+// Observa cliques nas categorias
+document.addEventListener('click', function(e) {
+    const categoryCard = e.target.closest('.category-card');
+    if (categoryCard) {
+        console.log('🔄 Categoria clicada - aguardando carregamento...');
+        // Aguarda os produtos carregarem
+        setTimeout(forcarOcultarEstoque, 500);
+        setTimeout(forcarOcultarEstoque, 1000);
+    }
+});
+
+// 6. ADICIONA EVENTO PARA QUANDO A PÁGINA É CARREGADA
+window.addEventListener('load', function() {
+    console.log('🔄 Página carregada - ocultando estoque...');
+    setTimeout(forcarOcultarEstoque, 500);
+});
+
+// 7. EXECUTA A CORREÇÃO IMEDIATAMENTE
+console.log('🚀 Executando correção de estoque (para todos os usuários)...');
+forcarOcultarEstoque();
+
+// 8. ATIVA O OBSERVADOR
+observarMudancasProdutos();
+
+console.log('✅ SOLUÇÃO DEFINITIVA PARA ESTOQUE APLICADA!');
+console.log('👉 O estoque em verde será oculto para TODOS os usuários (logados e não logados)');
+
+
     </script>
 </body>
 </html>
