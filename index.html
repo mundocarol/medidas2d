@@ -2871,7 +2871,101 @@
     transform: scale(1.02);
 }
 
+/* ===== BOTÕES RÁPIDOS - ABAIXO DO BANNER ===== */
+.botoes-rapidos {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
 
+.botoes-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.btn-rapido {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 16px;
+    min-height: 60px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Botões Cinza - ESTÁTICOS (sem clique) */
+.btn-cinza {
+    background: #e8ecf0;
+    color: #1a3a5c;
+    min-height: 60px;
+    cursor: default;
+    pointer-events: none;
+    /* Remove o pontilhado */
+    border: none;
+}
+
+/* Botão Laranja - Área do Revendedor (clicável) */
+.btn-laranja {
+    background: #f57c00;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-laranja:hover {
+    background: #e65100;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.btn-laranja i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+/* ===== RESPONSIVO - SEMPRE LADO A LADO ===== */
+@media (max-width: 768px) {
+    .botoes-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .btn-rapido {
+        padding: 14px 10px;
+        min-height: 50px;
+        font-size: 13px;
+    }
+    
+    .btn-laranja i {
+        font-size: 15px;
+        margin-right: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .botoes-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    
+    .btn-rapido {
+        padding: 12px 6px;
+        min-height: 44px;
+        font-size: 11px;
+        border-radius: 8px;
+    }
+    
+    .btn-laranja i {
+        font-size: 13px;
+        margin-right: 4px;
+    }
+}
 
 
 
@@ -2955,6 +3049,30 @@
     <!-- Indicadores (dots) -->
     <div class="controls" id="bannerDots"></div>
 </section>
+
+<!-- ===== BOTÕES RÁPIDOS ===== -->
+
+<!-- Substitua o <div> por <a> e adicione o link igual ao botão 3 -->
+<section class="botoes-rapidos">
+    <div class="botoes-container">
+        <!-- Botão 1 - CINZA ESTÁTICO (sem texto, sem clique) -->
+        <div class="btn-rapido btn-cinza" id="btnBotao1">
+            <!-- Sem texto por enquanto -->
+        </div>
+        
+        <!-- Botão 2 - CINZA ESTÁTICO (sem texto, sem clique) -->
+        <div class="btn-rapido btn-cinza" id="btnBotao2">
+            <!-- Sem texto por enquanto -->
+        </div>
+        
+        <!-- Botão 3 - LARANJA (Área do Revendedor) -->
+        <a href="https://mcembalagens.com.br/revenda" class="btn-rapido btn-laranja" target="_blank">
+            <i class="fas fa-store"></i> Área do Revendedor
+        </a>
+    </div>
+</section>
+
+
 
         <section class="categories-section" id="categoriesSection">
             <h2 class="section-title">Nossas Categorias</h2>
