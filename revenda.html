@@ -3219,7 +3219,7 @@
         // ============================================================
         // CONFIGURAÇÕES
         // ============================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyUs5x6HG9tSJsVJBkQ98VdmlOJ56ZiWcbeTJbUur1I9yWvjEBPiBiFEEWO7kLjxb70nA/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzcTtrNqiyXbk3RvGY0qTGhriSo9nvFjwXrG6gGt4YcECH6d7WSlPgRRcVYDX2XwIGQ1g/exec';
         const WHATSAPP_NUMBER = '5531984834383';
         const PIX_KEY = 'mcembalagensbh@gmail.com';
         const APPS_SCRIPT_URL = API_URL;
@@ -3420,6 +3420,328 @@
                 obsInterna: obsInterna
             };
         }
+
+
+
+// ============================================================
+// VERIFICAR CPF/CNPJ EM TEMPO REAL (AO DIGITAR)
+// ============================================================
+let timeoutVerificarDocumento = null;
+
+document.getElementById('cadastroDocumento').addEventListener('input', function() {
+    const documento = this.value.trim();
+    
+    // Só verifica se tiver pelo menos 11 dígitos (CPF) ou 14 (CNPJ)
+    const numeros = documento.replace(/\D/g, '');
+    if (numeros.length < 11) {
+        // Limpa mensagens anteriores
+        const msgEl = document.getElementById('cadastroMessage');
+        msgEl.className = 'login-message';
+        msgEl.textContent = '';
+        return;
+    }
+    
+    // Debounce para não chamar a API a cada tecla
+    clearTimeout(timeoutVerificarDocumento);
+    timeoutVerificarDocumento = setTimeout(() => {
+        verificarDocumentoExistente(numeros);
+    }, 800);
+});
+
+// ============================================================
+// VERIFICAR SE DOCUMENTO JÁ EXISTE NA BASE - COMPLETA
+// ============================================================
+async function verificarDocumentoExistente(documento) {
+    const msgEl = document.getElementById('cadastroMessage');
+    const formFields = document.querySelectorAll('#panelCadastro .form-group, #panelCadastro .form-row, #panelCadastro .checkbox-group, #panelCadastro .btn-login-action, #panelCadastro > div:not(.login-message)');
+    
+    try {
+        msgEl.className = 'login-message';
+        msgEl.textContent = '🔄 Verificando documento...';
+        msgEl.style.display = 'block';
+        
+        // 🔥 USA O MESMO PADRÃO DO CADASTRO (GET simples)
+        const response = await fetch(API_URL + '?_t=' + Date.now());
+        
+        if (!response.ok) throw new Error('Erro ao buscar dados');
+        const data = await response.json();
+        const clientes = data.clientes || [];
+        
+        // Normaliza o documento para busca
+        const docBusca = documento.replace(/\D/g, '');
+        
+        // Busca cliente com este documento
+        const clienteExistente = clientes.find(c => {
+            const cDoc = String(c.cpf || c.documento || '').replace(/\D/g, '');
+            return cDoc === docBusca;
+        });
+        
+        if (clienteExistente) {
+            // 🔥 VERIFICA SE JÁ TEM REVENDA NAS OBSERVAÇÕES
+            const observacao = String(clienteExistente.observacoes || '').toUpperCase();
+            const ehRevendedor = observacao.includes('REVENDA');
+            
+            if (ehRevendedor) {
+                // 🔥 CASO A: JÁ É REVENDEDOR
+                msgEl.className = 'login-message success';
+                msgEl.style.background = '#e8f5e9';
+                msgEl.style.color = '#2e7d32';
+                msgEl.style.borderColor = '#27ae60';
+                msgEl.innerHTML = `
+                    ✅ <strong>Seu cadastro de revendedor já está ativo!</strong><br>
+                    <span style="font-size:13px;color:#2e7d32;">
+                        Caso tenha perdido sua senha, entre em contato via WhatsApp para resetar.
+                    </span>
+                    <br><br>
+                    <a href="#" onclick="abrirWhatsAppAtendente(); return false;" 
+                       style="display:inline-block;background:#25D366;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;">
+                        <i class="fab fa-whatsapp"></i> Falar com Atendente
+                    </a>
+                    <br><br>
+                    <span style="font-size:11px;color:#888;">
+                        <i class="fas fa-info-circle"></i> Não é possível solicitar nova análise.
+                    </span>
+                `;
+                
+                // BLOQUEIA O FORMULÁRIO
+                formFields.forEach(field => {
+                    field.style.display = 'none';
+                });
+                
+                // Botão para voltar ao login
+                const voltarBtn = document.createElement('div');
+                voltarBtn.id = 'voltarLoginBtn';
+                voltarBtn.style.marginTop = '15px';
+                voltarBtn.innerHTML = `
+                    <button onclick="switchLoginTab('login')" style="width:100%;padding:12px;background:var(--primary-blue);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                        <i class="fas fa-arrow-left"></i> Voltar para Login
+                    </button>
+                `;
+                msgEl.parentNode.insertBefore(voltarBtn, msgEl.nextSibling);
+                
+                return;
+            } else {
+                // 🔥 CASO B: CLIENTE COMUM - OFERECE SOLICITAR ANÁLISE
+                msgEl.className = 'login-message warning';
+                msgEl.style.background = '#fff3cd';
+                msgEl.style.color = '#856404';
+                msgEl.style.borderColor = '#f39c12';
+                msgEl.innerHTML = `
+                    <strong>⚠️ Você já tem cadastro para compras em nosso site principal.</strong><br>
+                    <span style="font-size:13px;">
+                        Para solicitar análise para se tornar um Revendedor, clique no botão abaixo.
+                    </span>
+                    <br><br>
+                    <button onclick="solicitarAnaliseRevenda('${clienteExistente.email}', '${docBusca}')" 
+                            style="background:#f39c12;color:white;border:none;padding:10px 25px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                        <i class="fas fa-user-plus"></i> Solicitar Análise
+                    </button>
+                    <br><br>
+                    <span style="font-size:11px;color:#888;">
+                        <i class="fas fa-clock"></i> Após a solicitação, aguarde até 24 horas úteis para liberação.
+                    </span>
+                `;
+                
+                // BLOQUEIA O FORMULÁRIO
+                formFields.forEach(field => {
+                    field.style.display = 'none';
+                });
+                
+                return;
+            }
+        } else {
+            // 🔥 CASO C: DOCUMENTO NÃO ENCONTRADO - LIBERA O FORMULÁRIO
+            msgEl.className = 'login-message success';
+            msgEl.style.background = '#e8f5e9';
+            msgEl.style.color = '#2e7d32';
+            msgEl.style.borderColor = '#27ae60';
+            msgEl.textContent = '✅ Documento disponível para cadastro. Preencha os dados abaixo.';
+            
+            // MOSTRA O FORMULÁRIO NOVAMENTE
+            formFields.forEach(field => {
+                field.style.display = '';
+            });
+            
+            // Remove botão de voltar se existir
+            const voltarBtn = document.getElementById('voltarLoginBtn');
+            if (voltarBtn) voltarBtn.remove();
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao verificar documento:', error);
+        msgEl.className = 'login-message error';
+        msgEl.textContent = '❌ Erro ao verificar documento. Tente novamente.';
+        msgEl.style.display = 'block';
+    }
+}
+
+// ============================================================
+// SOLICITAR ANÁLISE PARA CLIENTE EXISTENTE - CORRIGIDA
+// USANDO A MESMA LÓGICA QUE FUNCIONA NO CADASTRO
+// ============================================================
+async function solicitarAnaliseRevenda(email, documento) {
+    if (!email) {
+        mostrarNotificacao('⚠️ Email não encontrado.', 'warning');
+        return;
+    }
+    
+    if (!confirm('Deseja solicitar análise para se tornar um revendedor?')) return;
+    
+    const msgEl = document.getElementById('cadastroMessage');
+    const btn = document.querySelector('#panelCadastro .btn-login-action');
+    const textoOriginal = btn ? btn.innerHTML : '';
+    
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        btn.disabled = true;
+    }
+    
+    msgEl.className = 'login-message';
+    msgEl.textContent = '🔄 Buscando dados do cliente...';
+    msgEl.style.display = 'block';
+    
+    try {
+        // 🔥 1. BUSCA O CLIENTE COMPLETO (MESMO PADRÃO DO CADASTRO)
+        const responseBusca = await fetch(API_URL + '?_t=' + Date.now());
+        if (!responseBusca.ok) throw new Error('Erro ao buscar dados');
+        const data = await responseBusca.json();
+        const clientes = data.clientes || [];
+        
+        // Encontra o cliente pelo email
+        const emailLower = email.toLowerCase().trim();
+        const cliente = clientes.find(c => {
+            const cEmail = String(c.email || '').toLowerCase().trim();
+            return cEmail === emailLower;
+        });
+        
+        if (!cliente) {
+            throw new Error('Cliente não encontrado');
+        }
+        
+        // 🔥 2. VERIFICA SE JÁ TEM REVENDA (PROTEÇÃO)
+        const observacaoAtual = String(cliente.observacoes || '').toUpperCase();
+        if (observacaoAtual.includes('REVENDA')) {
+            msgEl.className = 'login-message error';
+            msgEl.style.background = '#fde8e8';
+            msgEl.style.color = '#721c24';
+            msgEl.style.borderColor = '#e74c3c';
+            msgEl.innerHTML = `
+                ❌ <strong>Este cliente já é um revendedor!</strong><br>
+                <span style="font-size:13px;color:#721c24;">
+                    Não é possível solicitar nova análise.
+                </span>
+                <br><br>
+                <a href="#" onclick="abrirWhatsAppAtendente(); return false;" 
+                   style="display:inline-block;background:#25D366;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;">
+                    <i class="fab fa-whatsapp"></i> Falar com Atendente
+                </a>
+            `;
+            if (btn) { btn.innerHTML = textoOriginal; btn.disabled = false; }
+            return;
+        }
+        
+        // 🔥 3. PREPARA OS DADOS (MESMO FORMATO DO CADASTRO)
+        msgEl.textContent = '🔄 Enviando solicitação de análise...';
+        
+        const dadosAtualizacao = {
+            acao: 'salvar_cliente',
+            cliente: {
+                nome: cliente.nome || '',
+                email: cliente.email || '',
+                telefone: cliente.telefone || '',
+                documento: documento || cliente.cpf || cliente.documento || '',
+                senha: cliente.senha || '',
+                tipo_pessoa: cliente.tipo_pessoa || 'FISICA',
+                inscricao_estadual: cliente.inscricao_estadual || '',
+                endereco: cliente.endereco || '',
+                numero: cliente.numero || '',
+                complemento: cliente.complemento || '',
+                bairro: cliente.bairro || '',
+                cidade: cliente.cidade || '',
+                estado: cliente.estado || '',
+                cep: cliente.cep || '',
+                endereco_entrega: cliente.endereco_entrega || '',
+                cep_entrega: cliente.cep_entrega || '',
+                observacao: 'analise'
+            }
+        };
+        
+        console.log('📤 Enviando solicitação de análise:', dadosAtualizacao);
+        
+        // 🔥 4. ENVIA EXATAMENTE IGUAL AO CADASTRO (SEM await response.json())
+        // O cadastro funciona com mode: 'no-cors' ou sem especificar
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors', // ← MESMO MODO QUE FUNCIONA NO CADASTRO
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dadosAtualizacao)
+        });
+        
+        // 🔥 5. NÃO TENTA LER A RESPOSTA (igual ao cadastro)
+        // O cadastro não lê resposta, só envia e pronto
+        
+        console.log('✅ Solicitação enviada com sucesso!');
+        
+        // 🔥 6. MENSAGEM DE SUCESSO
+        msgEl.className = 'login-message success';
+        msgEl.style.background = '#e8f5e9';
+        msgEl.style.color = '#2e7d32';
+        msgEl.style.borderColor = '#27ae60';
+        msgEl.innerHTML = `
+            ✅ Solicitação de análise enviada com sucesso!<br>
+            <span style="font-size:13px;color:#2e7d32;">
+                Aguarde até <strong>24 horas úteis</strong> para a liberação.<br>
+                Você receberá um e-mail com a confirmação.
+            </span>
+            <br><br>
+            <button onclick="switchLoginTab('login')" 
+                    style="padding:10px 25px;background:var(--primary-blue);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                <i class="fas fa-arrow-left"></i> Voltar ao Login
+            </button>
+        `;
+        
+        // 🔥 7. BLOQUEIA O FORMULÁRIO
+        const formFields = document.querySelectorAll('#panelCadastro .form-group, #panelCadastro .form-row, #panelCadastro .checkbox-group, #panelCadastro .btn-login-action, #panelCadastro > div:not(.login-message)');
+        formFields.forEach(field => {
+            field.style.display = 'none';
+        });
+        
+        mostrarNotificacao('✅ Solicitação de análise enviada com sucesso!', 'success');
+        
+        // 🔥 8. FECHA O MODAL APÓS 4 SEGUNDOS
+        setTimeout(() => {
+            fecharModal('loginModal');
+            mostrarNotificacao('📧 Aguarde o e-mail de confirmação em até 24 horas.', 'info');
+        }, 4000);
+        
+    } catch (error) {
+        console.error('❌ Erro ao solicitar análise:', error);
+        msgEl.className = 'login-message error';
+        msgEl.style.background = '#fde8e8';
+        msgEl.style.color = '#721c24';
+        msgEl.style.borderColor = '#e74c3c';
+        msgEl.innerHTML = `
+            ❌ Erro ao enviar solicitação.<br>
+            <span style="font-size:13px;color:#721c24;">
+                ${error.message || 'Tente novamente ou entre em contato pelo WhatsApp.'}
+            </span>
+            <br><br>
+            <a href="#" onclick="abrirWhatsAppAtendente(); return false;" 
+               style="display:inline-block;background:#25D366;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;">
+                <i class="fab fa-whatsapp"></i> Falar com Atendente
+            </a>
+        `;
+    } finally {
+        if (btn) {
+            btn.innerHTML = textoOriginal;
+            btn.disabled = false;
+        }
+    }
+}
+
+
 
         // ============================================================
         // FUNÇÕES DE UTILIDADE
@@ -3930,272 +4252,261 @@ document.addEventListener('click', function(e) {
             }
         }
 
-        // ============================================================
-        // CADASTRO E LOGIN REVENDA
-        // ============================================================
-        async function fazerCadastroRevenda() {
-            const nome = document.getElementById('cadastroNome').value.trim();
-            const email = document.getElementById('cadastroEmail').value.trim();
-            const telefone = document.getElementById('cadastroTelefone').value.trim();
-            const senha = document.getElementById('cadastroSenha').value;
-            const documentoInput = document.getElementById('cadastroDocumento').value.trim();
-            const tipoPessoa = document.getElementById('cadastroTipoPessoa').value;
-            const inscricaoEstadual = document.getElementById('cadastroInscricaoEstadual').value.trim();
-            const cep = document.getElementById('cadastroCep').value.trim();
-            const endereco = document.getElementById('cadastroEndereco').value.trim();
-            const numero = document.getElementById('cadastroNumero').value.trim();
-            const complemento = document.getElementById('cadastroComplemento').value.trim();
-            const bairro = document.getElementById('cadastroBairro').value.trim();
-            const cidade = document.getElementById('cadastroCidade').value.trim();
-            const uf = document.getElementById('cadastroUf').value;
-            const msgEl = document.getElementById('cadastroMessage');
-            
-            if (!nome) { msgEl.className = 'login-message error'; msgEl.textContent = '⚠️ Preencha o Nome/Razão Social.'; return; }
-            if (!email) { msgEl.className = 'login-message error'; msgEl.textContent = '⚠️ Preencha o Email.'; return; }
-            if (!documentoInput) { msgEl.className = 'login-message error'; msgEl.textContent = '⚠️ Preencha o CPF/CNPJ.'; return; }
-            if (senha.length < 6) { msgEl.className = 'login-message error'; msgEl.textContent = '⚠️ A senha deve ter no mínimo 6 caracteres.'; return; }
-            if (!cep || !endereco || !numero || !bairro || !cidade || !uf) {
-                msgEl.className = 'login-message error';
-                msgEl.textContent = '⚠️ Preencha todos os campos do endereço.';
-                return;
-            }
-            
-            const docValidado = validarDocumento(documentoInput);
-            if (!docValidado.valido) {
-                msgEl.className = 'login-message error';
-                msgEl.textContent = '⚠️ CPF/CNPJ inválido. Digite 11 números (CPF) ou 14 números (CNPJ).';
-                return;
-            }
-            
-            let enderecoEntrega = '';
-            let cepEntrega = '';
-            if (!document.getElementById('mesmoEnderecoEntregaCadastro').checked) {
-                cepEntrega = document.getElementById('cadastroCepEntrega').value.trim();
-                const enderecoE = document.getElementById('cadastroEnderecoEntrega').value.trim();
-                const numeroE = document.getElementById('cadastroNumeroEntrega').value.trim();
-                const complementoE = document.getElementById('cadastroComplementoEntrega').value.trim();
-                const bairroE = document.getElementById('cadastroBairroEntrega').value.trim();
-                const cidadeE = document.getElementById('cadastroCidadeEntrega').value.trim();
-                const ufE = document.getElementById('cadastroUfEntrega').value;
-                enderecoEntrega = `${enderecoE}, ${numeroE}${complementoE ? ', ' + complementoE : ''} - ${bairroE}, ${cidadeE} - ${ufE}, ${cepEntrega}`;
-            } else {
-                enderecoEntrega = `${endereco}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}, ${cidade} - ${uf}, ${cep}`;
-                cepEntrega = cep;
-            }
-            
-            const enderecoCompleto = `${endereco}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}, ${cidade} - ${uf}, ${cep}`;
-            const documentoSalvo = docValidado.documento;
-            
-            msgEl.className = 'login-message';
-            msgEl.textContent = '🔄 Cadastrando...';
-            
-            const btn = document.querySelector('#panelCadastro .btn-login-action');
-            const textoOriginal = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cadastrando...';
-            btn.disabled = true;
-            
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        acao: 'salvar_cliente',
-                        cliente: {
-                            nome: nome,
-                            email: email,
-                            telefone: telefone,
-                            documento: documentoSalvo,
-                            tipo_pessoa: tipoPessoa,
-                            inscricao_estadual: inscricaoEstadual,
-                            senha: senha,
-                            endereco: endereco,
-                            numero: numero,
-                            complemento: complemento,
-                            bairro: bairro,
-                            cidade: cidade,
-                            estado: uf,
-                            cep: cep,
-                            endereco_entrega: enderecoEntrega,
-                            cep_entrega: cepEntrega,
-                            observacao: 'Aguardando liberação revendedor'
-                        }
-                    })
-                });
-                
-                msgEl.className = 'login-message success';
-                msgEl.innerHTML = `
-                    ✅ Cadastro realizado com sucesso!<br>
-                    <span style="font-size:13px;color:#2e7d32;">
-                        Seu acesso será liberado em até <strong>24 horas úteis</strong> após análise.<br>
-                        Você receberá um e-mail com a confirmação.
-                    </span>
-                `;
-                
-                document.getElementById('cadastroNome').value = '';
-                document.getElementById('cadastroEmail').value = '';
-                document.getElementById('cadastroTelefone').value = '';
-                document.getElementById('cadastroDocumento').value = '';
-                document.getElementById('cadastroSenha').value = '';
-                document.getElementById('cadastroCep').value = '';
-                document.getElementById('cadastroEndereco').value = '';
-                document.getElementById('cadastroNumero').value = '';
-                document.getElementById('cadastroComplemento').value = '';
-                document.getElementById('cadastroBairro').value = '';
-                document.getElementById('cadastroCidade').value = '';
-                document.getElementById('cadastroUf').value = '';
-                
-                setTimeout(() => {
-                    switchLoginTab('login');
-                    document.getElementById('loginEmailLogin').value = email;
-                    msgEl.textContent = '✅ Cadastro concluído! Aguarde a liberação.';
-                }, 3000);
-                
-            } catch (error) {
-                msgEl.className = 'login-message error';
-                msgEl.textContent = '❌ Erro ao cadastrar. Tente novamente.';
-            } finally {
-                btn.innerHTML = textoOriginal;
-                btn.disabled = false;
-            }
-        }
-
-
-     async function fazerLoginRevenda() {
-    const email = document.getElementById('loginEmailLogin').value.trim();
-    const senha = document.getElementById('loginSenhaLogin').value;
-    const msgEl = document.getElementById('loginMessage');
+ // ============================================================
+// CADASTRO REVENDEDOR - COMPLETA E CORRIGIDA
+// ============================================================
+async function fazerCadastroRevenda() {
+    const nome = document.getElementById('cadastroNome').value.trim();
+    const email = document.getElementById('cadastroEmail').value.trim();
+    const telefone = document.getElementById('cadastroTelefone').value.trim();
+    const senha = document.getElementById('cadastroSenha').value;
+    const documentoInput = document.getElementById('cadastroDocumento').value.trim();
+    const tipoPessoa = document.getElementById('cadastroTipoPessoa').value;
+    const inscricaoEstadual = document.getElementById('cadastroInscricaoEstadual').value.trim();
+    const cep = document.getElementById('cadastroCep').value.trim();
+    const endereco = document.getElementById('cadastroEndereco').value.trim();
+    const numero = document.getElementById('cadastroNumero').value.trim();
+    const complemento = document.getElementById('cadastroComplemento').value.trim();
+    const bairro = document.getElementById('cadastroBairro').value.trim();
+    const cidade = document.getElementById('cadastroCidade').value.trim();
+    const uf = document.getElementById('cadastroUf').value;
+    const msgEl = document.getElementById('cadastroMessage');
     
-    if (!email) {
-        msgEl.className = 'login-message error';
-        msgEl.textContent = '⚠️ Digite seu email.';
-        return;
+    if (!nome) { 
+        msgEl.className = 'login-message error'; 
+        msgEl.textContent = '⚠️ Preencha o Nome/Razão Social.'; 
+        return; 
     }
-    if (!senha) {
+    if (!email) { 
+        msgEl.className = 'login-message error'; 
+        msgEl.textContent = '⚠️ Preencha o Email.'; 
+        return; 
+    }
+    if (!documentoInput) { 
+        msgEl.className = 'login-message error'; 
+        msgEl.textContent = '⚠️ Preencha o CPF/CNPJ.'; 
+        return; 
+    }
+    if (senha.length < 6) { 
+        msgEl.className = 'login-message error'; 
+        msgEl.textContent = '⚠️ A senha deve ter no mínimo 6 caracteres.'; 
+        return; 
+    }
+    if (!cep || !endereco || !numero || !bairro || !cidade || !uf) {
         msgEl.className = 'login-message error';
-        msgEl.textContent = '⚠️ Digite sua senha.';
+        msgEl.textContent = '⚠️ Preencha todos os campos do endereço.';
         return;
     }
     
-    const btn = document.querySelector('#panelLogin .btn-login-action');
-    const textoOriginal = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
-    btn.disabled = true;
+    const docValidado = validarDocumento(documentoInput);
+    if (!docValidado.valido) {
+        msgEl.className = 'login-message error';
+        msgEl.textContent = '⚠️ CPF/CNPJ inválido. Digite 11 números (CPF) ou 14 números (CNPJ).';
+        return;
+    }
+    
     msgEl.className = 'login-message';
-    msgEl.textContent = '🔄 Verificando credenciais...';
+    msgEl.textContent = '🔄 Verificando cadastro...';
+    
+    const btn = document.querySelector('#panelCadastro .btn-login-action');
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cadastrando...';
+    btn.disabled = true;
     
     try {
-        const response = await fetch(API_URL);
-        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-        const data = await response.json();
-        const clientes = data.clientes || [];
-        const emailLower = email.toLowerCase().trim();
-        const cliente = clientes.find(c => {
-            const cEmail = String(c.email || '').toLowerCase().trim();
-            return cEmail === emailLower;
+        const response = await fetch(API_URL + '?_t=' + Date.now(), {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Accept': 'application/json'
+            }
         });
         
-        if (!cliente) {
-            msgEl.className = 'login-message error';
-            msgEl.textContent = '❌ Email não encontrado. Faça seu cadastro.';
-            btn.innerHTML = textoOriginal;
-            btn.disabled = false;
-            return;
-        }
+        if (!response.ok) throw new Error('Erro ao buscar dados');
+        const data = await response.json();
+        const clientes = data.clientes || [];
         
-        const senhaCliente = String(cliente.senha || '');
-        if (senhaCliente !== senha) {
-            msgEl.className = 'login-message error';
-            msgEl.textContent = '❌ Senha incorreta. Tente novamente.';
-            btn.innerHTML = textoOriginal;
-            btn.disabled = false;
-            return;
-        }
+        const docBusca = docValidado.documento;
+        const clienteExistente = clientes.find(c => {
+            const cDoc = String(c.cpf || c.documento || '').replace(/[^\d]/g, '');
+            return cDoc === docBusca;
+        });
         
-        const resultado = parseObservacaoRevendedor(cliente.observacoes || '');
-        
-        if (!resultado.isRevendedor) {
-            msgEl.className = 'login-message error';
-            msgEl.innerHTML = `
-                ❌ Acesso negado.<br>
-                <span style="font-size:13px;color:#856404;">
-                    Seu cadastro ainda não foi liberado como revendedor.<br>
-                    Aguarde a análise em até 24 horas úteis.
-                </span>
-                <br><br>
-                <a href="#" onclick="abrirWhatsAppAtendente(); return false;" style="color:#25D366;font-weight:600;text-decoration:none;">
-                    <i class="fab fa-whatsapp"></i> Fale com nossa equipe
-                </a>
-            `;
-            btn.innerHTML = textoOriginal;
-            btn.disabled = false;
-            return;
-        }
-        
-        usuarioLogado = {
-            email: String(cliente.email),
-            nome: String(cliente.nome || 'Revendedor'),
-            documento: String(cliente.documento || ''),
-            telefone: String(cliente.telefone || ''),
-            endereco: String(cliente.endereco || ''),
-            cep: String(cliente.cep || ''),
-            tipoPessoa: String(cliente.tipo_pessoa || 'FISICA'),
-            senha: String(cliente.senha || ''),
-            isRevendedor: true,
-            opcoesBoleto: resultado.opcoes,
-            obsInterna: resultado.obsInterna
-        };
-        
-        localStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
-        sessionStorage.setItem('tipoCliente', 'REVENDEDOR');
-        sessionStorage.setItem('opcoesBoleto', JSON.stringify(resultado.opcoes));
-        
-        // 🔥🔥🔥 CORREÇÃO: CHAMA AS FUNÇÕES DE ATUALIZAÇÃO 🔥🔥🔥
-        console.log('🔄 Atualizando interface após login...');
-        atualizarInterfaceUsuario();
-        atualizarNomeClienteHeader();
-        
-        // 🔥 FORÇA A ATUALIZAÇÃO DO DROPDOWN MANUALMENTE
-        const dropdown = document.getElementById('userDropdown');
-        if (dropdown) {
-            const loginItem = dropdown.querySelector('.login-item');
-            const dadosItem = dropdown.querySelector('.dropdown-item:nth-child(2)');
-            const pedidosItem = dropdown.querySelector('.dropdown-item:nth-child(3)');
-            const sairItem = dropdown.querySelector('.sair');
-            const btnUser = document.getElementById('btnUserMenu');
+        if (clienteExistente) {
+            const observacao = String(clienteExistente.observacoes || '').toUpperCase();
+            const ehRevendedor = observacao.includes('REVENDA');
             
-            if (loginItem) loginItem.style.display = 'none';
-            if (dadosItem) dadosItem.style.display = 'flex';
-            if (pedidosItem) pedidosItem.style.display = 'flex';
-            if (sairItem) sairItem.style.display = 'flex';
-            if (btnUser) btnUser.innerHTML = '<i class="fas fa-user-check" style="color:#27ae60;"></i>';
-            
-            dropdown.style.display = 'none';
-            console.log('✅ Dropdown atualizado manualmente!');
+            if (ehRevendedor) {
+                msgEl.className = 'login-message success';
+                msgEl.style.background = '#e8f5e9';
+                msgEl.style.color = '#2e7d32';
+                msgEl.style.borderColor = '#27ae60';
+                msgEl.innerHTML = `
+                    ✅ <strong>Seu cadastro de revendedor já está ativo!</strong><br>
+                    <span style="font-size:13px;color:#2e7d32;">
+                        Caso tenha perdido sua senha, entre em contato via WhatsApp para resetar.
+                    </span>
+                    <br><br>
+                    <a href="#" onclick="abrirWhatsAppAtendente(); return false;" 
+                       style="display:inline-block;background:#25D366;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;">
+                        <i class="fab fa-whatsapp"></i> Falar com Atendente
+                    </a>
+                `;
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+                return;
+            } else {
+                msgEl.className = 'login-message warning';
+                msgEl.style.background = '#fff3cd';
+                msgEl.style.color = '#856404';
+                msgEl.style.borderColor = '#f39c12';
+                msgEl.innerHTML = `
+                    <strong>⚠️ Você já tem cadastro para compras em nosso site principal.</strong><br>
+                    <span style="font-size:13px;">
+                        Para solicitar análise para se tornar um Revendedor, clique no botão abaixo.
+                    </span>
+                    <br><br>
+                    <button onclick="solicitarAnaliseRevenda('${clienteExistente.email}', '${docBusca}')" 
+                            style="background:#f39c12;color:white;border:none;padding:10px 25px;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+                        <i class="fas fa-user-plus"></i> Solicitar Análise
+                    </button>
+                `;
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+                return;
+            }
         }
         
-        document.getElementById('revendedorBadge').classList.add('show');
+        let enderecoEntrega = '';
+        let cepEntrega = '';
+        if (!document.getElementById('mesmoEnderecoEntregaCadastro').checked) {
+            cepEntrega = document.getElementById('cadastroCepEntrega').value.trim();
+            const enderecoE = document.getElementById('cadastroEnderecoEntrega').value.trim();
+            const numeroE = document.getElementById('cadastroNumeroEntrega').value.trim();
+            const complementoE = document.getElementById('cadastroComplementoEntrega').value.trim();
+            const bairroE = document.getElementById('cadastroBairroEntrega').value.trim();
+            const cidadeE = document.getElementById('cadastroCidadeEntrega').value.trim();
+            const ufE = document.getElementById('cadastroUfEntrega').value;
+            enderecoEntrega = `${enderecoE}, ${numeroE}${complementoE ? ', ' + complementoE : ''} - ${bairroE}, ${cidadeE} - ${ufE}, ${cepEntrega}`;
+        } else {
+            enderecoEntrega = `${endereco}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}, ${cidade} - ${uf}, ${cep}`;
+            cepEntrega = cep;
+        }
+        
+        const enderecoCompleto = `${endereco}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}, ${cidade} - ${uf}, ${cep}`;
+        const documentoSalvo = docValidado.documento;
+        
+        msgEl.className = 'login-message';
+        msgEl.textContent = '🔄 Cadastrando...';
+        
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                acao: 'salvar_cliente',
+                cliente: {
+                    nome: nome,
+                    email: email,
+                    telefone: telefone,
+                    documento: documentoSalvo,
+                    tipo_pessoa: tipoPessoa,
+                    inscricao_estadual: inscricaoEstadual,
+                    senha: senha,
+                    endereco: endereco,
+                    numero: numero,
+                    complemento: complemento,
+                    bairro: bairro,
+                    cidade: cidade,
+                    estado: uf,
+                    cep: cep,
+                    endereco_entrega: enderecoEntrega,
+                    cep_entrega: cepEntrega,
+                    observacao: 'analise'
+                }
+            })
+        });
         
         msgEl.className = 'login-message success';
-        msgEl.textContent = '✅ Login realizado com sucesso! Bem-vindo, revendedor!';
+        msgEl.style.background = '#e8f5e9';
+        msgEl.style.color = '#2e7d32';
+        msgEl.style.borderColor = '#27ae60';
+        msgEl.innerHTML = `
+            ✅ Cadastro realizado com sucesso!<br>
+            <span style="font-size:13px;color:#2e7d32;">
+                Seu acesso será liberado em até <strong>24 horas úteis</strong> após análise.<br>
+                Você receberá um e-mail com a confirmação.
+            </span>
+        `;
         
-        mostrarInterfaceRevendedor(true);
-        document.getElementById('bloqueioBanner').style.display = 'none';
-        document.getElementById('aguardandoBanner').style.display = 'none';
+        document.getElementById('cadastroNome').value = '';
+        document.getElementById('cadastroEmail').value = '';
+        document.getElementById('cadastroTelefone').value = '';
+        document.getElementById('cadastroDocumento').value = '';
+        document.getElementById('cadastroSenha').value = '';
+        document.getElementById('cadastroCep').value = '';
+        document.getElementById('cadastroEndereco').value = '';
+        document.getElementById('cadastroNumero').value = '';
+        document.getElementById('cadastroComplemento').value = '';
+        document.getElementById('cadastroBairro').value = '';
+        document.getElementById('cadastroCidade').value = '';
+        document.getElementById('cadastroUf').value = '';
         
-        carregarPedidosCliente(email);
-        
-        if (currentProducts && currentProducts.length > 0) { renderizarProdutos(); }
-        
-        setTimeout(() => { fecharModal('loginModal'); }, 1500);
+        setTimeout(() => {
+            switchLoginTab('login');
+            document.getElementById('loginEmailLogin').value = email;
+        }, 3000);
         
     } catch (error) {
-        console.error('❌ Erro no login:', error);
+        console.error('❌ Erro no cadastro:', error);
         msgEl.className = 'login-message error';
-        msgEl.textContent = '❌ Erro ao conectar. Tente novamente.';
+        msgEl.textContent = '❌ Erro ao cadastrar. Tente novamente.';
     } finally {
         btn.innerHTML = textoOriginal;
         btn.disabled = false;
+    }
+}
+
+
+
+
+// ============================================================
+// SWITCH ENTRE ABAS DE LOGIN E CADASTRO - COMPLETA
+// ============================================================
+function switchLoginTab(tab) {
+    // Troca as abas
+    document.querySelectorAll('.login-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === tab);
+    });
+    document.getElementById('panelLogin').classList.toggle('active', tab === 'login');
+    document.getElementById('panelCadastro').classList.toggle('active', tab === 'cadastro');
+    
+    // 🔥 RESETA O FORMULÁRIO DE CADASTRO AO MUDAR PARA ABA DE CADASTRO
+    if (tab === 'cadastro') {
+        // Mostra todos os campos novamente
+        const formFields = document.querySelectorAll('#panelCadastro .form-group, #panelCadastro .form-row, #panelCadastro .checkbox-group, #panelCadastro .btn-login-action, #panelCadastro > div:not(.login-message)');
+        formFields.forEach(field => {
+            field.style.display = '';
+        });
+        
+        // Remove botão de voltar se existir
+        const voltarBtn = document.getElementById('voltarLoginBtn');
+        if (voltarBtn) voltarBtn.remove();
+        
+        // Limpa mensagem
+        const msgEl = document.getElementById('cadastroMessage');
+        msgEl.className = 'login-message';
+        msgEl.textContent = '';
+        msgEl.style.display = '';
+        msgEl.style.background = '';
+        msgEl.style.color = '';
+        msgEl.style.borderColor = '';
+        
+        // Limpa campos
+        document.getElementById('cadastroDocumento').value = '';
     }
 }
 
