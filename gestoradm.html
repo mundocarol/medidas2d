@@ -1542,6 +1542,15 @@
             <i class="fas fa-clock"></i> Pendentes
             <span class="badge-count" id="badgePendentes">0</span>
         </button>
+
+        <!-- ============================================================ -->
+<!-- ABA ANÁLISES -->
+<!-- ============================================================ -->
+<button class="tab-btn" data-tab="analises" onclick="switchTab('analises')">
+    <i class="fas fa-user-check"></i> Análises
+    <span class="badge-count" id="badgeAnalises" style="background:#f39c12;">0</span>
+</button>  
+
         <button class="tab-btn" data-tab="pedidos" onclick="switchTab('pedidos')">
             <i class="fas fa-shopping-cart"></i> Todos Pedidos
             <span class="badge-count blue" id="badgeTodosPedidos">0</span>
@@ -1554,6 +1563,8 @@
             <i class="fas fa-users"></i> Clientes
             <span class="badge-count gray" id="badgeClientes">0</span>
         </button>
+
+
     </div>
 
     <!-- Filtros -->
@@ -1727,6 +1738,40 @@
         </div>
     </div>
 </div>
+
+<!-- Tab Análises -->
+<div class="tab-content" id="tab-analises">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+        <div style="flex:1;min-width:180px;position:relative;">
+            <i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#999;"></i>
+            <input type="text" id="buscaAnalises" placeholder="Buscar por nome, email, documento..." 
+                   style="width:100%;padding:8px 10px 8px 32px;border:2px solid #ddd;border-radius:6px;font-size:13px;"
+                   oninput="renderizarAnalises()">
+        </div>
+        
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Email</th>
+                    <th>Telefone</th>
+                    <th>CPF/CNPJ</th>
+                    <th>Status Análise</th>
+                    <th>Data Cadastro</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="analisesTable">
+                <tr><td colspan="8" class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
 
 <!-- SPINNER GLOBAL -->
 <div class="spinner-overlay" id="spinnerGlobal">
@@ -2160,6 +2205,9 @@ function switchTab(tab) {
     if (tab === 'clientes') {
         renderizarClientes();
     }
+    if (tab === 'analises') {
+        renderizarAnalises();
+    }
 }
 
 // ============================================================
@@ -2243,6 +2291,211 @@ function validarCodigoDuplicado(codigo, idAtual = null) {
     
     return !existe;
 }
+
+
+// ============================================================
+// RENDERIZAR ANÁLISES - APENAS PENDENTES
+// ============================================================
+function renderizarAnalises() {
+    const tbody = document.getElementById('analisesTable');
+    const busca = document.getElementById('buscaAnalises')?.value?.toLowerCase() || '';
+    
+    // 🔥 FILTRA APENAS CLIENTES COM 'analise' (pendentes)
+    let clientesPendentes = dados.clientes.filter(c => {
+        const obs = String(c.observacoes || '').toLowerCase().trim();
+        return obs === 'analise';
+    });
+    
+    // Aplica filtro de busca
+    if (busca) {
+        clientesPendentes = clientesPendentes.filter(c => {
+            const nome = String(c.nome || '').toLowerCase();
+            const email = String(c.email || '').toLowerCase();
+            const telefone = String(c.telefone || '').toLowerCase();
+            const documento = String(c.cpf || c.documento || '').toLowerCase();
+            return nome.includes(busca) || email.includes(busca) || 
+                   telefone.includes(busca) || documento.includes(busca);
+        });
+    }
+    
+    // Ordena por data (mais recentes primeiro)
+    clientesPendentes.sort((a, b) => {
+        const dataA = a.data_cadastro ? new Date(a.data_cadastro.split('/').reverse().join('/')) : new Date(0);
+        const dataB = b.data_cadastro ? new Date(b.data_cadastro.split('/').reverse().join('/')) : new Date(0);
+        return dataB - dataA;
+    });
+    
+    // Atualiza badge com quantidade de pendentes
+    document.getElementById('badgeAnalises').textContent = clientesPendentes.length;
+    
+    if (clientesPendentes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:25px;color:#999;">
+            <i class="fas fa-check-circle" style="font-size:32px;display:block;margin-bottom:10px;color:#27ae60;"></i>
+            <strong style="font-size:16px;color:#27ae60;">Nenhuma análise pendente! 🎉</strong><br>
+            <span style="font-size:13px;color:#888;">Todas as solicitações foram processadas.</span>
+        </td></tr>`;
+        return;
+    }
+    
+    tbody.innerHTML = clientesPendentes.map(c => {
+        const documento = c.cpf || c.documento || '---';
+        
+        return `
+        <tr>
+            <td><strong>#${c.id_cliente}</strong></td>
+            <td><strong>${c.nome || 'Não identificado'}</strong></td>
+            <td>${c.email || '-'}</td>
+            <td>${c.telefone || '-'}</td>
+            <td>${documento}</td>
+            <td><span class="status-badge status-pendente">⏳ Aguardando Análise</span></td>
+            <td style="font-size:11px;">${c.data_cadastro || '-'}</td>
+            <td>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                    <button class="btn-sm btn-success" onclick="aprovarAnalise(${c.id_cliente})" title="Aprovar">
+                        <i class="fas fa-check"></i> Aprovar
+                    </button>
+                    <button class="btn-sm btn-delete" onclick="rejeitarAnalise(${c.id_cliente})" title="Rejeitar">
+                        <i class="fas fa-times"></i> Rejeitar
+                    </button>
+                    <button class="btn-sm btn-edit" onclick="verDetalhesCliente(${c.id_cliente})" title="Ver detalhes">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `}).join('');
+}
+
+
+// ============================================================
+// APROVAR ANÁLISE - SALVA "REVENDA" E REMOVE DA LISTA
+// ============================================================
+async function aprovarAnalise(idCliente) {
+    const cliente = dados.clientes.find(c => parseInt(c.id_cliente) === parseInt(idCliente));
+    if (!cliente) {
+        alert('Cliente não encontrado!');
+        return;
+    }
+    
+    if (!confirm(`Deseja APROVAR a análise do cliente "${cliente.nome}"?\n\nEle será liberado como REVENDEDOR.`)) {
+        return;
+    }
+    
+    mostrarSpinner('Aprovando análise...');
+    
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                acao: 'salvar_cliente',
+                cliente: {
+                    nome: cliente.nome || '',
+                    email: cliente.email || '',
+                    telefone: cliente.telefone || '',
+                    documento: cliente.cpf || cliente.documento || '',
+                    senha: cliente.senha || '',
+                    tipo_pessoa: cliente.tipo_pessoa || 'FISICA',
+                    inscricao_estadual: cliente.inscricao_estadual || '',
+                    endereco: cliente.endereco || '',
+                    numero: cliente.numero || '',
+                    complemento: cliente.complemento || '',
+                    bairro: cliente.bairro || '',
+                    cidade: cliente.cidade || '',
+                    estado: cliente.estado || '',
+                    cep: cliente.cep || '',
+                    endereco_entrega: cliente.endereco_entrega || '',
+                    cep_entrega: cliente.cep_entrega || '',
+                    observacao: 'REVENDA'
+                }
+            })
+        });
+        
+        // 🔥 REMOVE DA LISTA LOCAL (não mostra mais)
+        cliente.observacoes = 'REVENDA';
+        
+        esconderSpinner();
+        mostrarNotificacao(`✅ "${cliente.nome}" aprovado como revendedor!`, 'success');
+        
+        // 🔥 RECARREGA APENAS A ABA DE ANÁLISES (não recarrega tudo)
+        renderizarAnalises();
+        renderizarClientes();
+        atualizarBages();
+        
+    } catch (error) {
+        console.error('❌ Erro ao aprovar análise:', error);
+        esconderSpinner();
+        alert('⚠️ Erro ao aprovar análise. Tente novamente.');
+    }
+}
+
+// ============================================================
+// REJEITAR ANÁLISE - SALVA "REJEITADO" E REMOVE DA LISTA
+// ============================================================
+async function rejeitarAnalise(idCliente) {
+    const cliente = dados.clientes.find(c => parseInt(c.id_cliente) === parseInt(idCliente));
+    if (!cliente) {
+        alert('Cliente não encontrado!');
+        return;
+    }
+    
+    if (!confirm(`Deseja REJEITAR a análise do cliente "${cliente.nome}"?\n\nEle continuará como cliente comum.`)) {
+        return;
+    }
+    
+    mostrarSpinner('Rejeitando análise...');
+    
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                acao: 'salvar_cliente',
+                cliente: {
+                    nome: cliente.nome || '',
+                    email: cliente.email || '',
+                    telefone: cliente.telefone || '',
+                    documento: cliente.cpf || cliente.documento || '',
+                    senha: cliente.senha || '',
+                    tipo_pessoa: cliente.tipo_pessoa || 'FISICA',
+                    inscricao_estadual: cliente.inscricao_estadual || '',
+                    endereco: cliente.endereco || '',
+                    numero: cliente.numero || '',
+                    complemento: cliente.complemento || '',
+                    bairro: cliente.bairro || '',
+                    cidade: cliente.cidade || '',
+                    estado: cliente.estado || '',
+                    cep: cliente.cep || '',
+                    endereco_entrega: cliente.endereco_entrega || '',
+                    cep_entrega: cliente.cep_entrega || '',
+                    observacao: 'REJEITADO'
+                }
+            })
+        });
+        
+        // 🔥 REMOVE DA LISTA LOCAL (não mostra mais)
+        cliente.observacoes = 'REJEITADO';
+        
+        esconderSpinner();
+        mostrarNotificacao(`❌ Análise de "${cliente.nome}" rejeitada.`, 'warning');
+        
+        // 🔥 RECARREGA APENAS A ABA DE ANÁLISES (não recarrega tudo)
+        renderizarAnalises();
+        renderizarClientes();
+        atualizarBages();
+        
+    } catch (error) {
+        console.error('❌ Erro ao rejeitar análise:', error);
+        esconderSpinner();
+        alert('⚠️ Erro ao rejeitar análise. Tente novamente.');
+    }
+}
+
+
+
+
 
 // ============================================================
 // DUPLICAR PRODUTO - NOVA
@@ -2710,13 +2963,13 @@ async function carregarDados() {
         dados.clientes = data.clientes || [];
 
         ordenarProdutosPorNome();
-
         popularFiltroCategorias();
         
         renderizarPendentes();
         renderizarTodosPedidos();
         renderizarProdutos();
         renderizarClientes();
+        renderizarAnalises(); // 🔥 NOVO
         atualizarBages();
 
         esconderSpinner();
@@ -2745,6 +2998,7 @@ async function carregarDadosParcial() {
 
         renderizarPendentes();
         renderizarTodosPedidos();
+        renderizarAnalises(); // 🔥 NOVO
         atualizarBages();
 
     } catch (error) {
@@ -2760,6 +3014,13 @@ function atualizarBages() {
     document.getElementById('badgeTodosPedidos').textContent = dados.pedidos.length;
     document.getElementById('badgeProdutos').textContent = dados.produtos.length;
     document.getElementById('badgeClientes').textContent = dados.clientes.length;
+    
+    // 🔥 NOVO: Conta análises pendentes
+    const analisesPendentes = dados.clientes.filter(c => {
+        const obs = String(c.observacoes || '').toLowerCase().trim();
+        return obs === 'analise';
+    });
+    document.getElementById('badgeAnalises').textContent = analisesPendentes.length;
 }
 
 // ============================================================
