@@ -2165,6 +2165,83 @@
             .btn-back:hover { transform: none; }
             .btn-close-modal:hover { transform: none; }
         }
+
+        /* ===== BADGE REVENDEDOR - TARJA PARA CELULAR ===== */
+.revendedor-tarja {
+    display: none;
+    background: #f39c12;
+    color: #fff;
+    text-align: center;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    width: 100%;
+    animation: pulseTarja 2s infinite;
+}
+
+.revendedor-tarja.show {
+    display: block;
+}
+
+.revendedor-tarja i {
+    margin-right: 8px;
+}
+
+@keyframes pulseTarja {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+/* ===== BADGE DO HEADER (desktop) ===== */
+.revendedor-badge {
+    background: #f39c12;
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-left: 10px;
+    display: none;
+    animation: pulseBadge 2s infinite;
+    white-space: nowrap;
+}
+
+.revendedor-badge.show {
+    display: inline-block;
+}
+
+/* ===== RESPONSIVO: CELULAR ===== */
+@media (max-width: 768px) {
+    /* Oculta o badge do header no celular */
+    .revendedor-badge {
+        display: none !important;
+    }
+    
+    /* Mostra a tarja no topo */
+    .revendedor-tarja.show {
+        display: block;
+    }
+}
+
+/* ===== RESPONSIVO: DESKTOP ===== */
+@media (min-width: 769px) {
+    /* Oculta a tarja no desktop */
+    .revendedor-tarja {
+        display: none !important;
+    }
+    
+    /* Mostra o badge no header */
+    .revendedor-badge.show {
+        display: inline-block;
+    }
+}
     </style>
 </head>
 
@@ -2178,6 +2255,7 @@
     <!-- HEADER - IGUAL AO ORIGINAL COM BADGE REVENDEDOR -->
     <!-- ============================================================ -->
     <header class="header">
+
         <div class="header-container">
             <div class="logo">
                 <a href="#" onclick="showHome()">
@@ -2219,6 +2297,10 @@
             </div>
         </div>
     </header>
+    <!-- ===== TARJA REVENDEDOR (CELULAR) ===== -->
+<div class="revendedor-tarja" id="revendedorTarja">
+    <i class="fas fa-tag"></i> Área do Revendedor
+</div>
 
     <!-- ============================================================ -->
     <!-- MAIN CONTENT -->
@@ -3311,6 +3393,77 @@
             document.body.appendChild(notif);
             setTimeout(() => { notif.classList.add('removing'); setTimeout(() => notif.remove(), 400); }, 4000);
         }
+
+        // ============================================================
+// 🔥 FUNÇÃO PARA CONTROLAR A TARJA REVENDEDOR (CELULAR)
+// ============================================================
+
+function atualizarTarjaRevendedor() {
+    const tarja = document.getElementById('revendedorTarja');
+    const badge = document.getElementById('revendedorBadge');
+    const ehRevendedor = sessionStorage.getItem('tipoCliente') === 'REVENDEDOR';
+    
+    if (ehRevendedor || (usuarioLogado && usuarioLogado.isRevendedor)) {
+        // Mostra a tarja no celular
+        if (tarja) tarja.classList.add('show');
+        // Mostra o badge no desktop
+        if (badge) badge.classList.add('show');
+    } else {
+        // Oculta ambos
+        if (tarja) tarja.classList.remove('show');
+        if (badge) badge.classList.remove('show');
+    }
+}
+
+// 🔥 SOBRESCREVE A FUNÇÃO existente para incluir a tarja
+const mostrarInterfaceRevendedorOriginal = window.mostrarInterfaceRevendedor;
+
+if (typeof mostrarInterfaceRevendedorOriginal === 'function') {
+    window.mostrarInterfaceRevendedor = function(liberado) {
+        // Chama a função original
+        mostrarInterfaceRevendedorOriginal(liberado);
+        
+        // Atualiza a tarja
+        atualizarTarjaRevendedor();
+    };
+    console.log('✅ mostrarInterfaceRevendedor() sobrescrita com tarja!');
+}
+
+// 🔥 ADICIONA A TARJA NA FUNÇÃO DE LOGIN
+// Sobrescreve a função fazerLoginRevenda para incluir a tarja
+const fazerLoginRevendaOriginal = window.fazerLoginRevenda;
+
+if (typeof fazerLoginRevendaOriginal === 'function') {
+    window.fazerLoginRevenda = async function() {
+        // Chama a função original
+        await fazerLoginRevendaOriginal();
+        
+        // Atualiza a tarja
+        setTimeout(atualizarTarjaRevendedor, 500);
+    };
+    console.log('✅ fazerLoginRevenda() sobrescrita com tarja!');
+}
+
+// 🔥 ADICIONA A TARJA NA FUNÇÃO DE SAIR
+const sairContaOriginal = window.sairConta;
+
+if (typeof sairContaOriginal === 'function') {
+    window.sairConta = function() {
+        // Chama a função original
+        sairContaOriginal();
+        
+        // Atualiza a tarja
+        setTimeout(atualizarTarjaRevendedor, 500);
+    };
+    console.log('✅ sairConta() sobrescrita com tarja!');
+}
+
+// 🔥 EXECUTA A ATUALIZAÇÃO INICIAL
+setTimeout(atualizarTarjaRevendedor, 500);
+
+console.log('✅ TARJA REVENDEDOR CONFIGURADA!');
+console.log('📱 Celular: tarja laranja no topo');
+console.log('💻 Desktop: badge ao lado do logo');
 
         function fecharModal(id) { 
             document.getElementById(id).style.display = 'none'; 
