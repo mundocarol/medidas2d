@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
+    <title>MC Embalagens BH - Demonstração Revendedor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== RESET E CONFIGURAÇÕES GERAIS ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary-blue: #1a3a5c;
+            --primary-dark: #0d1b2a;
+            --secondary-blue: #2a5a8c;
+            --accent-blue: #3a7ab5;
+            --text-light: #ffffff;
+            --text-dark: #1a1a1a;
+            --shadow: 0 4px 6px rgba(0,0,0,0.1);
+            --shadow-hover: 0 8px 15px rgba(0,0,0,0.15);
+            --radius: 12px;
+            --transition: all 0.3s ease;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --whatsapp: #25D366;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            color: var(--text-dark);
+            padding-bottom: 90px;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-blue); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--secondary-blue); }
+
+        /* ===== BANNER DEMONSTRAÇÃO ===== */
+        .demo-banner {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            text-align: center;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-bottom: 3px solid #ffd700;
+        }
+
+        .demo-banner i {
+            font-size: 20px;
+            animation: pulseDemo 2s infinite;
+        }
+
+        .demo-banner span {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        @keyframes pulseDemo {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: var(--primary-blue);
+            padding: 15px 20px;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 60px;
+            z-index: 1000;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 200px;
+            width: 100%;
+        }
+
+        .logo img {
+            width: 100%;
+            height: auto;
+            max-width: 300px;
+            display: block;
+        }
+
+        .logo a { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            text-decoration: none; 
+            cursor: pointer; 
+        }
+
+        .revendedor-badge {
+            background: #f39c12;
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-left: 10px;
+            display: inline-block;
+            animation: pulseBadge 2s infinite;
+        }
+
+        @keyframes pulseBadge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @media (max-width: 768px) {
+            .logo { max-width: 140px; }
+            .logo img { max-width: 180px; }
+            .revendedor-badge { font-size: 9px; padding: 2px 10px; }
+        }
+
+        /* ===== HEADER ACTIONS ===== */
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .header-actions button {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            position: relative;
+        }
+
+        .header-actions button:hover { background: rgba(255,255,255,0.15); transform: scale(1.1); }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ===== CARROSSEL ===== */
+        .banner-carousel {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 30px;
+            background: transparent;
+            border-radius: var(--radius);
+        }
+
+        .banner-carousel .slides-wrapper {
+            position: relative;
+            width: 100%;
+            min-height: 150px;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        .banner-carousel .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+        }
+
+        .banner-carousel .slide.active { opacity: 1; position: relative; }
+        .banner-carousel .slide img { width: 100%; height: auto; display: block; }
+
+        .banner-carousel .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+
+        .banner-carousel .controls .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .banner-carousel .controls .dot.active { background: white; border-color: rgba(255,255,255,0.8); transform: scale(1.2); }
+
+        .banner-carousel .arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.4);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 20px;
+            border-radius: 50%;
+            transition: all 0.3s;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+        }
+
+        .banner-carousel .arrow:hover { background: rgba(0,0,0,0.7); transform: translateY(-50%) scale(1.1); }
+        .banner-carousel .arrow.prev { left: 15px; }
+        .banner-carousel .arrow.next { right: 15px; }
+
+        /* ===== CATEGORIAS ===== */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+
+        .category-card .category-image-wrapper {
+            width: 100%;
+            aspect-ratio: 1/1;
+            overflow: hidden;
+            border-radius: var(--radius);
+            background: #f0f4f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .category-card .category-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            background: #FFFFFF;
+        }
+
+        .category-card .category-image-wrapper .placeholder-icon { font-size: 48px; color: var(--primary-blue); }
+        .category-card h3 { color: var(--primary-dark); font-size: 16px; margin-top: 5px; }
+        .category-card p { color: #666; font-size: 12px; margin: 0; }
+
+        /* ===== PRODUTOS ===== */
+        .products-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            flex-wrap: wrap;
+        }
+
+        .btn-back {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .btn-back:hover { background: var(--secondary-blue); transform: scale(1.02); }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+        .product-card.demo-mode { opacity: 0.85; }
+
+        .product-image-wrapper {
+            width: 100%;
+            height: 180px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            padding: 0px;
+            cursor: pointer;
+        }
+
+        .product-image-wrapper:hover { background: #1a3a5c; }
+
+        .product-image-wrapper img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: scale-down;
+            background: white;
+        }
+
+        .product-image-wrapper .placeholder-icon { font-size: 48px; color: #999; }
+
+        .product-info {
+            padding: 12px 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-info h4 {
+            color: var(--primary-dark);
+            margin-bottom: 2px;
+            font-size: 14px;
+            line-height: 1.3;
+        }
+
+        .product-info .product-codigo {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+
+        .product-info .product-description {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 8px;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .product-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .quantity-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f8f9fa;
+            padding: 4px 8px;
+            border-radius: 6px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            opacity: 0.7;
+        }
+
+        .quantity-option label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            min-width: 35px;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .quantity-control button {
+            background: #ccc;
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: not-allowed;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .quantity-control span {
+            min-width: 25px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--primary-dark);
+        }
+
+        .price-info-revenda {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 1px;
+            min-width: 80px;
+        }
+
+        .price-info-revenda .price-old {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 10px;
+            line-height: 1.2;
+        }
+
+        .price-info-revenda .price-revenda {
+            font-weight: 700;
+            color: #27ae60;
+            font-size: 14px;
+            line-height: 1.2;
+        }
+
+        .price-info-revenda .price-pix {
+            font-weight: 600;
+            color: #1a3a5c;
+            font-size: 11px;
+            background: #e8f5e9;
+            padding: 0 6px;
+            border-radius: 8px;
+            line-height: 1.4;
+        }
+
+        .price-display {
+            font-weight: 700;
+            color: var(--primary-blue);
+            font-size: 14px;
+            text-align: center;
+            padding: 4px;
+            background: #f0f4f8;
+            border-radius: 6px;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-add-product {
+            background: #999;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: not-allowed;
+            font-weight: 600;
+            width: 100%;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-add-product .demo-lock {
+            font-size: 14px;
+        }
+
+        .demo-badge-produto {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            margin-left: 6px;
+        }
+
+        .stock-info {
+            font-size: 12px;
+            text-align: center;
+            margin-top: 4px;
+            padding: 2px;
+            font-weight: 500;
+        }
+
+        .stock-info.production { color: #f39c12; }
+
+        /* ===== LOADING ===== */
+        .loading-overlay {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            min-height: 300px;
+            grid-column: 1 / -1;
+        }
+
+        .loading-overlay .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e0e0e0;
+            border-top: 4px solid var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-overlay p { color: #666; font-size: 16px; }
+        .loading-overlay .loading-sub { color: #999; font-size: 13px; margin-top: 8px; }
+
+        /* ===== VÍDEOS ===== */
+        .videos-section { margin: 30px 0; }
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            background: #000;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* ===== BOTTOM NAV ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--primary-blue);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0 14px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
+            z-index: 1000;
+            border-top: none;
+            min-height: 75px;
+        }
+
+        .nav-item {
+            background: transparent;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 10px;
+            cursor: pointer;
+            padding: 4px 16px;
+            position: relative;
+            transition: var(--transition);
+            min-width: 60px;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .nav-item i { 
+            font-size: 26px;
+            margin-bottom: 2px;
+            transition: var(--transition);
+            color: rgba(255,255,255,0.7);
+        }
+
+        .nav-item span { 
+            font-size: 11px;
+            line-height: 1.2;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .nav-item.active { color: #ffffff; }
+        .nav-item.active i { transform: scale(1.15); color: #ffffff; }
+        .nav-item.active span { color: #ffffff; }
+        .nav-item:hover { color: #ffffff; }
+        .nav-item:hover i { color: #ffffff; }
+        .nav-item:hover span { color: #ffffff; }
+
+        /* ===== BOTÃO VOLTAR AO SITE ===== */
+        .btn-voltar-site-demo {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.2);
+            margin-top: 10px;
+        }
+
+        .btn-voltar-site-demo:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+        }
+
+        .btn-voltar-site-demo i {
+            margin-right: 8px;
+        }
+
+        /* ===== RESPONSIVO ===== */
+        @media (max-width: 1024px) {
+            .products-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 10px 15px; top: 50px; }
+            .section-title { font-size: 20px; }
+            .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .category-card { padding: 15px; }
+            .category-card .category-image-wrapper { height: 120px; }
+            .category-card h3 { font-size: 14px; }
+            .products-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .product-image-wrapper { height: 150px; }
+            .product-info h4 { font-size: 13px; }
+            .product-info .product-codigo { font-size: 10px; }
+            .product-info .product-description { font-size: 11px; -webkit-line-clamp: 1; }
+            .quantity-option { padding: 3px 6px; gap: 4px; }
+            .quantity-option label { font-size: 11px; min-width: 30px; }
+            .quantity-control button { width: 22px; height: 22px; font-size: 12px; }
+            .quantity-control span { min-width: 20px; font-size: 12px; }
+            .price-info-revenda { min-width: 60px; }
+            .price-info-revenda .price-old { font-size: 9px; }
+            .price-info-revenda .price-revenda { font-size: 12px; }
+            .price-info-revenda .price-pix { font-size: 10px; }
+            .price-display { font-size: 12px; min-height: 28px; padding: 3px; }
+            .btn-add-product { font-size: 12px; padding: 6px 10px; }
+            .bottom-nav { padding: 8px 0 12px 0; min-height: 70px; }
+            .nav-item { font-size: 9px; padding: 2px 12px; min-width: 50px; }
+            .nav-item i { font-size: 22px; }
+            .nav-item span { font-size: 10px; }
+            .videos-grid { grid-template-columns: 1fr; gap: 15px; }
+            .video-wrapper { padding-bottom: 56.25%; }
+            .demo-banner { font-size: 13px; padding: 10px 15px; top: 0; }
+            .demo-banner i { font-size: 16px; }
+            .banner-carousel .arrow { width: 32px; height: 32px; font-size: 14px; padding: 6px 10px; }
+            .banner-carousel .arrow.prev { left: 6px; }
+            .banner-carousel .arrow.next { right: 6px; }
+        }
+
+        @media (max-width: 480px) {
+            .products-grid { grid-template-columns: 1fr !important; gap: 12px; }
+            .product-card {
+                display: flex;
+                flex-direction: column !important;
+                padding: 0;
+                border-radius: 10px;
+                overflow: hidden;
+            }
+            .product-image-wrapper {
+                width: 100% !important;
+                height: 160px !important;
+                flex-shrink: 0;
+            }
+            .product-image-wrapper img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                background: white;
+            }
+            .product-info { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 4px; }
+            .product-info h4 { font-size: 14px; min-height: auto; margin-bottom: 2px; }
+            .product-info .product-codigo { font-size: 10px; }
+            .product-info .product-description { font-size: 11px; -webkit-line-clamp: 2; min-height: 32px; }
+            .product-actions { width: 100%; margin-top: 6px; gap: 4px; }
+            .quantity-option {
+                padding: 6px 10px;
+                flex-wrap: nowrap;
+                justify-content: space-between;
+                border-radius: 6px;
+            }
+            .quantity-option label { font-size: 12px; min-width: 32px; font-weight: 600; }
+            .quantity-control button { width: 28px; height: 28px; font-size: 14px; border-radius: 50%; }
+            .quantity-control span { min-width: 24px; font-size: 14px; font-weight: 600; }
+            .price-info-revenda { min-width: 50px; }
+            .price-info-revenda .price-old { font-size: 8px; }
+            .price-info-revenda .price-revenda { font-size: 11px; }
+            .price-info-revenda .price-pix { font-size: 9px; }
+            .price-display { font-size: 12px; min-height: 30px; padding: 4px 8px; border-radius: 4px; }
+            .btn-add-product { font-size: 12px; padding: 8px 12px; border-radius: 4px; min-height: 36px; }
+            .bottom-nav { padding: 6px 0 10px 0; min-height: 65px; }
+            .nav-item { font-size: 8px; padding: 2px 8px; min-width: 40px; }
+            .nav-item i { font-size: 20px; }
+            .nav-item span { font-size: 9px; }
+            .demo-banner { font-size: 11px; padding: 8px 12px; }
+            .demo-banner i { font-size: 14px; }
+            .demo-banner span { font-size: 10px; padding: 1px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== BANNER DEMONSTRAÇÃO ===== -->
+    <div class="demo-banner">
+        <i class="fas fa-info-circle"></i>
+        🔍 SITE DEMONSTRAÇÃO - APENAS PARA VISUALIZAÇÃO
+        <span>Não é possível comprar</span>
+        <a href="https://mcembalagens.com.br" target="_blank" class="btn-voltar-site-demo" style="background:#1a3a5c;padding:6px 18px;font-size:12px;margin:0;">
+            <i class="fas fa-arrow-left"></i> Voltar ao Site Principal
+        </a>
+    </div>
+
+    <!-- ===== HEADER ===== -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo">
+                <a href="#" onclick="showHome()">
+                    <img src="https://cdn.awsli.com.br/1608/1608652/arquivos/logo-mc-2026-branca.webp" 
+                         alt="MC Embalagens BH" 
+                         id="logo-img"
+                         style="height:50px;width:auto;object-fit:contain;">
+                </a>
+                <span class="revendedor-badge">🏷️ Revendedor</span>
+            </div>
+            <div class="header-actions">
+                <button class="btn-search" onclick="buscarProduto()" aria-label="Buscar">
+                    <i class="fas fa-search"></i>
+                </button>
+                <button class="btn-cart" onclick="mostrarAvisoDemo()" aria-label="Carrinho">
+                    <i class="fas fa-shopping-cart"></i>
+                </button>
+                <button class="btn-login" onclick="mostrarAvisoDemo()" aria-label="Login">
+                    <i class="fas fa-user"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+
+        <!-- BANNER DE BOAS-VINDAS DEMO -->
+        <div class="bloqueio-banner" style="display:block;background:linear-gradient(135deg,#1a3a5c,#2a5a8c);color:white;padding:40px 20px;border-radius:12px;text-align:center;margin:20px 0 30px;position:relative;overflow:hidden;">
+            <div style="position:absolute;font-size:120px;opacity:0.1;right:-20px;top:-30px;transform:rotate(15deg);">🔍</div>
+            <h2 style="font-size:24px;margin-bottom:10px;position:relative;">📋 Site de Demonstração</h2>
+            <p style="font-size:16px;opacity:0.9;max-width:500px;margin:0 auto 20px;position:relative;">
+                Aqui você pode visualizar todos os produtos e preços exclusivos para revendedores.
+                <br>
+                <span style="font-size:14px;opacity:0.8;">Este é um ambiente de demonstração - as compras não estão disponíveis.</span>
+            </p>
+            <div class="btn-group" style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap;position:relative;">
+                <a href="https://mcembalagens.com.br" target="_blank" style="padding:12px 30px;border:none;border-radius:8px;font-weight:600;font-size:16px;cursor:pointer;transition:all 0.3s;background:white;color:#1a3a5c;text-decoration:none;display:inline-flex;align-items:center;gap:8px;">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Site Principal
+                </a>
+            </div>
+        </div>
+
+        <!-- CARROSSEL DE BANNERS -->
+        <section class="banner-carousel" id="bannerCarousel">
+            <div class="slides-wrapper" id="bannerSlides"></div>
+            <button class="arrow prev" onclick="mudarBanner(-1)" aria-label="Anterior">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="arrow next" onclick="mudarBanner(1)" aria-label="Próximo">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            <div class="controls" id="bannerDots"></div>
+        </section>
+
+        <!-- CATEGORIAS -->
+        <section class="categories-section" id="categoriesSection">
+            <h2 class="section-title">Nossas Categorias</h2>
+            <div class="categories-grid" id="categoriesGrid">
+                <div class="loading-overlay" id="loadingIndicator">
+                    <div class="spinner"></div>
+                    <p>🔄 Carregando produtos...</p>
+                    <span class="loading-sub">Aguarde um momento, estamos preparando tudo para você</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- VÍDEOS -->
+        <section class="videos-section" id="videosSection">
+            <h2 class="section-title">📹 Tutoriais e Apresentações</h2>
+            <div class="videos-grid" id="videosGrid">
+                <div class="video-wrapper">
+                    <iframe 
+                        src="https://www.youtube-nocookie.com/embed/caJcK4Ja-po?rel=0&modestbranding=1&playsinline=1" 
+                        allowfullscreen 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- PRODUTOS -->
+        <section class="products-section" id="productsSection" style="display: none;">
+            <div class="products-header">
+                <button class="btn-back" onclick="voltarCategorias()">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </button>
+                <h3 id="categoryTitle">Produtos</h3>
+                <span style="margin-left:auto;font-size:14px;color:#666;" id="productCount"></span>
+            </div>
+            <div class="products-grid" id="productsGrid"></div>
+        </section>
+    </main>
+
+    <!-- ===== BOTTOM NAVIGATION ===== -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="showHome()">
+            <i class="fas fa-home"></i><span>Início</span>
+        </button>
+        <button class="nav-item" onclick="mostrarAvisoDemo()">
+            <i class="fas fa-box"></i><span>Pedidos</span>
+        </button>
+        <button class="nav-item" onclick="mostrarAvisoDemo()">
+            <i class="fas fa-headset"></i><span>Atendimento</span>
+        </button>
+        <button class="nav-item" onclick="mostrarAvisoDemo()">
+            <i class="fab fa-whatsapp"></i><span>WhatsApp</span>
+        </button>
+    </nav>
+
+    <script>
+        // ============================================================
+        // CONFIGURAÇÕES
+        // ============================================================
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyUs5x6HG9tSJsVJBkQ98VdmlOJ56ZiWcbeTJbUur1I9yWvjEBPiBiFEEWO7kLjxb70nA/exec';
+        const DESCONTO_REVENDEDOR = 0.10;
+
+        // ============================================================
+        // VARIÁVEIS
+        // ============================================================
+        let PRODUCTS_DATA = { categories: [] };
+        let dadosCarregados = false;
+        let carregando = false;
+        let currentCategory = null;
+        let currentProducts = [];
+        let bannerAtual = 0;
+        let intervalBanner = null;
+
+        // ============================================================
+        // BANNERS
+        // ============================================================
+        const BANNERS_CONFIG = [
+            {
+                id: 1,
+                imagem_pc: 'https://cdn.awsli.com.br/1608/1608652/arquivos/bannr-fabrica-mc-embalagens-pc.png',
+                imagem_mobile: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-da-fabrica-mc-embalagens.png',
+                titulo: '', subtitulo: '', link: '', btnTexto: '', ativo: true
+            },
+            {
+                id: 2,
+                imagem_pc: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-caixa-kraft-com-visor.png',
+                imagem_mobile: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-caixas-com-visor-mobile.png',
+                titulo: '', subtitulo: '', link: '', btnTexto: '', ativo: true
+            },
+            {
+                id: 3,
+                imagem_pc: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-caixas-kraft.png',
+                imagem_mobile: 'https://cdn.awsli.com.br/1608/1608652/arquivos/banner-caixas-com-visor-fechadas.png',
+                titulo: '', subtitulo: '', link: '', btnTexto: '', ativo: true
+            }
+        ];
+
+        // ============================================================
+        // FUNÇÕES DE UTILIDADE
+        // ============================================================
+        function mostrarNotificacao(mensagem, tipo) {
+            const notif = document.createElement('div');
+            notif.className = 'notification-floating';
+            notif.style.cssText = `
+                position: fixed;
+                top: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 14px 24px;
+                border-radius: 12px;
+                font-weight: 600;
+                font-size: 15px;
+                z-index: 99999;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+                max-width: 90%;
+                text-align: center;
+                background: #1a3a5c;
+                color: white;
+                animation: slideDownNotif 0.4s ease;
+            `;
+            notif.textContent = mensagem;
+            document.body.appendChild(notif);
+            setTimeout(() => { notif.remove(); }, 4000);
+        }
+
+        function mostrarAvisoDemo() {
+            mostrarNotificacao('🔍 Este é um site de demonstração. As compras não estão disponíveis.', 'info');
+        }
+
+        function abrirModalDemo() {
+            const modal = document.createElement('div');
+            modal.id = 'demoModal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.7);
+                z-index: 99999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s;
+            `;
+            modal.innerHTML = `
+                <div style="background:white;max-width:450px;width:90%;border-radius:16px;padding:30px;text-align:center;position:relative;animation:slideUp 0.3s;">
+                    <button onclick="this.closest('#demoModal').remove()" style="position:absolute;top:10px;right:15px;font-size:28px;cursor:pointer;background:transparent;border:none;color:#999;">&times;</button>
+                    <div style="font-size:48px;color:#f39c12;margin-bottom:15px;">🔍</div>
+                    <h2 style="color:var(--primary-dark);margin-bottom:10px;">Site de Demonstração</h2>
+                    <p style="color:#666;font-size:15px;line-height:1.6;margin-bottom:20px;">
+                        Este é um ambiente <strong>apenas para visualização</strong>.
+                        <br><br>
+                        Você está vendo os preços exclusivos para <strong>revendedores</strong>,
+                        mas as compras não estão disponíveis nesta versão de demonstração.
+                    </p>
+                    <a href="https://mcembalagens.com.br" target="_blank" style="display:inline-block;background:#1a3a5c;color:white;padding:14px 30px;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;transition:all 0.3s;width:100%;">
+                        <i class="fas fa-arrow-left"></i> Voltar ao Site Principal
+                    </a>
+                    <button onclick="this.closest('#demoModal').remove()" style="margin-top:10px;background:transparent;border:none;color:#888;cursor:pointer;font-size:14px;width:100%;padding:8px;">
+                        Fechar
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // ============================================================
+        // NAVEGAÇÃO
+        // ============================================================
+        function showHome() {
+            document.getElementById('categoriesSection').style.display = 'block';
+            document.getElementById('productsSection').style.display = 'none';
+            document.getElementById('videosSection').style.display = 'block';
+            const navItems = document.querySelectorAll('.nav-item');
+            if (navItems.length > 0) {
+                navItems.forEach(n => n.classList.remove('active'));
+                navItems[0].classList.add('active');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function voltarCategorias() {
+            document.getElementById('categoriesSection').style.display = 'block';
+            document.getElementById('productsSection').style.display = 'none';
+            document.getElementById('videosSection').style.display = 'block';
+        }
+
+        function buscarProduto() {
+            const termo = prompt('🔍 Buscar produtos:');
+            if (!termo || !termo.trim()) return;
+            const termoBusca = termo.trim().toLowerCase();
+            const resultados = [];
+            for (const cat of PRODUCTS_DATA.categories) {
+                for (const prod of cat.products) {
+                    if (prod.name.toLowerCase().includes(termoBusca) ||
+                        prod.description.toLowerCase().includes(termoBusca) ||
+                        (prod.codigo && prod.codigo.toLowerCase().includes(termoBusca))) {
+                        resultados.push({ ...prod, categoria: cat.name, categoriaId: cat.id });
+                    }
+                }
+            }
+            if (resultados.length === 0) {
+                alert(`🔍 Nenhum produto encontrado para "${termo.trim()}"`);
+                return;
+            }
+            const categoriaVirtual = {
+                id: -1,
+                name: `🔍 Resultados para "${termo.trim()}" (${resultados.length})`,
+                description: `Encontrados ${resultados.length} produtos`,
+                image: '',
+                products: resultados
+            };
+            currentCategory = categoriaVirtual;
+            currentProducts = resultados;
+            document.getElementById('categoriesSection').style.display = 'none';
+            document.getElementById('productsSection').style.display = 'block';
+            document.getElementById('videosSection').style.display = 'none';
+            document.getElementById('categoryTitle').textContent = categoriaVirtual.name;
+            document.getElementById('productCount').textContent = `${resultados.length} produtos`;
+            renderizarProdutos();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // RENDERIZAR CATEGORIAS
+        // ============================================================
+        function renderizarCategorias() {
+            const grid = document.getElementById('categoriesGrid');
+            if (!grid) return;
+            const loading = document.getElementById('loadingIndicator');
+            if (loading) loading.style.display = 'none';
+            grid.innerHTML = '';
+            
+            PRODUCTS_DATA.categories.forEach(cat => {
+                const card = document.createElement('div');
+                card.className = 'category-card';
+                const imageHtml = cat.image ? `<img src="${cat.image}" alt="${cat.name}">` : `<span class="placeholder-icon"><i class="fas fa-box"></i></span>`;
+                card.innerHTML = `
+                    <div class="category-image-wrapper">${imageHtml}</div>
+                    <h3>${cat.name}</h3>
+                    <p>${cat.description}</p>
+                `;
+                card.onclick = () => abrirCategoria(cat.id);
+                grid.appendChild(card);
+            });
+        }
+
+        function abrirCategoria(categoryId) {
+            const category = PRODUCTS_DATA.categories.find(c => c.id === categoryId);
+            if (!category) return;
+            currentCategory = category;
+            currentProducts = category.products;
+            document.getElementById('categoriesSection').style.display = 'none';
+            document.getElementById('productsSection').style.display = 'block';
+            document.getElementById('videosSection').style.display = 'none';
+            document.getElementById('categoryTitle').textContent = category.name;
+            document.getElementById('productCount').textContent = `${category.products.length} produtos`;
+            renderizarProdutos();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // RENDERIZAR PRODUTOS - DEMONSTRAÇÃO
+        // ============================================================
+        function renderizarProdutos() {
+            const grid = document.getElementById('productsGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            
+            currentProducts.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card demo-mode';
+                card.id = `product-${product.id}`;
+                
+                const imgDiv = document.createElement('div');
+                imgDiv.className = 'product-image-wrapper';
+                
+                let imagemUrl = '';
+                if (product.images && product.images.length > 0) {
+                    imagemUrl = product.images[0];
+                    if (!imagemUrl.startsWith('http://') && !imagemUrl.startsWith('https://')) {
+                        if (imagemUrl.startsWith('//')) { imagemUrl = 'https:' + imagemUrl; }
+                    }
+                    imgDiv.innerHTML = `<img src="${imagemUrl}" alt="${product.name}" onerror="this.style.display='none';this.parentElement.innerHTML='<span class=\\'placeholder-icon\\'>📦</span>';">`;
+                } else {
+                    imgDiv.innerHTML = `<span class="placeholder-icon">📦</span>`;
+                }
+                
+                imgDiv.onclick = () => mostrarAvisoDemo();
+                
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'product-info';
+                
+                let quantityHTML = '';
+                product.quantities.forEach(qtyOption => {
+                    const precoOriginalPorUnidade = qtyOption.price / qtyOption.qty;
+                    const precoRevendaPorUnidade = precoOriginalPorUnidade * (1 - DESCONTO_REVENDEDOR);
+                    const precoPixPorUnidade = precoRevendaPorUnidade * 0.97;
+                    
+                    quantityHTML += `
+                        <div class="quantity-option" data-product-id="${product.id}" data-qty-step="${qtyOption.qty}">
+                            <label>+${qtyOption.qty}</label>
+                            <div class="quantity-control">
+                                <button disabled>−</button>
+                                <span class="quantity-value" id="qty-${product.id}-${qtyOption.qty}">0</span>
+                                <button disabled>+</button>
+                            </div>
+                            <div class="price-info-revenda">
+                                <span class="price-old">R$ ${precoOriginalPorUnidade.toFixed(2)}</span>
+                                <span class="price-revenda">R$ ${precoRevendaPorUnidade.toFixed(2)}</span>
+                                <span class="price-pix">PIX: R$ ${precoPixPorUnidade.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                infoDiv.innerHTML = `
+                    <h4>${product.name} <span class="demo-badge-produto">🔍 DEMO</span></h4>
+                    <div class="product-codigo"><span>Código: ${product.codigo || '---'}</span></div>
+                    <p class="product-description">${product.description}</p>
+                    <div class="product-actions">
+                        <div class="quantity-selector">${quantityHTML}</div>
+                        <div class="price-display" id="priceDisplay-${product.id}">💰 Selecione uma quantidade para ver o preço</div>
+                        <button class="btn-add-product" onclick="mostrarAvisoDemo()" style="cursor:pointer;">
+                            <span class="demo-lock">🔍</span> Visualizar Apenas
+                        </button>
+                        <div class="stock-info production"><i class="fas fa-clock"></i> Produção: ${product.productionDays || 7} dias</div>
+                    </div>
+                `;
+                
+                card.appendChild(imgDiv);
+                card.appendChild(infoDiv);
+                grid.appendChild(card);
+            });
+        }
+
+        // ============================================================
+        // CARROSSEL
+        // ============================================================
+        function initBannerCarousel() {
+            const slidesWrapper = document.getElementById('bannerSlides');
+            const dotsContainer = document.getElementById('bannerDots');
+            if (!slidesWrapper) return;
+            
+            const bannersAtivos = BANNERS_CONFIG.filter(b => b.ativo !== false);
+            if (bannersAtivos.length === 0) {
+                slidesWrapper.innerHTML = `<div class="slide active"><img src="https://via.placeholder.com/1200x400/1a3a5c/ffffff?text=MC+Embalagens+BH" alt="MC Embalagens BH"></div>`;
+                return;
+            }
+            
+            function getImagemBanner(banner) {
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile && banner.imagem_mobile) return banner.imagem_mobile;
+                return banner.imagem_pc || banner.imagem;
+            }
+            
+            let slidesHTML = '';
+            bannersAtivos.forEach((banner, index) => {
+                const activeClass = index === 0 ? 'active' : '';
+                const imgSrc = getImagemBanner(banner);
+                slidesHTML += `
+                    <div class="slide ${activeClass}" data-index="${index}">
+                        <img src="${imgSrc}" alt="${banner.titulo || 'Banner'}" loading="lazy">
+                    </div>
+                `;
+            });
+            slidesWrapper.innerHTML = slidesHTML;
+            
+            if (dotsContainer) {
+                let dotsHTML = '';
+                bannersAtivos.forEach((_, index) => {
+                    const activeClass = index === 0 ? 'active' : '';
+                    dotsHTML += `<span class="dot ${activeClass}" onclick="irParaBanner(${index})"></span>`;
+                });
+                dotsContainer.innerHTML = dotsHTML;
+            }
+            
+            iniciarAutoplay();
+        }
+
+        function mudarBanner(direcao) {
+            const slides = document.querySelectorAll('#bannerSlides .slide');
+            const dots = document.querySelectorAll('#bannerDots .dot');
+            const total = slides.length;
+            if (total === 0) return;
+            slides[bannerAtual].classList.remove('active');
+            if (dots[bannerAtual]) dots[bannerAtual].classList.remove('active');
+            bannerAtual = (bannerAtual + direcao + total) % total;
+            slides[bannerAtual].classList.add('active');
+            if (dots[bannerAtual]) dots[bannerAtual].classList.add('active');
+        }
+
+        function irParaBanner(index) {
+            const slides = document.querySelectorAll('#bannerSlides .slide');
+            const dots = document.querySelectorAll('#bannerDots .dot');
+            const total = slides.length;
+            if (total === 0 || index === bannerAtual) return;
+            slides[bannerAtual].classList.remove('active');
+            if (dots[bannerAtual]) dots[bannerAtual].classList.remove('active');
+            bannerAtual = index;
+            slides[bannerAtual].classList.add('active');
+            if (dots[bannerAtual]) dots[bannerAtual].classList.add('active');
+        }
+
+        function iniciarAutoplay() {
+            if (intervalBanner) clearInterval(intervalBanner);
+            const slides = document.querySelectorAll('#bannerSlides .slide');
+            if (slides.length > 1) { intervalBanner = setInterval(() => mudarBanner(1), 5000); }
+        }
+
+        // ============================================================
+        // CARREGAR DADOS DA PLANILHA
+        // ============================================================
+        async function carregarDadosPlanilha() {
+            if (carregando) return;
+            carregando = true;
+
+            try {
+                const loading = document.getElementById('loadingIndicator');
+                if (loading) loading.style.display = 'flex';
+                
+                const response = await fetch(API_URL);
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+                const data = await response.json();
+                
+                if (!data.produtos || !data.categorias) throw new Error('Estrutura de dados inválida');
+                
+                const produtosStr = data.produtos
+                    .filter(p => String(p.produto_ativado || '').toUpperCase().trim() === 'SIM')
+                    .map(p => { const novoP = {}; for (const key in p) { novoP[key] = String(p[key] || '').trim(); } return novoP; });
+                
+                const categoriasStr = data.categorias.map(c => { const novoC = {}; for (const key in c) { novoC[key] = String(c[key] || '').trim(); } return novoC; });
+                
+                PRODUCTS_DATA.categories = categoriasStr.map(cat => {
+                    const produtosDaCategoria = produtosStr.filter(p => p.categoria === cat.nome);
+                    return {
+                        id: parseInt(cat.id) || 0,
+                        name: cat.nome || 'Categoria sem nome',
+                        description: cat.descricao || '',
+                        image: cat.imagem || '',
+                        products: produtosDaCategoria
+                            .filter(p => String(p.produto_ativado || '').toUpperCase() === 'SIM')
+                            .map(p => {
+                                const qtyList = p.quantidades ? p.quantidades.split(',').map(q => parseInt(q.trim())).filter(q => !isNaN(q) && q > 0) : [];
+                                const precoMap = {};
+                                if (p.preco_venda) {
+                                    p.preco_venda.split(';').forEach(item => {
+                                        const parts = item.trim().split(':');
+                                        if (parts.length === 2) { precoMap[parseInt(parts[0])] = parseFloat(parts[1]) || 0; }
+                                    });
+                                }
+                                const pesoMap = {}, dimsMap = {};
+                                if (p.pesos_medidas && p.pesos_medidas.trim() !== '') {
+                                    p.pesos_medidas.split(';').forEach(item => {
+                                        const parts = item.trim().split(':');
+                                        if (parts.length === 2) {
+                                            const qtd = parseInt(parts[0]);
+                                            const dados = parts[1] || '';
+                                            const pesoDims = dados.split('-');
+                                            if (pesoDims.length === 2) {
+                                                pesoMap[qtd] = pesoDims[0] || '';
+                                                dimsMap[qtd] = pesoDims[1] || '';
+                                            } else {
+                                                pesoMap[qtd] = dados;
+                                                dimsMap[qtd] = '';
+                                            }
+                                        }
+                                    });
+                                }
+                                const quantities = qtyList.map(qty => ({
+                                    qty: qty,
+                                    price: precoMap[qty] || 0,
+                                    weight: pesoMap[qty] || '',
+                                    dimensions: dimsMap[qty] || ''
+                                }));
+                                let images = [];
+                                if (p.imagens_carousel) { images = p.imagens_carousel.split(',').map(img => img.trim()).filter(img => img && img.length > 0); }
+                                if (images.length === 0 && p.imagem_principal) { const img = p.imagem_principal.trim(); if (img && img.length > 0) images = [img]; }
+                                if (images.length === 0 && cat.imagem) { images = [cat.imagem]; }
+                                return {
+                                    id: parseInt(p.id) || 0,
+                                    name: p.nome || 'Produto sem nome',
+                                    description: p.descricao || '',
+                                    images: images,
+                                    quantities: quantities,
+                                    stock: parseInt(p.estoque) || 0,
+                                    productionDays: parseInt(p.prazo_producao) || 0,
+                                    weight: parseFloat(p.peso_unitario) || 0,
+                                    codigo: p.codigo_produto || '',
+                                    ncm: p.ncm || '',
+                                    ativado: String(p.produto_ativado || '').toUpperCase() === 'SIM'
+                                };
+                            })
+                    };
+                });
+                
+                dadosCarregados = true;
+                const loadingEl = document.getElementById('loadingIndicator');
+                if (loadingEl) loadingEl.style.display = 'none';
+                renderizarCategorias();
+                init();
+                
+            } catch (error) {
+                console.error('❌ Erro ao carregar dados:', error);
+                const loadingEl = document.getElementById('loadingIndicator');
+                if (loadingEl) {
+                    loadingEl.innerHTML = `
+                        <p style="color:#e74c3c;font-size:18px;">❌ Erro ao carregar dados</p>
+                        <p style="color:#888;font-size:14px;">Verifique sua conexão e tente novamente</p>
+                        <button onclick="carregarDadosPlanilha()" style="margin-top:15px;padding:10px 30px;background:#1a3a5c;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">
+                            <i class="fas fa-sync"></i> Tentar Novamente
+                        </button>
+                    `;
+                }
+            } finally {
+                carregando = false;
+            }
+        }
+
+        // ============================================================
+        // INICIALIZAR
+        // ============================================================
+        function init() {
+            if (!PRODUCTS_DATA.categories || PRODUCTS_DATA.categories.length === 0) {
+                console.warn('⚠️ Nenhuma categoria encontrada');
+                return;
+            }
+            showHome();
+            initBannerCarousel();
+        }
+
+        // ============================================================
+        // EVENTOS
+        // ============================================================
+        window.addEventListener('resize', function() {
+            const slidesWrapper = document.getElementById('bannerSlides');
+            if (!slidesWrapper) return;
+            const bannersAtivos = BANNERS_CONFIG.filter(b => b.ativo !== false);
+            const slides = slidesWrapper.querySelectorAll('.slide');
+            slides.forEach((slide, index) => {
+                const banner = bannersAtivos[index];
+                if (!banner) return;
+                const isMobile = window.innerWidth <= 768;
+                const imgSrc = isMobile && banner.imagem_mobile ? banner.imagem_mobile : (banner.imagem_pc || banner.imagem);
+                const img = slide.querySelector('img');
+                if (img) img.src = imgSrc;
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostra aviso demo ao carregar
+            setTimeout(() => {
+                mostrarNotificacao('🔍 Site de Demonstração - Apenas para visualização', 'info');
+            }, 1000);
+            
+            carregarDadosPlanilha();
+        });
+
+        console.log('🚀 MC Embalagens BH - SITE DEMONSTRAÇÃO');
+        console.log('🔍 Modo: Visualização apenas');
+        console.log('📦 Desconto revendedor aplicado: ' + (DESCONTO_REVENDEDOR * 100) + '%');
+        console.log('❌ Compras desabilitadas');
+    </script>
+
+</body>
+</html>
