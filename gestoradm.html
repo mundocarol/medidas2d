@@ -1517,9 +1517,153 @@
             text-align: center;
         }
 
+        /* ============================================================
+   TELA DE LOGIN - ADICIONAR NO INÍCIO DO CSS
+   ============================================================ */
+#loginOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a3a5c 0%, #2a5a8c 100%);
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+#loginOverlay.hidden {
+    display: none;
+}
+.login-box {
+    background: white;
+    padding: 40px 50px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    animation: fadeInUp 0.5s ease;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.login-box .logo {
+    font-size: 48px;
+    color: #1a3a5c;
+    margin-bottom: 10px;
+}
+.login-box h1 {
+    color: #1a3a5c;
+    font-size: 22px;
+    margin-bottom: 5px;
+}
+.login-box p {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 25px;
+}
+.login-box .input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+.login-box .input-group i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    font-size: 18px;
+}
+.login-box .input-group input {
+    width: 100%;
+    padding: 14px 14px 14px 48px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s;
+    background: #f8f9fa;
+}
+.login-box .input-group input:focus {
+    border-color: #1a3a5c;
+    outline: none;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(26, 58, 92, 0.1);
+}
+.login-box .btn-login {
+    width: 100%;
+    padding: 14px;
+    background: #1a3a5c;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.login-box .btn-login:hover {
+    background: #2a5a8c;
+    transform: scale(1.02);
+}
+.login-box .btn-login:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+.login-box .erro-senha {
+    color: #e74c3c;
+    font-size: 13px;
+    margin-top: 10px;
+    display: none;
+}
+.login-box .erro-senha.show {
+    display: block;
+}
+.login-box .tempo-restante {
+    font-size: 12px;
+    color: #888;
+    margin-top: 15px;
+}
+.login-box .tempo-restante span {
+    font-weight: 700;
+    color: #1a3a5c;
+}
+
+/* Ocultar conteúdo enquanto não logado */
+#app {
+    display: none;
+}
+#app.logged-in {
+    display: block;
+}
+
     </style>
 </head>
 <body>
+<!-- ============================================================
+     TELA DE LOGIN
+     ============================================================ -->
+<div id="loginOverlay">
+    <div class="login-box">
+        <div class="logo">🔐</div>
+        <h1>Embalagens Express</h1>
+        <p>Digite a senha para acessar o sistema</p>
+        <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="inputSenhaLogin" placeholder="Digite a senha" 
+                   onkeypress="if(event.key==='Enter') fazerLogin()">
+        </div>
+        <button class="btn-login" id="btnLogin" onclick="fazerLogin()">
+            <i class="fas fa-sign-in-alt"></i> Entrar
+        </button>
+        <div class="erro-senha" id="erroSenhaLogin">Senha incorreta! Tente novamente.</div>
+        <div class="tempo-restante" id="tempoRestanteLogin"></div>
+    </div>
+</div>
+
 
 <div class="container" id="app">
     <header class="header">
@@ -2142,8 +2286,210 @@
 <div id="printArea"></div>
 
 <script>
+
+// ============================================================
+// SISTEMA DE LOGIN COM SENHA OFUSCADA - CORRIGIDO
+// ============================================================
+
+
+
+const _senhaCodificada = [
+    67,    // 
+    97,    // 
+    108,   // 
+    64,    // 
+    '3+2', // 
+    '4+2', // 
+    '1+1', // 
+    '6+3', // 
+    '1+2', // 
+    '5+3'  // 
+];
+
+// Função para decodificar a senha ofuscada
+function _decodificarSenha() {
+    let senha = '';
+    for (const item of _senhaCodificada) {
+        if (typeof item === 'number') {
+            senha += String.fromCharCode(item);
+        } else {
+            // Resolve operações matemáticas simples (ex: "3+2" = 5)
+            const partes = item.split('+');
+            if (partes.length === 2) {
+                const num = parseInt(partes[0]) + parseInt(partes[1]);
+                senha += String(num);
+            } else {
+                senha += item;
+            }
+        }
+    }
+    return senha;
+}
+
+// Função para verificar a senha (comparação segura)
+function _verificarSenha(senhaDigitada) {
+    const senhaCorreta = _decodificarSenha();
+    if (senhaDigitada.length !== senhaCorreta.length) return false;
+    
+    let resultado = 0;
+    for (let i = 0; i < senhaDigitada.length; i++) {
+        resultado |= senhaDigitada.charCodeAt(i) ^ senhaCorreta.charCodeAt(i);
+    }
+    return resultado === 0;
+}
+
+// Verifica se o usuário já está logado (sessão de 5 horas)
+function verificarSessao() {
+    const sessao = localStorage.getItem('sessao_gestor');
+    if (!sessao) return false;
+    
+    try {
+        const dados = JSON.parse(sessao);
+        const agora = Date.now();
+        const tempoDecorrido = agora - dados.timestamp;
+        const cincoHoras = 5 * 60 * 60 * 1000; // 5 horas em milissegundos
+        
+        if (tempoDecorrido < cincoHoras) {
+            return true;
+        } else {
+            localStorage.removeItem('sessao_gestor');
+            return false;
+        }
+    } catch (e) {
+        return false;
+    }
+}
+
+// Verifica a sessão ao carregar a página
+function verificarSessaoAoCarregar() {
+    if (verificarSessao()) {
+        // Usuário já está logado
+        document.getElementById('loginOverlay').classList.add('hidden');
+        document.getElementById('app').classList.add('logged-in');
+        carregarDados();
+        iniciarAtualizacaoAutomatica();
+        atualizarTempoRestante();
+    } else {
+        // Mostra tela de login
+        document.getElementById('loginOverlay').classList.remove('hidden');
+        document.getElementById('app').classList.remove('logged-in');
+        const input = document.getElementById('inputSenhaLogin');
+        if (input) input.focus();
+    }
+}
+
+// Faz o login
+function fazerLogin() {
+    const input = document.getElementById('inputSenhaLogin');
+    const senha = input.value;
+    const erro = document.getElementById('erroSenhaLogin');
+    const btn = document.getElementById('btnLogin');
+    
+    if (!senha) {
+        erro.textContent = '⚠️ Digite a senha!';
+        erro.classList.add('show');
+        return;
+    }
+    
+    // CORRIGIDO: usa _verificarSenha() em vez de comparar diretamente
+    if (_verificarSenha(senha)) {
+        // Login bem-sucedido
+        erro.classList.remove('show');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrando...';
+        
+        // Salva sessão no localStorage com timestamp
+        localStorage.setItem('sessao_gestor', JSON.stringify({
+            timestamp: Date.now()
+        }));
+        
+        // Mostra o sistema
+        document.getElementById('loginOverlay').classList.add('hidden');
+        document.getElementById('app').classList.add('logged-in');
+        
+        // Carrega os dados
+        carregarDados();
+        
+        // Inicia o timer de atualização automática
+        iniciarAtualizacaoAutomatica();
+        
+        // Atualiza o contador de tempo restante
+        atualizarTempoRestante();
+        
+    } else {
+        erro.textContent = '❌ Senha incorreta! Tente novamente.';
+        erro.classList.add('show');
+        input.value = '';
+        input.focus();
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
+    }
+}
+
+// Atualiza o tempo restante da sessão
+function atualizarTempoRestante() {
+    const elemento = document.getElementById('tempoRestanteLogin');
+    if (!elemento) return;
+    
+    const sessao = localStorage.getItem('sessao_gestor');
+    if (!sessao) {
+        elemento.innerHTML = '';
+        return;
+    }
+    
+    try {
+        const dados = JSON.parse(sessao);
+        const agora = Date.now();
+        const tempoDecorrido = agora - dados.timestamp;
+        const cincoHoras = 5 * 60 * 60 * 1000;
+        const tempoRestante = Math.max(0, cincoHoras - tempoDecorrido);
+        
+        const horas = Math.floor(tempoRestante / (60 * 60 * 1000));
+        const minutos = Math.floor((tempoRestante % (60 * 60 * 1000)) / (60 * 1000));
+        const segundos = Math.floor((tempoRestante % (60 * 1000)) / 1000);
+        
+        if (tempoRestante > 0) {
+            elemento.innerHTML = `⏱️ Sessão ativa por <span>${horas}h ${minutos}min ${segundos}s</span>`;
+        } else {
+            elemento.innerHTML = '⏰ Sessão expirada. Faça login novamente.';
+            localStorage.removeItem('sessao_gestor');
+            document.getElementById('loginOverlay').classList.remove('hidden');
+            document.getElementById('app').classList.remove('logged-in');
+        }
+    } catch (e) {
+        elemento.innerHTML = '';
+    }
+}
+
+// Função para fazer logout manual (opcional)
+function fazerLogout() {
+    if (confirm('Deseja encerrar a sessão?')) {
+        localStorage.removeItem('sessao_gestor');
+        document.getElementById('loginOverlay').classList.remove('hidden');
+        document.getElementById('app').classList.remove('logged-in');
+        document.getElementById('inputSenhaLogin').value = '';
+        document.getElementById('inputSenhaLogin').focus();
+        // Para o intervalo de atualização
+        if (intervaloAtualizacao) {
+            clearInterval(intervaloAtualizacao);
+            intervaloAtualizacao = null;
+        }
+    }
+}
+
+// Inicializa a verificação quando a página carregar
+// Coloque isso no final do script, após todas as funções
+document.addEventListener('DOMContentLoaded', function() {
+    verificarSessaoAoCarregar();
+});
+
+// Atualiza o timer a cada minuto
+setInterval(atualizarTempoRestante, 10000); // a cada 10 segundos para ficar mais preciso
+
+
+
 const API_URL = 'https://script.google.com/macros/s/AKfycbzgS8t9-G11EQU1J5prf2njyxB5kFqIYc9EuUT77d3rihWzVQrGpKNRKxYTGafZUtMtHw/exec';
-const SENHA_GESTOR = 'Cal@562938';
+const SENHA_GESTOR = '123456';
 
 let dados = {
     produtos: [],
@@ -2949,9 +3295,18 @@ async function finalizarPedidoCheckout() {
 }
 
 // ============================================================
-// CARREGAR DADOS
+// CARREGAR DADOS - MODIFICADO PARA VERIFICAR SESSÃO
 // ============================================================
 async function carregarDados() {
+    // Verifica se a sessão ainda é válida antes de carregar
+    if (!verificarSessao()) {
+        // Sessão expirada, força logout
+        localStorage.removeItem('sessao_gestor');
+        document.getElementById('loginOverlay').classList.remove('hidden');
+        document.getElementById('app').classList.remove('logged-in');
+        return;
+    }
+    
     mostrarSpinner('Carregando dados...');
     try {
         const response = await fetch(API_URL);
@@ -2969,7 +3324,7 @@ async function carregarDados() {
         renderizarTodosPedidos();
         renderizarProdutos();
         renderizarClientes();
-        renderizarAnalises(); // 🔥 NOVO
+        renderizarAnalises();
         atualizarBages();
 
         esconderSpinner();
@@ -2977,7 +3332,10 @@ async function carregarDados() {
     } catch (error) {
         console.error('Erro ao carregar dados:', error);
         esconderSpinner();
-        alert('⚠️ Erro ao carregar dados. Verifique sua conexão.');
+        // Se o erro for de rede, não mostra alert para não incomodar
+        if (!error.message.includes('Failed to fetch')) {
+            alert('⚠️ Erro ao carregar dados. Verifique sua conexão.');
+        }
     }
 }
 
@@ -5415,15 +5773,57 @@ async function finalizarPedidoManual() {
 // ============================================================
 carregarDados();
 
-setInterval(() => {
-    const tabAtiva = document.querySelector('.tab-content.active');
-    if (tabAtiva) {
-        const id = tabAtiva.id;
-        if (id === 'tab-pendentes' || id === 'tab-pedidos') {
-            carregarDadosParcial();
-        }
+// ============================================================
+// ATUALIZAÇÃO AUTOMÁTICA A CADA 10 MINUTOS (EM SEGUNDO PLANO)
+// ============================================================
+let intervaloAtualizacao = null;
+
+function iniciarAtualizacaoAutomatica() {
+    // Cancela o intervalo anterior se existir
+    if (intervaloAtualizacao) {
+        clearInterval(intervaloAtualizacao);
     }
-}, 30000);
+    
+    // Atualiza a cada 10 minutos (600000 ms)
+    intervaloAtualizacao = setInterval(() => {
+        // Só atualiza se a sessão ainda for válida
+        if (verificarSessao()) {
+            console.log('🔄 Atualizando dados em segundo plano...');
+            // Atualiza apenas pendentes, análises e badges (mais leve)
+            atualizarEmSegundoPlano();
+        } else {
+            // Se a sessão expirou, para o intervalo e força logout
+            clearInterval(intervaloAtualizacao);
+            localStorage.removeItem('sessao_gestor');
+            document.getElementById('loginOverlay').classList.remove('hidden');
+            document.getElementById('app').classList.remove('logged-in');
+        }
+    }, 600000); // 10 minutos
+}
+
+// Função para atualizar em segundo plano (sem mostrar spinner)
+async function atualizarEmSegundoPlano() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        
+        // Atualiza apenas os dados que mudam com frequência
+        dados.pedidos = data.pedidos || [];
+        dados.clientes = data.clientes || [];
+        dados.produtos = data.produtos || []; // Também atualiza produtos por segurança
+        
+        // Atualiza as abas que mostram dados dinâmicos
+        renderizarPendentes();
+        renderizarTodosPedidos();
+        renderizarAnalises();
+        atualizarBages();
+        
+        console.log('✅ Dados atualizados em segundo plano!');
+        
+    } catch (error) {
+        console.log('⚠️ Erro na atualização em segundo plano:', error.message);
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializa
