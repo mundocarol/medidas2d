@@ -3037,8 +3037,8 @@
     <p style="font-size:13px;color:#0d47a1;margin:0;">
         <i class="fas fa-info-circle"></i> 
         <strong>Como funciona o cadastro de revendedor?</strong><br>
-        Após preencher todos os dados e clicar em "Cadastrar", sua solicitação será analisada.
-        Em até <strong>24 horas úteis</strong> você receberá a confirmação por e-mail.
+        Após preencher todos os dados e clicar em "Cadastrar", seu cadastro já estara liberado.
+        Aproveite <strong>os Preços exclusivos</strong>, em caso de nao liberação do cadastro, nos chame pelo Whatssap para solucionar.
     </p>
 </div>
                 
@@ -5398,7 +5398,7 @@ async function verificarStatusRevendedor(email) {
                 cidade: cidade,
                 estado: uf,
                 cep: cep,
-                observacao: 'ANALISE'
+                observacao: 'REVENDA'
             }
         };
         
@@ -5421,17 +5421,16 @@ async function verificarStatusRevendedor(email) {
         // ============================================================
         msgEl.className = 'login-message success';
         msgEl.innerHTML = `
-            ✅ <strong>Cadastro realizado com sucesso!</strong><br>
-            <span style="font-size:13px;color:#2e7d32;">
-                Seu acesso será liberado em até <strong>24 horas úteis</strong> após análise.<br>
-                Você receberá um e-mail com a confirmação.
-            </span>
-            <br><br>
-            <button onclick="switchLoginTab('login')" 
-                    style="padding:10px 25px;background:var(--primary-blue);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
-                <i class="fas fa-arrow-left"></i> Voltar ao Login
-            </button>
-        `;
+    ✅ <strong>Cadastro concluído com sucesso!</strong><br>
+    <span style="font-size:13px;color:#2e7d32;">
+        Você já pode simular e efetuar suas compras normalmente com os <strong>preços exclusivos</strong> de revendedor! 🏷️
+    </span>
+    <br><br>
+    <button onclick="switchLoginTab('login')" 
+            style="padding:10px 25px;background:var(--primary-blue);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;">
+        <i class="fas fa-arrow-left"></i> Voltar ao Login
+    </button>
+`;
         msgEl.style.display = 'block';
         
         // ============================================================
@@ -5691,7 +5690,7 @@ function bloquearCamposCadastro(bloquear) {
                 cidade: cliente.cidade || '',
                 estado: cliente.estado || '',
                 cep: cliente.cep || '',
-                observacao: 'ANALISE'
+                observacao: 'REVENDA'
             }
         };
         
