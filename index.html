@@ -3871,7 +3871,35 @@ src="https://www.facebook.com/tr?id=1764645147917874&ev=PageView&noscript=1"
         // ============================================================
         const APPS_SCRIPT_URL = API_URL;
 
+// ============================================================
+// 🔥 MONTAR STRING DOS PRODUTOS DO CARRINHO
+// ============================================================
+function montarStringProdutosCarrinho() {
+    try {
+        if (!carrinho || carrinho.length === 0) {
+            return '';
+        }
+        
+        var partes = [];
+        carrinho.forEach(function(item) {
+            var nome = item.name || 'Produto';
+            var qtdPacotes = item.qty || 1;
+            var tamanhoPacote = item.step || 1;
+            var totalUnidades = item.totalUnits || (qtdPacotes * tamanhoPacote);
+            var preco = item.price || 0;
+            
+            // Formato: "Nome (Xx Y un) - R$ Z"
+            partes.push(nome + ' (' + qtdPacotes + 'x ' + tamanhoPacote + ' un) - R$ ' + preco.toFixed(2));
+        });
+        
+        return partes.join(' | ');
+    } catch (e) {
+        console.warn('⚠️ Erro ao montar produtos:', e);
+        return '';
+    }
+}
 
+        
         // ============================================================
         // CONFIGURAÇÃO SUPERFRETE
         // ============================================================
@@ -5093,20 +5121,25 @@ async function calcularFreteCarrinho() {
         console.log('📦 Calculando frete para CEP:', cep);
         console.log('⚖️ Peso: ' + peso + 'kg, Dim: ' + dims.altura + 'x' + dims.largura + 'x' + dims.comprimento);
         
-        await fetch(API_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                acao: 'salvar_frete',
-                cepDestino: cep,
-                peso: peso,
-                altura: dims.altura,
-                largura: dims.largura,
-                comprimento: dims.comprimento,
-                _t: Date.now()
-            })
-        });
+        // 🔥 NOVO: Monta a string dos produtos do carrinho
+var produtosCarrinhoString = montarStringProdutosCarrinho();
+console.log('🛒 Produtos do carrinho (carrinho):', produtosCarrinhoString);
+
+await fetch(API_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        acao: 'salvar_frete',
+        cepDestino: cep,
+        peso: peso,
+        altura: dims.altura,
+        largura: dims.largura,
+        comprimento: dims.comprimento,
+        produtos_carrinho: produtosCarrinhoString,  // 🔥 NOVO CAMPO
+        _t: Date.now()
+    })
+});
         
         console.log('⏳ Aguardando processamento (3s)...');
         await new Promise(function(resolve) { setTimeout(resolve, 3000); });
@@ -9256,20 +9289,25 @@ async function carregarOpcoesFreteCheckout() {
         // ============================================================
         // SALVAR FRETE NA PLANILHA
         // ============================================================
-        await fetch(API_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                acao: 'salvar_frete',
-                cepDestino: cep,
-                peso: peso,
-                altura: dims.altura,
-                largura: dims.largura,
-                comprimento: dims.comprimento,
-                _t: Date.now()
-            })
-        });
+       // 🔥 NOVO: Monta a string dos produtos do carrinho
+var produtosCarrinhoString = montarStringProdutosCarrinho();
+console.log('🛒 Produtos do carrinho (checkout):', produtosCarrinhoString);
+
+await fetch(API_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        acao: 'salvar_frete',
+        cepDestino: cep,
+        peso: peso,
+        altura: dims.altura,
+        largura: dims.largura,
+        comprimento: dims.comprimento,
+        produtos_carrinho: produtosCarrinhoString,  // 🔥 NOVO CAMPO
+        _t: Date.now()
+    })
+});
         
         console.log('⏳ Aguardando processamento (3s)...');
         await new Promise(function(resolve) { setTimeout(resolve, 3000); });
