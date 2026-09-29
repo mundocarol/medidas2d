@@ -2168,7 +2168,7 @@
         </div>
         <div id="pedidoManualContent">
             
-            <!-- 🔥 NOVO: BUSCA DE CLIENTES -->
+            <!-- 🔥 BUSCA DE CLIENTES -->
             <div class="form-group" style="background:#f0f4f8;padding:12px;border-radius:8px;border:2px solid var(--primary-blue);margin-bottom:12px;">
                 <label style="font-weight:700;color:var(--primary-blue);">
                     <i class="fas fa-user-search"></i> Buscar Cliente
@@ -2189,7 +2189,7 @@
                 </div>
             </div>
             
-            <!-- DADOS DO CLIENTE (PREENCHE AUTOMATICAMENTE) -->
+            <!-- DADOS DO CLIENTE -->
             <div style="background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:12px;border:1px solid #e0e0e0;">
                 <div class="form-row">
                     <div class="form-group">
@@ -2230,6 +2230,27 @@
                         <option value="Depósito/Transferência">Depósito/Transferência</option>
                     </select>
                 </div>
+
+                <!-- 🔥 NOVO: FRETE -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Frete</label>
+                        <input type="text" id="visFrete" placeholder="Ex: Entrega própria, PAC, Jadlog..." 
+                               style="width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:6px;font-size:13px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Valor do Frete (R$)</label>
+                        <input type="number" id="visFreteValor" step="0.01" min="0" 
+                               placeholder="0,00" style="width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:6px;font-size:13px;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Prazo do Frete (dias úteis)</label>
+                    <input type="number" id="visFretePrazo" min="0" placeholder="Ex: 5" 
+                           style="width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:6px;font-size:13px;">
+                    <small style="color:#888;font-size:11px;">Dias úteis para entrega do frete (será somado ao prazo de produção)</small>
+                </div>
+
                 <div class="form-group">
                     <label>Observações do Pedido</label>
                     <textarea id="visObs" rows="2" placeholder="Informações internas sobre o pedido..." 
@@ -2237,7 +2258,7 @@
                 </div>
             </div>
             
-            <!-- BUSCA DE PRODUTOS (JÁ EXISTE) -->
+            <!-- BUSCA DE PRODUTOS -->
             <div class="form-group">
                 <label>🔍 Buscar Produto</label>
                 <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -2258,7 +2279,7 @@
                 </div>
             </div>
 
-            <!-- CARRINHO (JÁ EXISTE) -->
+            <!-- CARRINHO -->
             <div style="border-top:2px solid #eee;padding-top:12px;margin-top:8px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
                     <h4 style="color:var(--primary-blue);font-size:14px;"><i class="fas fa-shopping-cart"></i> Itens do Pedido</h4>
@@ -3908,6 +3929,9 @@ function renderizarTodosPedidos() {
 // ============================================================
 // IMPRIMIR CUPOM - CORRIGIDO (CAPTURA BERÇOS ATÉ O FIM DA LINHA)
 // ============================================================
+// ============================================================
+// IMPRIMIR CUPOM - VERSÃO DO CÓDIGO 01 + BERÇOS
+// ============================================================
 function imprimirCupom(idPedido) {
     const pedido = dados.pedidos.find(p => parseInt(p.id_pedido) === parseInt(idPedido));
     if (!pedido) {
@@ -3921,79 +3945,51 @@ function imprimirCupom(idPedido) {
     let maiorPrazoProducao = 0;
     let isProducaoGeral = false;
     
-    // Dicionário para somar todos os berços por gomos
+    // ============================================================
+    // 🔥 DICIONÁRIO PARA SOMAR BERÇOS POR GOMOS
+    // ============================================================
     const totalBerçosPorGomos = {};
     
     // ============================================================
-    // 🔥 FUNÇÃO PARA EXTRAIR E SOMAR BERÇOS - CORRIGIDA
+    // 🔥 FUNÇÃO PARA EXTRAIR E SOMAR BERÇOS (CORRIGIDA)
     // ============================================================
-    function extrairESomarBerços(descricao, quantidadeUnidades, nomeProduto) {
-        if (!descricao) {
-            console.log(`⚠️ [${nomeProduto}] Sem descrição`);
-            return;
-        }
-        if (quantidadeUnidades <= 0) {
-            console.log(`⚠️ [${nomeProduto}] Quantidade inválida: ${quantidadeUnidades}`);
-            return;
-        }
+    function extrairESomarBerços(descricao, totalUnidades, nomeProduto) {
+        if (!descricao) return;
+        if (totalUnidades <= 0) return;
         
-        console.log(`\n🔍 [${nomeProduto}] Processando berços...`);
-        console.log(`   Descrição: "${descricao}"`);
-        console.log(`   Quantidade: ${quantidadeUnidades} unidades`);
-        
-        // 🔥 CORREÇÃO: Procura por "Berços:" e captura tudo até o final da linha
-        // O [^\n]* captura tudo que não é quebra de linha
         const regex = /[Bb]erços?\s*:\s*([^\n]*)/;
         const match = descricao.match(regex);
+        if (!match) return;
         
-        if (!match) {
-            console.log(`   ❌ Nenhum berço encontrado`);
-            return;
-        }
-        
-        console.log(`   ✅ Match encontrado: "${match[0]}"`);
-        
-        // 🔥 CORREÇÃO: Remove espaços e quebras de linha do conteúdo
         let conteudo = match[1].replace(/\s/g, '');
-        console.log(`   ✅ Conteúdo limpo: "${conteudo}"`);
-        
-        // 🔥 CORREÇÃO: Divide por vírgula e processa cada parte
         const partes = conteudo.split(',').map(p => p.trim());
-        console.log(`   Partes: [${partes.join(', ')}]`);
         
         partes.forEach(part => {
-            // 🔥 CORREÇÃO: Remove qualquer caractere que não seja número ou 'x'
             const partLimpa = part.replace(/[^0-9x]/gi, '');
-            console.log(`   Processando: "${part}" → limpo: "${partLimpa}"`);
-            
             const subPartes = partLimpa.split('x').map(Number);
             if (subPartes.length === 2) {
                 const qtdBerçosPorUnidade = subPartes[0];
                 const gomos = subPartes[1];
                 
                 if (qtdBerçosPorUnidade > 0 && gomos > 0) {
-                    const totalBerços = quantidadeUnidades * qtdBerçosPorUnidade;
+                    // 🔥 CORREÇÃO: Multiplica pelo total de UNIDADES (não pelos pacotes)
+                    const totalBerços = totalUnidades * qtdBerçosPorUnidade;
                     
                     if (!totalBerçosPorGomos[gomos]) {
                         totalBerçosPorGomos[gomos] = 0;
                     }
                     totalBerçosPorGomos[gomos] += totalBerços;
-                    
-                    console.log(`   ✅ ${qtdBerçosPorUnidade}x berço de ${gomos} gomos → +${totalBerços} = ${totalBerçosPorGomos[gomos]} total`);
-                } else {
-                    console.log(`   ⚠️ Valores inválidos: qtd=${qtdBerçosPorUnidade}, gomos=${gomos}`);
                 }
-            } else {
-                console.log(`   ⚠️ Formato inválido: "${part}" → subPartes: [${subPartes.join(', ')}]`);
             }
         });
     }
     
+    // ============================================================
+    // 🔥 PROCESSAMENTO DOS ITENS - EXATAMENTE COMO NO CÓDIGO 01
+    // ============================================================
     let freteNome = 'Retirada na Loja';
     let freteValor = 0;
-    if (pedido.frete && pedido.frete.trim() !== '') {
-        freteNome = pedido.frete.trim();
-    }
+    
     if (pedido.observacoes) {
         const matchFrete = pedido.observacoes.match(/Frete:\s*([^|]+)/);
         if (matchFrete) {
@@ -4007,6 +4003,7 @@ function imprimirCupom(idPedido) {
             freteValor = parseFloat(matchValor[1].replace(',', '.')) || 0;
         }
     }
+    
     if (pedido.frete_valor) {
         freteValor = parseFloat(pedido.frete_valor) || 0;
     }
@@ -4030,50 +4027,137 @@ function imprimirCupom(idPedido) {
         }
     }
     
+    // ============================================================
+    // 🔥 BUSCA O CPF/CNPJ DO CLIENTE
+    // ============================================================
+    let documentoCliente = '';
+    let tipoDocumento = '';
+    
+    if (pedido.cliente_documento) {
+        documentoCliente = pedido.cliente_documento;
+    }
+    
+    if (!documentoCliente && pedido.cliente_email) {
+        const clienteEncontrado = dados.clientes.find(c => 
+            c.email && c.email.toLowerCase() === pedido.cliente_email.toLowerCase()
+        );
+        if (clienteEncontrado && clienteEncontrado.cpf) {
+            documentoCliente = clienteEncontrado.cpf;
+        }
+    }
+    
+    if (!documentoCliente && pedido.cliente_nome) {
+        const clienteEncontrado = dados.clientes.find(c => 
+            c.nome && c.nome.toLowerCase() === pedido.cliente_nome.toLowerCase()
+        );
+        if (clienteEncontrado && clienteEncontrado.cpf) {
+            documentoCliente = clienteEncontrado.cpf;
+        }
+    }
+    
+    if (documentoCliente) {
+        const docLimpo = documentoCliente.replace(/\D/g, '');
+        if (docLimpo.length === 11) {
+            documentoCliente = docLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            tipoDocumento = 'CPF';
+        } else if (docLimpo.length === 14) {
+            documentoCliente = docLimpo.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+            tipoDocumento = 'CNPJ';
+        } else if (docLimpo.length > 0) {
+            documentoCliente = docLimpo;
+            tipoDocumento = 'DOC';
+        }
+    }
+    
+    // ============================================================
+    // 🔥 PROCESSAMENTO DOS ITENS - EXATAMENTE COMO NO CÓDIGO 01
+    // ============================================================
     try {
         let itens = [];
         let textoItens = pedido.itens || '';
         
-        console.log('📝 Texto original dos itens:', textoItens);
+        console.log('📝 Texto original dos itens da planilha:', textoItens);
         
-        // ============================================================
-        // 🔥 VERIFICA SE OS ITENS SÃO UM ARRAY (SALVO COMO JSON)
-        // ============================================================
-        let itensArray = [];
-        let isJsonFormat = false;
-        
-        try {
-            if (typeof textoItens === 'string' && textoItens.trim().startsWith('[')) {
-                const parsed = JSON.parse(textoItens);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    itensArray = parsed;
-                    isJsonFormat = true;
-                    console.log('📦 Itens em formato JSON:', JSON.stringify(itensArray, null, 2));
-                }
+        if (typeof textoItens === 'string') {
+            let partes = [];
+            if (textoItens.includes(' | ')) {
+                partes = textoItens.split(' | ');
+            } else if (textoItens.includes('|')) {
+                partes = textoItens.split('|');
+            } else {
+                partes = [textoItens];
             }
-        } catch (e) {
-            console.log('⚠️ Não é JSON, tentando parsing manual');
-        }
-        
-        if (isJsonFormat && itensArray.length > 0) {
-            // ============================================================
-            // 🔥 PROCESSAMENTO DIRETO DOS ITENS DO PEDIDO (JSON)
-            // ============================================================
-            itensArray.forEach((item, index) => {
-                const nome = item.nome || 'Produto';
-                const qtdPacotes = parseInt(item.quantidade) || 1;
-                const preco = parseFloat(item.price) || 0;
-                const isProducao = item.isProducao || false;
-                const prazoProducao = parseInt(item.prazoProducao) || 0;
-                const tamanhoPacote = parseInt(item.pacote_tamanho) || 1;
-                const totalUnidades = qtdPacotes * tamanhoPacote;
-                const descricao = item.descricao || '';
-                const productId = item.productId || null;
+            
+            console.log('📝 Partes encontradas:', partes);
+            
+            partes.forEach(part => {
+                if (!part.trim()) return;
                 
-                console.log(`\n📦 Item ${index+1}: ${nome}`);
-                console.log(`   Quantidade: ${qtdPacotes} pacotes`);
-                console.log(`   Total de unidades: ${totalUnidades}`);
-                console.log(`   Descrição: "${descricao}"`);
+                let nomeLimpo = part.trim();
+                let isProducao = false;
+                let prazoProducao = 0;
+                
+                const partLower = part.toLowerCase();
+                if (partLower.includes('produção') || partLower.includes('producao')) {
+                    isProducao = true;
+                    const matchProd = part.match(/Produção\s*(\d*)\s*dias?/i);
+                    if (matchProd) {
+                        prazoProducao = parseInt(matchProd[1]) || 7;
+                    } else {
+                        prazoProducao = 7;
+                    }
+                    nomeLimpo = nomeLimpo.replace(/\(Produção\s*\d*\s*dias?\)/i, '');
+                    nomeLimpo = nomeLimpo.replace(/\(Produção\)/i, '');
+                }
+                
+                nomeLimpo = nomeLimpo.replace(/\(Disponível\)/i, '');
+                nomeLimpo = nomeLimpo.trim();
+                
+                let qtdPacotes = 1;
+                let tamanhoPacote = 1;
+                let totalUnidades = 1;
+                let preco = 0;
+                let nome = nomeLimpo;
+                
+                const matchPacote = nomeLimpo.match(/\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
+                if (matchPacote) {
+                    qtdPacotes = parseInt(matchPacote[1]) || 1;
+                    tamanhoPacote = parseInt(matchPacote[2]) || 1;
+                    totalUnidades = qtdPacotes * tamanhoPacote;
+                    preco = parseFloat(matchPacote[3].replace(',', '.')) || 0;
+                    
+                    nome = nomeLimpo.replace(/\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/, '');
+                    nome = nome.replace(/\(Disponível\)/i, '');
+                    nome = nome.trim();
+                    
+                    console.log(`✅ Item: ${nome} | ${qtdPacotes}x ${tamanhoPacote} un | R$ ${preco.toFixed(2)}`);
+                } else {
+                    const matchUnidade = nomeLimpo.match(/\((\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
+                    if (matchUnidade) {
+                        totalUnidades = parseInt(matchUnidade[1]) || 1;
+                        qtdPacotes = 1;
+                        tamanhoPacote = totalUnidades;
+                        preco = parseFloat(matchUnidade[2].replace(',', '.')) || 0;
+                        
+                        nome = nomeLimpo.replace(/\((\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/, '');
+                        nome = nome.replace(/\(Disponível\)/i, '');
+                        nome = nome.trim();
+                    } else {
+                        const matchPreco = nomeLimpo.match(/R\$\s*([\d,.]+)/);
+                        if (matchPreco) {
+                            preco = parseFloat(matchPreco[1].replace(',', '.')) || 0;
+                            nome = nomeLimpo.replace(/-\s*R\$\s*([\d,.]+)/, '');
+                            nome = nome.replace(/\(Disponível\)/i, '');
+                            nome = nome.trim();
+                        }
+                    }
+                }
+                
+                nome = nome.replace(/\(personalizado\)/i, '');
+                nome = nome.replace(/[🔄🔨✅📦💰]/g, '');
+                nome = nome.trim();
+                
+                if (!nome) nome = 'Produto';
                 
                 if (prazoProducao > maiorPrazoProducao) {
                     maiorPrazoProducao = prazoProducao;
@@ -4082,276 +4166,125 @@ function imprimirCupom(idPedido) {
                     isProducaoGeral = true;
                 }
                 
-                // ============================================================
-                // 🔥 EXTRAI E SOMA OS BERÇOS
-                // ============================================================
-                let produtoCompleto = null;
-                let descricaoParaBuscar = descricao;
-                
-                // Tenta pelo productId
-                if (productId) {
-                    produtoCompleto = dados.produtos.find(p => parseInt(p.id) === parseInt(productId));
-                    if (produtoCompleto) {
-                        console.log(`✅ Produto encontrado por ID: "${produtoCompleto.nome}"`);
-                        descricaoParaBuscar = produtoCompleto.descricao || descricao;
+                // 🔥 BUSCA O PRODUTO PARA EXTRAIR BERÇOS
+                let codigoProduto = '';
+                const produtoEncontrado = dados.produtos.find(p => 
+                    p.nome && p.nome.toLowerCase() === nome.toLowerCase()
+                );
+                if (produtoEncontrado) {
+                    codigoProduto = produtoEncontrado.codigo_produto || '';
+                    // 🔥 EXTRAI BERÇOS - PASSA O TOTAL DE UNIDADES
+                    if (produtoEncontrado.descricao) {
+                        extrairESomarBerços(produtoEncontrado.descricao, totalUnidades, nome);
                     }
                 }
                 
-                // Tenta pelo nome
-                if (!produtoCompleto) {
-                    const nomeLimpo = nome
-                        .replace(/\(Disponível\)/i, '')
-                        .replace(/\(Produção.*?\)/i, '')
-                        .replace(/\(personalizado\)/i, '')
-                        .trim();
-                    
-                    console.log(`   Buscando produto por nome: "${nomeLimpo}"`);
-                    
-                    produtoCompleto = dados.produtos.find(p => 
-                        p.nome && p.nome.toLowerCase() === nomeLimpo.toLowerCase()
-                    );
-                    
-                    if (!produtoCompleto) {
-                        produtoCompleto = dados.produtos.find(p => 
-                            p.nome && p.nome.toLowerCase().includes(nomeLimpo.toLowerCase())
-                        );
-                    }
-                    
-                    if (produtoCompleto) {
-                        console.log(`✅ Produto encontrado por nome: "${produtoCompleto.nome}"`);
-                        descricaoParaBuscar = produtoCompleto.descricao || descricao;
-                    }
-                }
-                
-                if (!produtoCompleto) {
-                    console.log(`⚠️ Produto NÃO encontrado para: "${nome}"`);
-                    console.log(`   Usando descrição do item: "${descricao}"`);
-                }
-                
-                // 🔥 EXTRAI OS BERÇOS
-                if (descricaoParaBuscar) {
-                    extrairESomarBerços(descricaoParaBuscar, qtdPacotes, nome);
-                } else {
-                    console.log(`⚠️ Sem descrição para extrair berços`);
-                }
-                
-                // ============================================================
-                // GERA O HTML DO ITEM
-                // ============================================================
-                let nomeFinal = nome;
-                nomeFinal = nomeFinal.replace(/\(Produção\s*\d*\s*dias?\)/i, '');
-                nomeFinal = nomeFinal.replace(/\(Produção\)/i, '');
-                nomeFinal = nomeFinal.replace(/\(Disponível\)/i, '');
-                nomeFinal = nomeFinal.trim();
-                if (!nomeFinal) nomeFinal = nome;
-                
-                const unitPrice = totalUnidades > 0 ? preco / totalUnidades : 0;
-                subtotal += preco;
-                
-                let statusEstoque = '';
-                if (isProducao && prazoProducao > 0) {
-                    statusEstoque = `🔨 ${prazoProducao} dias (Produção)`;
-                } else if (isProducao) {
-                    statusEstoque = '🔨 Produção';
-                } else {
-                    statusEstoque = '✅ Disponível';
-                }
-                
-                const qtdTexto = `${qtdPacotes}x ${tamanhoPacote} un (${totalUnidades} un)`;
-                
-                itensHtml += `
-                    <div style="display:flex;flex-direction:column;padding:2px 0;border-bottom:1px dotted #ccc;width:100%;max-width:100%;">
-                        <div style="display:flex;justify-content:space-between;width:100%;align-items:flex-start;">
-                            <div style="flex:1;min-width:0;padding-right:6px;">
-                                <span style="font-size:8.5px;font-weight:bold;color:#000;display:block;word-wrap:break-word;white-space:normal;line-height:1.3;">
-                                    ${index+1}. ${nomeFinal}
-                                </span>
-                                <span style="font-size:7px;color:#000;display:block;font-weight:bold;">${qtdTexto}</span>
-                            </div>
-                            <span style="font-size:8.5px;font-weight:bold;color:#000;flex-shrink:0;white-space:nowrap;">R$ ${preco.toFixed(2)}</span>
-                        </div>
-                        <div style="display:flex;justify-content:space-between;width:100%;font-size:7px;color:#000;margin-top:1px;flex-wrap:wrap;gap:2px 8px;">
-                            ${unitPrice > 0 ? `<span style="color:#000;">💰 Unit: R$ ${unitPrice.toFixed(2)}</span>` : ''}
-                            <span style="color:#000;font-weight:bold;">${statusEstoque}</span>
-                        </div>
-                    </div>
-                `;
-            });
-        } else {
-            // ============================================================
-            // 🔥 PROCESSAMENTO LEGADO (STRING COM ' | ')
-            // ============================================================
-            console.log('📝 Processando formato legado (string com | )');
-            
-            if (typeof textoItens === 'string' && textoItens.includes(' | ')) {
-                const partes = textoItens.split(' | ');
-                console.log('📝 Partes encontradas:', partes);
-                
-                partes.forEach((part, index) => {
-                    let isProducao = false;
-                    let prazoProducao = 0;
-                    let nomeLimpo = part;
-                    
-                    const partLower = part.toLowerCase();
-                    if (partLower.includes('produção') || partLower.includes('producao')) {
-                        isProducao = true;
-                        const matchProd = part.match(/Produção\s*(\d*)\s*dias?/i);
-                        if (matchProd) {
-                            prazoProducao = parseInt(matchProd[1]) || 7;
-                        } else {
-                            prazoProducao = 7;
-                        }
-                        nomeLimpo = nomeLimpo.replace(/\(Produção\s*\d*\s*dias?\)/i, '');
-                        nomeLimpo = nomeLimpo.replace(/\(Produção\)/i, '');
-                    }
-                    
-                    nomeLimpo = nomeLimpo.replace(/\(Disponível\)/i, '');
-                    nomeLimpo = nomeLimpo.replace(/\(\s*\)/g, '');
-                    nomeLimpo = nomeLimpo.trim();
-                    
-                    if (prazoProducao > maiorPrazoProducao) {
-                        maiorPrazoProducao = prazoProducao;
-                    }
-                    if (isProducao) {
-                        isProducaoGeral = true;
-                    }
-                    
-                    const matchPacote = nomeLimpo.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
-                    
-                    if (matchPacote) {
-                        const nome = matchPacote[1].trim();
-                        const qtdPacotes = parseInt(matchPacote[2]) || 1;
-                        const tamanhoPacote = parseInt(matchPacote[3]) || 1;
-                        const preco = parseFloat(matchPacote[4].replace(',', '.')) || 0;
-                        const totalUnidades = qtdPacotes * tamanhoPacote;
-                        
-                        let nomeFinal = nome;
-                        nomeFinal = nomeFinal.replace(/\(Produção\s*\d*\s*dias?\)/i, '');
-                        nomeFinal = nomeFinal.replace(/\(Produção\)/i, '');
-                        nomeFinal = nomeFinal.trim();
-                        if (!nomeFinal) nomeFinal = nome;
-                        
-                        // 🔥 EXTRAI E SOMA OS BERÇOS
-                        console.log(`\n🔍 Buscando berços para: "${nome}"`);
-                        const produtoEncontrado = dados.produtos.find(p => 
-                            p.nome && p.nome.toLowerCase() === nome.toLowerCase()
-                        );
-                        
-                        if (produtoEncontrado && produtoEncontrado.descricao) {
-                            console.log(`✅ Produto encontrado: "${produtoEncontrado.nome}"`);
-                            extrairESomarBerços(produtoEncontrado.descricao, qtdPacotes, nome);
-                        } else {
-                            console.log(`⚠️ Produto NÃO encontrado para: "${nome}"`);
-                        }
-                        
-                        const unitPrice = totalUnidades > 0 ? preco / totalUnidades : 0;
-                        subtotal += preco;
-                        
-                        let statusEstoque = '';
-                        if (isProducao && prazoProducao > 0) {
-                            statusEstoque = `🔨 ${prazoProducao} dias (Produção)`;
-                        } else if (isProducao) {
-                            statusEstoque = '🔨 Produção';
-                        } else {
-                            statusEstoque = '✅ Disponível';
-                        }
-                        
-                        const qtdTexto = `${qtdPacotes}x ${tamanhoPacote} un (${totalUnidades} un)`;
-                        
-                        itensHtml += `
-                            <div style="display:flex;flex-direction:column;padding:2px 0;border-bottom:1px dotted #ccc;width:100%;max-width:100%;">
-                                <div style="display:flex;justify-content:space-between;width:100%;align-items:flex-start;">
-                                    <div style="flex:1;min-width:0;padding-right:6px;">
-                                        <span style="font-size:8.5px;font-weight:bold;color:#000;display:block;word-wrap:break-word;white-space:normal;line-height:1.3;">
-                                            ${index+1}. ${nomeFinal}
-                                        </span>
-                                        <span style="font-size:7px;color:#000;display:block;font-weight:bold;">${qtdTexto}</span>
-                                    </div>
-                                    <span style="font-size:8.5px;font-weight:bold;color:#000;flex-shrink:0;white-space:nowrap;">R$ ${preco.toFixed(2)}</span>
-                                </div>
-                                <div style="display:flex;justify-content:space-between;width:100%;font-size:7px;color:#000;margin-top:1px;flex-wrap:wrap;gap:2px 8px;">
-                                    ${unitPrice > 0 ? `<span style="color:#000;">💰 Unit: R$ ${unitPrice.toFixed(2)}</span>` : ''}
-                                    <span style="color:#000;font-weight:bold;">${statusEstoque}</span>
-                                </div>
-                            </div>
-                        `;
-                    }
+                itens.push({
+                    nome: nome,
+                    codigo: codigoProduto,
+                    quantidade: qtdPacotes,
+                    pacote_tamanho: tamanhoPacote,
+                    totalUnidades: totalUnidades,
+                    price: preco,
+                    isProducao: isProducao,
+                    prazoProducao: prazoProducao,
+                    textoOriginal: part.trim()
                 });
-            }
-            
-            // Fallback
-            if (itensHtml === '' && textoItens) {
-                const preco = parseFloat(pedido.total) || 0;
-                subtotal = preco;
-                itensHtml = `
-                    <div style="display:flex;flex-direction:column;padding:2px 0;border-bottom:1px dotted #ccc;width:100%;">
-                        <div style="display:flex;justify-content:space-between;width:100%;">
-                            <span style="font-size:8.5px;font-weight:bold;color:#000;">${String(textoItens).substring(0, 40)}</span>
-                            <span style="font-size:8.5px;font-weight:bold;color:#000;">R$ ${preco.toFixed(2)}</span>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-        
-        // ============================================================
-        // 🔥 LOG FINAL DOS BERÇOS
-        // ============================================================
-        console.log('\n📦 TOTAL DE BERÇOS POR GOMOS:');
-        const gomosOrdenados = Object.keys(totalBerçosPorGomos).map(Number).sort((a, b) => a - b);
-        if (gomosOrdenados.length === 0) {
-            console.log('   Nenhum berço encontrado');
-        } else {
-            gomosOrdenados.forEach(gomos => {
-                console.log(`   Berço ${gomos} gomos: ${totalBerçosPorGomos[gomos]} unidades`);
             });
         }
         
+        if (itens.length === 0 && textoItens) {
+            const matchPreco = textoItens.match(/R\$\s*([\d,.]+)/);
+            const preco = matchPreco ? parseFloat(matchPreco[1].replace(',', '.')) : 0;
+            const isProducao = textoItens.toLowerCase().includes('produção') || textoItens.toLowerCase().includes('producao');
+            const prazoMatch = textoItens.match(/Produção\s*(\d*)\s*dias?/i);
+            const prazo = prazoMatch ? parseInt(prazoMatch[1]) : 7;
+            
+            itens = [{
+                nome: String(textoItens).substring(0, 40),
+                codigo: '',
+                quantidade: 1,
+                pacote_tamanho: 1,
+                totalUnidades: 1,
+                price: preco || parseFloat(pedido.total) || 0,
+                isProducao: isProducao,
+                prazoProducao: isProducao ? prazo : 0
+            }];
+        }
+        
+        if (itens.length === 0) {
+            itens = [{
+                nome: 'Produto',
+                codigo: '',
+                quantidade: 1,
+                pacote_tamanho: 1,
+                totalUnidades: 1,
+                price: parseFloat(pedido.total) || 0,
+                isProducao: false,
+                prazoProducao: 0
+            }];
+        }
+        
+        console.log('📦 Itens processados:', itens);
+        
         // ============================================================
-        // 🔥 ADICIONA OS BERÇOS AGREGADOS
+        // 🔧 GERA HTML DO CUPOM - EXATAMENTE COMO NO CÓDIGO 01
         // ============================================================
-        if (gomosOrdenados.length > 0) {
-            const totalItensExistentes = itensHtml.split('<div style="display:flex;flex-direction:column;padding:2px 0;border-bottom:1px dotted #ccc;width:100%;max-width:100%;">').length - 1;
-            let itemIndex = totalItensExistentes + 1;
+        itens.forEach((item, index) => {
+            const preco = parseFloat(item.price || 0);
+            const qtdPacotes = parseInt(item.quantidade || 1);
+            const tamanhoPacote = parseInt(item.pacote_tamanho || 1);
+            const totalUnidades = qtdPacotes * tamanhoPacote;
+            
+            const unitPrice = totalUnidades > 0 ? preco / totalUnidades : 0;
+            subtotal += preco;
+            
+            const isProducao = item.isProducao || false;
+            const prazoProducao = item.prazoProducao || 0;
+            
+            let statusEstoque = '';
+            if (isProducao && prazoProducao > 0) {
+                statusEstoque = `PRODUCAO ${prazoProducao} DIAS`;
+            } else if (isProducao) {
+                statusEstoque = 'PRODUCAO';
+            } else {
+                statusEstoque = 'DISPONIVEL';
+            }
+            
+            const nome = String(item.nome || 'Produto').trim();
+            const qtdTexto = `${qtdPacotes}x ${tamanhoPacote} un (${totalUnidades} un total)`;
+            const codigoExibicao = item.codigo ? `- Cod ${item.codigo}` : '';
             
             itensHtml += `
-                <div style="border-top:1px dashed #000;margin:3px 0;width:100%;"></div>
-            `;
-            
-            gomosOrdenados.forEach(gomos => {
-                const totalBerços = totalBerçosPorGomos[gomos];
-                const qtdTexto = `${totalBerços} unidades`;
-                
-                itensHtml += `
-                    <div style="display:flex;flex-direction:column;padding:2px 0;border-bottom:1px dotted #ccc;width:100%;max-width:100%;">
-                        <div style="display:flex;justify-content:space-between;width:100%;align-items:flex-start;">
-                            <div style="flex:1;min-width:0;padding-right:6px;">
-                                <span style="font-size:8.5px;font-weight:bold;color:#000;display:block;word-wrap:break-word;white-space:normal;line-height:1.3;">
-                                    ${itemIndex}. BERÇO ${gomos} GOMOS
-                                </span>
-                                <span style="font-size:7px;color:#000;display:block;font-weight:bold;">${qtdTexto}</span>
-                            </div>
-                            <span style="font-size:8.5px;font-weight:bold;color:#000;flex-shrink:0;white-space:nowrap;">R$ 0,00</span>
+                <div style="display:flex;flex-direction:column;padding:2px 0;border-bottom:1px dotted #000;width:100%;max-width:100%;">
+                    <div style="display:flex;justify-content:space-between;width:100%;align-items:flex-start;">
+                        <div style="flex:1;min-width:0;padding-right:6px;">
+                            <span style="font-size:9px;font-weight:bold;color:#000;display:block;word-wrap:break-word;white-space:normal;line-height:1.3;">
+                                ${index+1}. ${nome} ${codigoExibicao}
+                            </span>
+                            <span style="font-size:8px;font-weight:bold;color:#000;display:block;">
+                                ${qtdTexto}
+                            </span>
+                            <span style="font-size:7px;font-weight:bold;color:#000;display:block;">
+                                ${statusEstoque}
+                            </span>
                         </div>
-                        <div style="display:flex;justify-content:space-between;width:100%;font-size:7px;color:#000;margin-top:1px;flex-wrap:wrap;gap:2px 8px;">
-                            <span style="color:#000;">💰 Unit: R$ 0.00</span>
-                            <span style="color:#000;font-weight:bold;">⭐ CONFERIR</span>
-                        </div>
+                        <span style="font-size:9px;font-weight:bold;color:#000;flex-shrink:0;white-space:nowrap;">R$ ${preco.toFixed(2)}</span>
                     </div>
-                `;
-                itemIndex++;
-            });
-        }
+                    ${unitPrice > 0 ? `<div style="font-size:7px;font-weight:bold;color:#000;padding-top:1px;">UNIT: R$ ${unitPrice.toFixed(2)}</div>` : ''}
+                </div>
+            `;
+        });
         
     } catch (e) {
         console.error('❌ Erro ao processar itens:', e);
         itensHtml = `
-            <div style="display:flex;flex-direction:column;padding:2px 0;border-bottom:1px dotted #ccc;width:100%;">
+            <div style="display:flex;flex-direction:column;padding:2px 0;border-bottom:1px dotted #000;width:100%;">
                 <div style="display:flex;justify-content:space-between;width:100%;">
-                    <span style="font-size:8.5px;font-weight:bold;color:#000;">Pedido #${pedido.id_pedido}</span>
-                    <span style="font-size:8.5px;font-weight:bold;color:#000;">R$ ${(parseFloat(pedido.total) || 0).toFixed(2)}</span>
+                    <span style="font-size:9px;font-weight:bold;color:#000;">Pedido #${pedido.id_pedido}</span>
+                    <span style="font-size:9px;font-weight:bold;color:#000;">R$ ${(parseFloat(pedido.total) || 0).toFixed(2)}</span>
                 </div>
-                <div style="font-size:7.5px;color:#666;margin-top:1px;">
+                <div style="font-size:8px;font-weight:bold;color:#000;margin-top:1px;">
                     ${pedido.itens ? String(pedido.itens).substring(0, 60) : 'Detalhes do pedido'}
                 </div>
             </div>
@@ -4360,11 +4293,59 @@ function imprimirCupom(idPedido) {
         maiorPrazoProducao = 7;
     }
     
+    // ============================================================
+    // 🔥 ADICIONA OS BERÇOS AGREGADOS COMO ITENS SEPARADOS
+    // ============================================================
+    const gomosOrdenados = Object.keys(totalBerçosPorGomos).map(Number).sort((a, b) => a - b);
+    
+    if (gomosOrdenados.length > 0) {
+        const totalItensExistentes = itensHtml.split('<div style="display:flex;flex-direction:column;padding:2px 0;border-bottom:1px dotted #000;width:100%;max-width:100%;">').length - 1;
+        let itemIndex = totalItensExistentes + 1;
+        
+        itensHtml += `
+            <div style="border-top:1px dashed #000;margin:3px 0;width:100%;"></div>
+            <div style="font-size:7px;font-weight:bold;color:#000;text-align:center;padding:2px 0;background:#f5f5f5;width:100%;">
+                📦 BERÇOS PARA SEPARAÇÃO
+            </div>
+        `;
+        
+        gomosOrdenados.forEach(gomos => {
+            const totalBerços = totalBerçosPorGomos[gomos];
+            const qtdTexto = `${totalBerços} unidades`;
+            
+            itensHtml += `
+                <div style="display:flex;flex-direction:column;padding:2px 0;border-bottom:1px dotted #000;width:100%;max-width:100%;background:#fafffa;">
+                    <div style="display:flex;justify-content:space-between;width:100%;align-items:flex-start;">
+                        <div style="flex:1;min-width:0;padding-right:6px;">
+                            <span style="font-size:9px;font-weight:bold;color:#000;display:block;word-wrap:break-word;white-space:normal;line-height:1.3;">
+                                ${itemIndex}. 🧩 BERÇO ${gomos} GOMOS
+                            </span>
+                            <span style="font-size:8px;font-weight:bold;color:#000;display:block;">
+                                ${qtdTexto}
+                            </span>
+                            <span style="font-size:7px;font-weight:bold;color:#000;display:block;">
+                                ⭐ CONFERIR NA SEPARAÇÃO
+                            </span>
+                        </div>
+                        <span style="font-size:9px;font-weight:bold;color:#000;flex-shrink:0;white-space:nowrap;">R$ 0,00</span>
+                    </div>
+                    <div style="font-size:7px;font-weight:bold;color:#000;padding-top:1px;">UNIT: R$ 0.00</div>
+                </div>
+            `;
+            itemIndex++;
+        });
+    }
+    
+    // ============================================================
+    // 🔥 DADOS FINAIS - EXATAMENTE COMO NO CÓDIGO 01
+    // ============================================================
     let diasEnvio = 1;
     if (freteNome && freteNome !== 'Retirada na Loja' && freteNome !== 'Retirada') {
         diasEnvio = 3;
     }
+    
     let prazoTotal = diasEnvio + maiorPrazoProducao;
+    
     if (prazoEntrega > 0) {
         prazoTotal = prazoEntrega;
     }
@@ -4377,36 +4358,6 @@ function imprimirCupom(idPedido) {
     const telefone = pedido.cliente_telefone || '';
     const observacoes = pedido.observacoes || '';
     
-    let documentoCliente = '';
-    if (pedido.cliente_email) {
-        const clienteEncontrado = dados.clientes.find(c => 
-            c.email && c.email.toLowerCase() === pedido.cliente_email.toLowerCase()
-        );
-        if (clienteEncontrado) {
-            documentoCliente = clienteEncontrado.documento || clienteEncontrado.cpf || '';
-        }
-    }
-    if (!documentoCliente && pedido.cliente_nome) {
-        const clienteEncontrado = dados.clientes.find(c => 
-            c.nome && c.nome.toLowerCase() === pedido.cliente_nome.toLowerCase()
-        );
-        if (clienteEncontrado) {
-            documentoCliente = clienteEncontrado.documento || clienteEncontrado.cpf || '';
-        }
-    }
-    
-    let documentoFormatado = '';
-    if (documentoCliente) {
-        const docLimpo = String(documentoCliente).replace(/\D/g, '');
-        if (docLimpo.length === 11) {
-            documentoFormatado = docLimpo.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-        } else if (docLimpo.length === 14) {
-            documentoFormatado = docLimpo.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-        } else if (docLimpo.length > 0) {
-            documentoFormatado = docLimpo;
-        }
-    }
-    
     let obsLimpa = observacoes;
     if (obsLimpa) {
         obsLimpa = obsLimpa.replace(/Prazo:\s*undefined\s*dias/gi, '');
@@ -4417,28 +4368,34 @@ function imprimirCupom(idPedido) {
     
     const dataFormatada = data.replace('T', ' ').substring(0, 16);
     
+    // ============================================================
+    // 🔧 CUPOM - EXATAMENTE COMO NO CÓDIGO 01
+    // ============================================================
     printArea.innerHTML = `
         <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:4px;margin-bottom:4px;width:100%;">
-            <h2 style="font-size:12px;margin:0;letter-spacing:0.5px;font-weight:bold;color:#000;">MC EMBALAGENS BH</h2>
-            <p style="font-size:7px;margin:0.3px 0;color:#000;">Pç Santuário S Geraldo,46 - BH/MG</p>
-            <p style="font-size:7px;margin:0.3px 0;color:#000;">CEP:31050-650 | Tel:(31)3487-5905</p>
+            <h2 style="font-size:13px;margin:0;letter-spacing:0.5px;font-weight:bold;color:#000;">MC EMBALAGENS BH</h2>
+            <p style="font-size:8px;margin:0.3px 0;font-weight:bold;color:#000;">Pç Santuário S Geraldo,46 - BH/MG</p>
+            <p style="font-size:8px;margin:0.3px 0;font-weight:bold;color:#000;">CEP:31050-650 | Tel:(31)3487-5905</p>
             <div style="border-top:1px dashed #000;margin:2px 0;"></div>
-            <p style="font-size:8px;font-weight:bold;margin:0.3px 0;color:#000;">CUPOM NÃO FISCAL</p>
+            <p style="font-size:9px;font-weight:bold;margin:0.3px 0;color:#000;">CUPOM NAO FISCAL</p>
             
-            <div style="display:flex;justify-content:space-between;font-size:8.5px;font-weight:bold;padding:1.5px 0;width:100%;margin-top:2px;border-bottom:1px dotted #000;padding-bottom:2px;color:#000;">
+            <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:bold;padding:1.5px 0;width:100%;margin-top:2px;border-bottom:1px dotted #000;padding-bottom:2px;color:#000;">
                 <span>Pedido #${pedido.id_pedido}</span>
                 <span>${dataFormatada}</span>
             </div>
             
-            <div style="display:flex;justify-content:space-between;font-size:8.5px;font-weight:bold;padding:1.5px 0;width:100%;color:#000;">
+            <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:bold;padding:1.5px 0;width:100%;color:#000;">
                 <span>Cliente: ${cliente}</span>
             </div>
             
-            ${documentoFormatado ? `<div style="display:flex;justify-content:flex-start;font-size:7.5px;padding:0.5px 0;width:100%;color:#000;"><span>${documentoFormatado}</span></div>` : ''}
+            ${documentoCliente ? `
+            <div style="display:flex;justify-content:space-between;font-size:8px;font-weight:bold;padding:0.5px 0;width:100%;color:#000;">
+                <span>${tipoDocumento}: ${documentoCliente}</span>
+            </div>` : ''}
             
-            ${telefone ? `<div style="display:flex;justify-content:flex-start;font-size:7.5px;padding:0.5px 0;width:100%;color:#000;"><span>Telefone: ${telefone}</span></div>` : ''}
+            ${telefone ? `<div style="display:flex;justify-content:flex-start;font-size:8px;font-weight:bold;padding:0.5px 0;width:100%;color:#000;"><span>Telefone: ${telefone}</span></div>` : ''}
             
-            <div style="display:flex;justify-content:space-between;font-size:7.5px;padding:0.5px 0;width:100%;color:#000;">
+            <div style="display:flex;justify-content:space-between;font-size:8px;font-weight:bold;padding:0.5px 0;width:100%;color:#000;">
                 <span>Status: ${status}</span>
                 <span>Pagamento: ${pagamento}</span>
             </div>
@@ -4447,7 +4404,7 @@ function imprimirCupom(idPedido) {
         </div>
         
         <div style="margin:2px 0;">
-            <div style="font-weight:bold;border-bottom:2px solid #000;padding-bottom:1.5px;margin-bottom:3px;display:flex;justify-content:space-between;font-size:8.5px;width:100%;background:#f5f5f5;padding:2px 4px;color:#000;">
+            <div style="font-weight:bold;border-bottom:2px solid #000;padding-bottom:1.5px;margin-bottom:3px;display:flex;justify-content:space-between;font-size:9px;width:100%;background:#f5f5f5;padding:2px 4px;color:#000;">
                 <span>PRODUTOS</span>
                 <span>VALOR</span>
             </div>
@@ -4455,47 +4412,49 @@ function imprimirCupom(idPedido) {
         </div>
         
         <div style="margin-top:4px;border-top:2px solid #000;padding-top:3px;">
-            <div style="display:flex;justify-content:space-between;padding:1.5px 0;font-size:8px;width:100%;color:#000;">
+            <div style="display:flex;justify-content:space-between;padding:1.5px 0;font-size:9px;font-weight:bold;width:100%;color:#000;">
                 <span>Subtotal</span>
                 <span>R$ ${subtotal.toFixed(2)}</span>
             </div>
             
-            <div style="display:flex;justify-content:space-between;padding:1.5px 0;font-size:8px;width:100%;border-bottom:1px dotted #000;padding-bottom:2px;color:#000;">
-                <span style="font-weight:bold;">Frete: ${freteNome}</span>
-                <span style="font-weight:bold;">${freteValor === 0 ? 'Grátis' : 'R$ ' + freteValor.toFixed(2)}</span>
+            <div style="display:flex;justify-content:space-between;padding:1.5px 0;font-size:9px;font-weight:bold;width:100%;border-bottom:1px dotted #000;padding-bottom:2px;color:#000;">
+                <span>Frete: ${freteNome}</span>
+                <span>${freteValor === 0 ? 'Grátis' : 'R$ ' + freteValor.toFixed(2)}</span>
             </div>
             
-            <div style="display:flex;justify-content:space-between;padding:1px 0;font-size:7.5px;width:100%;background:#f5f5f5;padding:2px 4px;margin-top:1px;color:#000;">
-                <span>Prazo total: ${prazoTotal} dias úteis</span>
+            <div style="display:flex;justify-content:space-between;padding:1px 0;font-size:8px;font-weight:bold;width:100%;background:#f5f5f5;padding:2px 4px;margin-top:1px;color:#000;">
+                <span>Prazo total: ${prazoTotal} dias uteis</span>
             </div>
             
-            <div style="display:flex;justify-content:space-between;font-weight:bold;padding:3px 0;border-top:3px double #000;margin-top:2px;font-size:11px;width:100%;background:#f9f9f9;padding:3px 4px;color:#000;">
+            <div style="display:flex;justify-content:space-between;font-weight:bold;padding:3px 0;border-top:3px double #000;margin-top:2px;font-size:12px;width:100%;background:#f9f9f9;padding:3px 4px;color:#000;">
                 <span>TOTAL</span>
                 <span>R$ ${total.toFixed(2)}</span>
             </div>
         </div>
         
         <div style="margin:4px 0;border-top:1px dashed #000;padding-top:3px;">
-            <div style="font-size:7.5px;font-weight:bold;color:#000;margin-bottom:2px;">ENDEREÇO DE ENTREGA</div>
-            <div style="font-size:7px;padding:0.3px 0;width:100%;word-wrap:break-word;white-space:normal;line-height:1.4;color:#000;">
+            <div style="font-size:8px;font-weight:bold;color:#000;margin-bottom:2px;">ENDERECO DE ENTREGA</div>
+            <div style="font-size:8px;font-weight:bold;padding:0.3px 0;width:100%;word-wrap:break-word;white-space:normal;line-height:1.4;color:#000;">
                 ${endereco}
             </div>
             
             ${obsLimpa ? `
-            <div style="font-size:6.5px;padding:0.3px 0;width:100%;margin-top:2px;border-top:1px dotted #ccc;padding-top:2px;color:#666;">
+            <div style="font-size:7px;font-weight:bold;padding:0.3px 0;width:100%;margin-top:2px;border-top:1px dotted #000;padding-top:2px;color:#000;">
                 Obs: ${obsLimpa}
             </div>` : ''}
         </div>
         
-        <div style="text-align:center;border-top:2px solid #000;padding-top:3px;margin-top:3px;font-size:6.5px;width:100%;color:#000;">
-            <p style="margin:0.2px 0;font-weight:bold;">Obrigado pela preferência!</p>
-            <p style="margin:0.2px 0;">@mcembalagens.bh</p>
-            <p style="margin:0.2px 0;font-size:5.5px;color:#000;">Emissão: ${new Date().toLocaleString()}</p>
+        <div style="text-align:center;border-top:2px solid #000;padding-top:3px;margin-top:3px;font-size:7px;width:100%;">
+            <p style="margin:0.2px 0;font-weight:bold;color:#000;">Obrigado pela preferencia!</p>
+            <p style="margin:0.2px 0;font-weight:bold;color:#000;">@mcembalagens.bh</p>
+            <p style="margin:0.2px 0;font-size:6px;font-weight:bold;color:#000;">Emissao: ${new Date().toLocaleString()}</p>
         </div>
     `;
     
     printArea.style.display = 'block';
+    
     window.print();
+    
     setTimeout(() => {
         printArea.style.display = 'none';
     }, 1500);
@@ -6435,6 +6394,9 @@ function limparCarrinhoManual() {
     }
 }
 
+// ============================================================
+// VISUALIZAR PEDIDO MANUAL - COM FRETE E PRAZO CORRIGIDO
+// ============================================================
 function visualizarPedidoManual() {
     if (carrinhoManual.length === 0) {
         alert('⚠️ Adicione pelo menos um item ao pedido.');
@@ -6449,18 +6411,33 @@ function visualizarPedidoManual() {
     const clienteEndereco = document.getElementById('visClienteEndereco').value.trim();
     const pagamento = document.getElementById('visPagamento').value || 'À vista';
     
+    // 🔥 NOVO: PEGA FRETE, VALOR E PRAZO
+    const freteNome = document.getElementById('visFrete').value.trim() || 'Retirada na Loja';
+    const freteValor = parseFloat(document.getElementById('visFreteValor').value) || 0;
+    const fretePrazo = parseInt(document.getElementById('visFretePrazo').value) || 0;
+    
+    // 🔥 CALCULA O MAIOR PRAZO DE PRODUÇÃO
+    let maiorPrazoProducao = 0;
+    carrinhoManual.forEach(item => {
+        if (item.isProducao && item.prazoProducao > maiorPrazoProducao) {
+            maiorPrazoProducao = item.prazoProducao;
+        }
+    });
+    
+    // 🔥 CALCULA O PRAZO TOTAL (PRODUÇÃO + FRETE)
+    const prazoTotal = maiorPrazoProducao + fretePrazo;
+    
     // 🔥 VERIFICA SE TEM CLIENTE OU ESTÁ VAZIO
     const temCliente = clienteNome && clienteNome !== '' && clienteNome !== 'Cliente não identificado';
     
     const container = document.getElementById('visItensContainer');
-    let total = 0;
+    let subtotal = 0;
     let itensHtml = '';
     
     // 🔥 CABEÇALHO CONDICIONAL - MOSTRA CLIENTE OU "NÃO IDENTIFICADO"
     let dadosClienteHtml = '';
     
     if (temCliente) {
-        // 🔥 TEM CLIENTE SELECIONADO - MOSTRA TODOS OS DADOS
         dadosClienteHtml = `
             <div style="background:#f8f9fa;padding:10px;border-radius:6px;margin-bottom:10px;border:1px solid #e0e0e0;">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
@@ -6473,11 +6450,14 @@ function visualizarPedidoManual() {
                     <div><strong>CPF/CNPJ:</strong> ${clienteDocumento || '-'}</div>
                     <div style="grid-column:1/-1;"><strong>Endereço:</strong> ${clienteEndereco || '-'}</div>
                     <div><strong>Pagamento:</strong> ${pagamento}</div>
+                    <div><strong>Frete:</strong> ${freteNome}</div>
+                    <div><strong>Valor Frete:</strong> R$ ${freteValor.toFixed(2)}</div>
+                    ${fretePrazo > 0 ? `<div><strong>Prazo Frete:</strong> ${fretePrazo} dias</div>` : ''}
+                    ${prazoTotal > 0 ? `<div><strong>Prazo Total:</strong> ${prazoTotal} dias</div>` : ''}
                 </div>
             </div>
         `;
     } else {
-        // 🔥 SEM CLIENTE - MOSTRA "NÃO IDENTIFICADO"
         dadosClienteHtml = `
             <div style="background:#fff3cd;padding:10px;border-radius:6px;margin-bottom:10px;border:1px solid #f39c12;">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
@@ -6490,6 +6470,10 @@ function visualizarPedidoManual() {
                     <div><strong>CPF/CNPJ:</strong> -</div>
                     <div style="grid-column:1/-1;"><strong>Endereço:</strong> -</div>
                     <div><strong>Pagamento:</strong> ${pagamento}</div>
+                    <div><strong>Frete:</strong> ${freteNome}</div>
+                    <div><strong>Valor Frete:</strong> R$ ${freteValor.toFixed(2)}</div>
+                    ${fretePrazo > 0 ? `<div><strong>Prazo Frete:</strong> ${fretePrazo} dias</div>` : ''}
+                    ${prazoTotal > 0 ? `<div><strong>Prazo Total:</strong> ${prazoTotal} dias</div>` : ''}
                 </div>
             </div>
         `;
@@ -6499,8 +6483,8 @@ function visualizarPedidoManual() {
     // ITENS DO PEDIDO
     // ============================================================
     carrinhoManual.forEach(item => {
-        const subtotal = item.preco || 0;
-        total += subtotal;
+        const subtotalItem = item.preco || 0;
+        subtotal += subtotalItem;
         const nomeExibicao = item.isCustom ? `${item.nome} (personalizado)` : item.nome;
         const isProducao = item.isProducao || false;
         const prazo = isProducao ? item.prazoProducao : 0;
@@ -6509,15 +6493,47 @@ function visualizarPedidoManual() {
         itensHtml += `
             <div class="item-resumo">
                 <span>${nomeExibicao} <span style="font-size:10px;color:#888;">${statusLabel}</span></span>
-                <span>${item.quantidade}x R$ ${(item.precoUnitario || 0).toFixed(2)} = <strong>R$ ${subtotal.toFixed(2)}</strong></span>
+                <span>${item.quantidade}x R$ ${(item.precoUnitario || 0).toFixed(2)} = <strong>R$ ${subtotalItem.toFixed(2)}</strong></span>
             </div>
         `;
     });
     
     // ============================================================
+    // 🔥 CALCULA O TOTAL COM FRETE
+    // ============================================================
+    const total = subtotal + freteValor;
+    
+    // ============================================================
+    // 🔥 MOSTRA O RESUMO DO FRETE
+    // ============================================================
+    let freteHtml = '';
+    if (freteValor > 0 || freteNome !== 'Retirada na Loja') {
+        freteHtml = `
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dotted #ccc;font-size:13px;">
+                <span>Frete: ${freteNome}</span>
+                <span>R$ ${freteValor.toFixed(2)}</span>
+            </div>
+        `;
+    }
+    
+    // ============================================================
     // MONTA O CONTAINER COMPLETO
     // ============================================================
-    container.innerHTML = dadosClienteHtml + itensHtml;
+    container.innerHTML = `
+        ${dadosClienteHtml}
+        ${itensHtml}
+        ${freteHtml}
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-top:2px solid #eee;font-size:14px;font-weight:700;color:var(--primary-blue);">
+            <span>SUBTOTAL</span>
+            <span>R$ ${subtotal.toFixed(2)}</span>
+        </div>
+        ${fretePrazo > 0 ? `<div style="display:flex;justify-content:flex-end;font-size:12px;color:#888;padding:2px 0;">⏱️ Prazo do frete: ${fretePrazo} dias úteis</div>` : ''}
+        ${prazoTotal > 0 ? `<div style="display:flex;justify-content:flex-end;font-size:12px;color:#888;padding:2px 0;">📅 Prazo total (produção + frete): ${prazoTotal} dias úteis</div>` : ''}
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-top:2px solid var(--primary-blue);font-size:16px;font-weight:700;color:var(--primary-blue);">
+            <span>TOTAL COM FRETE</span>
+            <span>R$ ${total.toFixed(2)}</span>
+        </div>
+    `;
     
     document.getElementById('visTotalGeral').textContent = `R$ ${total.toFixed(2)}`;
     
@@ -6629,7 +6645,7 @@ function salvarVisualizacaoPedido() {
 }
 
 // ============================================================
-// FINALIZAR PEDIDO MANUAL - CORRIGIDO (COM TRATAMENTO CORS)
+// FINALIZAR PEDIDO MANUAL - COM FRETE E PRAZO CORRIGIDO
 // ============================================================
 async function finalizarPedidoManual() {
     if (carrinhoManual.length === 0) {
@@ -6646,12 +6662,30 @@ async function finalizarPedidoManual() {
     const pagamento = document.getElementById('visPagamento').value || 'À vista';
     const observacoesPedido = document.getElementById('visObs').value || '';
     
+    // 🔥 NOVO: PEGA FRETE, VALOR E PRAZO
+    const freteNome = document.getElementById('visFrete').value.trim() || 'Retirada na Loja';
+    const freteValor = parseFloat(document.getElementById('visFreteValor').value) || 0;
+    const fretePrazo = parseInt(document.getElementById('visFretePrazo').value) || 0;
+    
     // 🔥 SE NÃO TIVER CLIENTE, USA "Cliente não identificado"
     if (!clienteNome || clienteNome === '' || clienteNome === 'Cliente não identificado') {
         clienteNome = 'Cliente não identificado';
     }
     
-    const total = carrinhoManual.reduce((sum, item) => sum + (item.preco || 0), 0);
+    // 🔥 CALCULA O TOTAL DOS PRODUTOS
+    const subtotal = carrinhoManual.reduce((sum, item) => sum + (item.preco || 0), 0);
+    const total = subtotal + freteValor;
+    
+    // 🔥 CALCULA O MAIOR PRAZO DE PRODUÇÃO
+    let maiorPrazoProducao = 0;
+    carrinhoManual.forEach(item => {
+        if (item.isProducao && item.prazoProducao > maiorPrazoProducao) {
+            maiorPrazoProducao = item.prazoProducao;
+        }
+    });
+    
+    // 🔥 CALCULA O PRAZO TOTAL (PRODUÇÃO + FRETE)
+    const prazoTotal = maiorPrazoProducao + fretePrazo;
     
     if (total === 0) {
         if (!confirm(`⚠️ O valor total do pedido é R$ 0,00.\n\nDeseja continuar mesmo assim?\n\nIsso dará baixa no estoque sem custo.`)) {
@@ -6701,6 +6735,34 @@ async function finalizarPedidoManual() {
             };
         });
         
+        // 🔥 FORMATO DAS OBSERVAÇÕES IGUAL AO DO SITE
+        let observacoesFormatadas = `Pedido realizado manualmente pelo gestor.`;
+        
+        // Adiciona frete se houver
+        if (freteNome !== 'Retirada na Loja' || freteValor > 0) {
+            observacoesFormatadas += ` | Frete: ${freteNome}`;
+            if (freteValor > 0) {
+                observacoesFormatadas += ` (R$ ${freteValor.toFixed(2).replace('.', ',')})`;
+            }
+        } else {
+            observacoesFormatadas += ` | Frete: Retirada na Loja`;
+        }
+        
+        // Adiciona pagamento
+        observacoesFormatadas += ` | Pagamento: ${pagamento}`;
+        
+        // Adiciona prazo total
+        if (prazoTotal > 0) {
+            observacoesFormatadas += ` | Prazo: ${prazoTotal} dias`;
+        }
+        
+        // Adiciona observações extras do usuário
+        if (observacoesPedido.trim()) {
+            observacoesFormatadas += ` | ${observacoesPedido.trim()}`;
+        }
+        
+        console.log('📝 Observações formatadas:', observacoesFormatadas);
+        
         // 🔥 MONTA O PEDIDO COM TODOS OS DADOS
         const pedidoData = {
             id: novoId,
@@ -6710,10 +6772,11 @@ async function finalizarPedidoManual() {
             itens: itensPedido,
             total: total,
             endereco_entrega: clienteEndereco || 'Pedido manual - retirada na loja',
-            observacoes: 'Pedido realizado manualmente pelo gestor. ' + observacoesPedido,
-            frete: 'Retirada na Loja',
-            frete_valor: 0,
-            pagamento: pagamento || 'À vista',
+            observacoes: observacoesFormatadas,  // 🔥 OBSERVAÇÕES FORMATADAS
+            frete: freteNome,                    // 🔥 NOME DO FRETE
+            frete_valor: freteValor,             // 🔥 VALOR DO FRETE
+            prazo_entrega: prazoTotal,           // 🔥 PRAZO TOTAL (PRODUÇÃO + FRETE)
+            pagamento: pagamento,
             status: 'Pendente',
             data_pedido: new Date().toLocaleString('pt-BR', {
                 day: '2-digit',
@@ -6776,10 +6839,14 @@ async function finalizarPedidoManual() {
             '⚠️ Cliente não identificado' : 
             `👤 Cliente: ${clienteNome}`;
         
+        const mensagemFrete = freteValor > 0 ? `\n📦 Frete: ${freteNome} - R$ ${freteValor.toFixed(2)}` : '';
+        const mensagemPrazo = fretePrazo > 0 ? `\n⏱️ Prazo do frete: ${fretePrazo} dias úteis` : '';
+        const mensagemPrazoTotal = prazoTotal > 0 ? `\n📅 Prazo total: ${prazoTotal} dias úteis` : '';
+        
         if (total === 0) {
-            alert(`✅ Pedido #${novoId} criado com sucesso!\n\n📦 ESTOQUE BAIXADO: ${carrinhoManual.length} produto(s)\n💰 Valor: R$ 0,00\n${mensagemCliente}`);
+            alert(`✅ Pedido #${novoId} criado com sucesso!\n\n📦 ESTOQUE BAIXADO: ${carrinhoManual.length} produto(s)\n💰 Valor: R$ 0,00\n${mensagemCliente}${mensagemFrete}${mensagemPrazo}${mensagemPrazoTotal}`);
         } else {
-            alert(`✅ Pedido #${novoId} criado com sucesso!\nTotal: R$ ${total.toFixed(2)}\n${mensagemCliente}`);
+            alert(`✅ Pedido #${novoId} criado com sucesso!\n💰 Total: R$ ${total.toFixed(2)} (Produtos: R$ ${subtotal.toFixed(2)} + Frete: R$ ${freteValor.toFixed(2)})\n${mensagemCliente}${mensagemFrete}${mensagemPrazo}${mensagemPrazoTotal}`);
         }
         
         fecharModal('modalPedidoManual');
@@ -6795,7 +6862,7 @@ async function finalizarPedidoManual() {
 }
 
 // ============================================================
-// INICIALIZAR
+// INICIALIZAR AQUI TROQUEI A FUNÇÃO ACIMA PARA FRETE NO PEDIDO MANUAL
 // ============================================================
 carregarDados();
 
