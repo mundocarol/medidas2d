@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1764645147917874');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1764645147917874&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+    
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
@@ -2871,7 +2890,101 @@
     transform: scale(1.02);
 }
 
+/* ===== BOTÕES RÁPIDOS - ABAIXO DO BANNER ===== */
+.botoes-rapidos {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
 
+.botoes-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.btn-rapido {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 16px;
+    min-height: 60px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+/* Botões Cinza - ESTÁTICOS (sem clique) */
+.btn-cinza {
+    background: #e8ecf0;
+    color: #1a3a5c;
+    min-height: 60px;
+    cursor: default;
+    pointer-events: none;
+    /* Remove o pontilhado */
+    border: none;
+}
+
+/* Botão Laranja - Área do Revendedor (clicável) */
+.btn-laranja {
+    background: #f57c00;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-laranja:hover {
+    background: #e65100;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.btn-laranja i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+/* ===== RESPONSIVO - SEMPRE LADO A LADO ===== */
+@media (max-width: 768px) {
+    .botoes-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .btn-rapido {
+        padding: 14px 10px;
+        min-height: 50px;
+        font-size: 13px;
+    }
+    
+    .btn-laranja i {
+        font-size: 15px;
+        margin-right: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .botoes-container {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+    }
+    
+    .btn-rapido {
+        padding: 12px 6px;
+        min-height: 44px;
+        font-size: 11px;
+        border-radius: 8px;
+    }
+    
+    .btn-laranja i {
+        font-size: 13px;
+        margin-right: 4px;
+    }
+}
 
 
 
@@ -2956,6 +3069,30 @@
     <div class="controls" id="bannerDots"></div>
 </section>
 
+<!-- ===== BOTÕES RÁPIDOS ===== -->
+
+<!-- Substitua o <div> por <a> e adicione o link igual ao botão 3 -->
+<section class="botoes-rapidos">
+    <div class="botoes-container">
+        <!-- Botão 1 - CINZA ESTÁTICO (sem texto, sem clique) -->
+        <div class="btn-rapido btn-cinza" id="btnBotao1">
+            <!-- Sem texto por enquanto -->
+        </div>
+        
+        <!-- Botão 2 - CINZA ESTÁTICO (sem texto, sem clique) -->
+        <div class="btn-rapido btn-cinza" id="btnBotao2">
+            <!-- Sem texto por enquanto -->
+        </div>
+        
+        <!-- Botão 3 - LARANJA (Área do Revendedor) -->
+        <a href="https://mcembalagens.com.br/revenda" class="btn-rapido btn-laranja" target="_blank">
+            <i class="fas fa-store"></i> Área do Revendedor
+        </a>
+    </div>
+</section>
+
+
+
         <section class="categories-section" id="categoriesSection">
             <h2 class="section-title">Nossas Categorias</h2>
             <div class="categories-grid" id="categoriesGrid">
@@ -2968,19 +3105,72 @@
         </section>
 
         <!-- ===== VÍDEOS ===== -->
-        <section class="videos-section" id="videosSection">
-            <h2 class="section-title"> Tutoriais e Apresentações </h2>
-            <div class="videos-grid" id="videosGrid">
-                <div class="video-wrapper">
-                    <iframe 
-                        src="https://www.youtube-nocookie.com/embed/caJcK4Ja-po?rel=0&modestbranding=1&playsinline=1" 
-                        allowfullscreen 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        loading="lazy">
-                    </iframe>
-                </div>
-            </div>
-        </section>
+<section class="videos-section" id="videosSection">
+    <h2 class="section-title"> Tutoriais e Apresentações </h2>
+    <div class="videos-grid" id="videosGrid">
+        
+        <!-- VÍDEO 1 -->
+        <div class="video-wrapper">
+            <iframe 
+                src="https://www.youtube-nocookie.com/embed/caJcK4Ja-po?rel=0&modestbranding=1&playsinline=1" 
+                allowfullscreen 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                loading="lazy">
+            </iframe>
+        </div>
+        
+        <!-- VÍDEO 2 -->
+        <div class="video-wrapper">
+            <iframe 
+                src="https://www.youtube-nocookie.com/embed/pnSuGJEEsSE?rel=0&modestbranding=1&playsinline=1" 
+                allowfullscreen 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                loading="lazy">
+            </iframe>
+        </div>
+        
+        <!-- VÍDEO 3 -->
+        <div class="video-wrapper">
+            <iframe 
+                src="https://www.youtube-nocookie.com/embed/GgmS3TYyjA0?rel=0&modestbranding=1&playsinline=1" 
+                allowfullscreen 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                loading="lazy">
+            </iframe>
+        </div>
+        
+        <!-- VÍDEO 4 -->
+        <div class="video-wrapper">
+            <iframe 
+                src="https://www.youtube-nocookie.com/embed/dm_C8ZMCTVw?rel=0&modestbranding=1&playsinline=1" 
+                allowfullscreen 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                loading="lazy">
+            </iframe>
+        </div>
+
+        <!-- VÍDEO 5 -->
+        <div class="video-wrapper">
+            <iframe 
+                src="" 
+                allowfullscreen 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                loading="lazy">
+            </iframe>
+        </div>
+
+        <!-- VÍDEO 6 -->
+        <div class="video-wrapper">
+            <iframe 
+                src="" 
+                allowfullscreen 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                loading="lazy">
+            </iframe>
+        </div>
+        
+    </div>
+</section>
 
         <section class="products-section" id="productsSection" style="display: none;">
             <div class="products-header">
@@ -3029,11 +3219,11 @@
         <a class="side-menu-item" onclick="fecharMenu();abrirMeusPedidos();"><i class="fas fa-box"></i> Meus Pedidos</a>
         <a class="side-menu-item" onclick="fecharMenu();abrirAtendimento();"><i class="fas fa-headset"></i> Central de Atendimento</a>
         <a class="side-menu-item" onclick="fecharMenu();abrirWhatsApp();"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-        <a class="side-menu-item" href="politica-troca.html" target="_blank"><i class="fas fa-exchange-alt"></i> Política de Troca</a>
-        <a class="side-menu-item" href="politica-privacidade.html" target="_blank"><i class="fas fa-shield-alt"></i> Política de Privacidade</a>
-        <a class="side-menu-item" href="termos-envio.html" target="_blank"><i class="fas fa-truck"></i> Termos de Envio</a>
-        <a class="side-menu-item" href="sobre-nos.html" target="_blank"><i class="fas fa-info-circle"></i> Sobre Nós</a>
-        <a class="side-menu-item" href="sobre-prazos.html" target="_blank"><i class="fas fa-clock"></i> Sobre os Prazos</a>
+        <a class="side-menu-item" href="politica-troca.html"><i class="fas fa-exchange-alt"></i> Política de Troca</a>
+<a class="side-menu-item" href="politica-privacidade.html"><i class="fas fa-shield-alt"></i> Política de Privacidade</a>
+<a class="side-menu-item" href="termos-envio.html"><i class="fas fa-truck"></i> Termos de Envio</a>
+<a class="side-menu-item" href="sobre-nos.html"><i class="fas fa-info-circle"></i> Sobre Nós</a>
+<a class="side-menu-item" href="sobre-prazos.html"><i class="fas fa-clock"></i> Sobre os Prazos</a>
     </div>
 
     <!-- ============================================================ -->
@@ -3104,7 +3294,7 @@
                 <i class="fas fa-arrow-left"></i> Continuar Comprando
             </button>
             
-            <button class="btn-checkout" onclick="abrirCheckout()">Finalizar Pedido</button>
+            <button class="btn-checkout" onclick="fbq('track', 'Purchase'); abrirCheckout()">Finalizar Pedido</button>
         </div>
     </div>
 
@@ -3672,7 +3862,7 @@
         // ============================================================
         // CONFIGURAÇÃO DA API, WHATSAPP E PAGAR.ME
         // ============================================================
-        const API_URL = 'https://script.google.com/macros/s/AKfycbyUs5x6HG9tSJsVJBkQ98VdmlOJ56ZiWcbeTJbUur1I9yWvjEBPiBiFEEWO7kLjxb70nA/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbyYsK2yKe0lTfOHadXQOd9XTUMNAQRySrw4bgg6Zboc2hWS6-losCnZspwCTzII7QmNWg/exec';
         const WHATSAPP_NUMBER = '5531984834383';
         const PIX_KEY = 'mcembalagensbh@gmail.com';
 
@@ -4854,6 +5044,13 @@ function formatarOpcoesFrete(opcoes, isCheckout) {
 var tentativasFrete = 0;
 var maxTentativasFrete = 2;
 
+// ============================================================
+// CALCULAR FRETE NO CARRINHO - COM SIMULAÇÃO DE CLIQUE
+// ============================================================
+// Variável global para controlar tentativas
+var tentativasFrete = 0;
+var maxTentativasFrete = 2;
+
 async function calcularFreteCarrinho() {
     var cep = document.getElementById('cepCarrinho').value.trim();
     var erroEl = document.getElementById('freteErroCarrinho');
@@ -4940,9 +5137,7 @@ async function calcularFreteCarrinho() {
                 };
             });
             
-            // ============================================================
-            // 🔧 ÚNICA CORREÇÃO: ADICIONA A ENTREGA PRÓPRIA
-            // ============================================================
+            // ADICIONA A ENTREGA PRÓPRIA
             var cidade = obterCidadePorCep(cep);
             if (cidade) {
                 var totalPedido = 0;
@@ -4963,9 +5158,6 @@ async function calcularFreteCarrinho() {
                     });
                 }
             }
-            // ============================================================
-            // FIM DA CORREÇÃO
-            // ============================================================
             
             var opcoesFormatadas = formatarOpcoesFrete(opcoes, false);
             
@@ -4974,13 +5166,17 @@ async function calcularFreteCarrinho() {
             
             var sucessoDiv = document.createElement('div');
             sucessoDiv.className = 'frete-sucesso show';
-            sucessoDiv.textContent = '✅ Frete calculado com sucesso!';
+            sucessoDiv.textContent = '✅ Frete calculado com sucesso! Clique nas opções para simular.';
             resultadoEl.appendChild(sucessoDiv);
             
+            // EXIBE AS OPÇÕES DE FRETE COM CLIQUE PARA SIMULAR
             for (var i = 0; i < opcoesFormatadas.length; i++) {
                 var op = opcoesFormatadas[i];
                 var div = document.createElement('div');
                 div.className = 'opcao-frete';
+                div.style.cssText = 'cursor:pointer;transition:all 0.3s;padding:10px 12px;border-radius:6px;border:2px solid transparent;margin-bottom:4px;';
+                div.setAttribute('data-frete', JSON.stringify(op));
+                
                 var valorClass = op.valor === 0 ? 'frete-valor gratis' : 'frete-valor';
                 
                 var infoPrazos = '';
@@ -4993,22 +5189,49 @@ async function calcularFreteCarrinho() {
                 }
                 
                 div.innerHTML = `
-                    <div class="frete-info">
-                        <div class="frete-nome">${op.nome}</div>
-                        <div class="frete-prazo">${infoPrazos}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                        <div class="frete-info">
+                            <div class="frete-nome">${op.nome}</div>
+                            <div class="frete-prazo">${infoPrazos}</div>
+                        </div>
+                        <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : 'R$ ' + op.valor.toFixed(2)}</div>
                     </div>
-                    <div class="${valorClass}">${op.valor === 0 ? 'Grátis' : 'R$ ' + op.valor.toFixed(2)}</div>
                 `;
+                
+                // EVENTO DE CLIQUE PARA SIMULAR (NÃO SALVA NADA)
+                div.addEventListener('click', function(event) {
+                    // Remove seleção de todos
+                    var todasOpcoes = document.querySelectorAll('#freteResultadoCarrinho .opcao-frete');
+                    todasOpcoes.forEach(function(el) {
+                        el.style.borderColor = 'transparent';
+                        el.style.background = 'transparent';
+                    });
+                    
+                    // Destaca esta opção
+                    this.style.borderColor = '#1a3a5c';
+                    this.style.background = '#f0f8ff';
+                    
+                    // Pega os dados da opção
+                    var dados = JSON.parse(this.getAttribute('data-frete'));
+                    
+                    // SIMULAÇÃO: Mostra uma notificação
+                    mostrarNotificacao('📦 Simulando: ' + dados.nome + ' - ' + (dados.valor === 0 ? 'Grátis' : 'R$ ' + dados.valor.toFixed(2)), 'info');
+                    
+                    console.log('🖱️ Clique simulado no frete:', dados);
+                    
+                    // NÃO SALVA NADA - apenas simulação
+                });
+                
                 resultadoEl.appendChild(div);
             }
             
-            if (checkoutState && checkoutState.passo >= 2) {
-                checkoutState.opcoesFrete = opcoesFormatadas;
-                checkoutState.freteSelecionado = opcoesFormatadas[0] || null;
-                if (typeof atualizarResumoFinal === 'function') atualizarResumoFinal();
-            }
+            // Mensagem adicional informativa
+            var infoSimulacao = document.createElement('div');
+            infoSimulacao.style.cssText = 'margin-top:10px;padding:8px 12px;background:#e8f5e9;border-radius:6px;font-size:12px;color:#2e7d32;';
+            infoSimulacao.innerHTML = '<i class="fas fa-info-circle"></i> Clique nas opções para simular o frete. A seleção final será feita no checkout.';
+            resultadoEl.appendChild(infoSimulacao);
             
-            mostrarNotificacao('✅ Frete calculado com sucesso!', 'success');
+            mostrarNotificacao('✅ Frete calculado! Clique nas opções para simular.', 'success');
             
         } else {
             // FALHA - VERIFICA TENTATIVAS
@@ -5022,7 +5245,7 @@ async function calcularFreteCarrinho() {
                 avisoDiv.innerHTML = '<strong>⚠️ Falha persistente ao calcular o frete</strong><p style="margin:4px 0 0 0;font-size:13px;">Já tentamos ' + maxTentativasFrete + ' vezes. Entre em contato com nosso atendente.</p>';
                 resultadoEl.appendChild(avisoDiv);
                 
-                // Mostrar apenas Retirada na Loja
+                // Mostra apenas Retirada na Loja
                 var producaoDias = calcularPrazoProducao();
                 var prazoRetirada = 1 + producaoDias;
                 
@@ -7094,63 +7317,88 @@ function ajustarPacoteCarrinho(index, delta) {
 }
 
         // ============================================================
-        // MEUS PEDIDOS
-        // ============================================================
-        function abrirMeusPedidos() {
-            if (!usuarioLogado) {
-                mostrarNotificacao('🔐 Faça login para ver seus pedidos.', 'warning');
-                setTimeout(() => { abrirLogin(); }, 1000);
-                return;
-            }
+// ABRIR MEUS PEDIDOS - CORRIGIDO (SEM EMAIL/SENHA)
+// ============================================================
+// ============================================================
+// ABRIR MEUS PEDIDOS - CORRIGIDO (SEM EMAIL/SENHA)
+// ============================================================
+function abrirMeusPedidos() {
+    if (!usuarioLogado) {
+        mostrarNotificacao('🔐 Faça login para ver seus pedidos.', 'warning');
+        setTimeout(function() { abrirLogin(); }, 1000);
+        return;
+    }
+    
+    // CARREGA OS PEDIDOS
+    carregarPedidosCliente(usuarioLogado.email);
+    
+    // CRIA UM MODAL ESPECÍFICO PARA PEDIDOS (SEM CAMPOS DE LOGIN)
+    var modal = document.createElement('div');
+    modal.id = 'meusPedidosModal';
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    modal.style.zIndex = '3000';
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width:700px;max-height:90vh;overflow-y:auto;">
+            <span class="modal-close" onclick="fecharModal('meusPedidosModal')">&times;</span>
             
-            carregarPedidosCliente(usuarioLogado.email);
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+                <div style="background:var(--primary-blue);color:white;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div>
+                    <h2 style="color:var(--primary-dark);margin:0;font-size:20px;">Meus Pedidos</h2>
+                    <p style="color:#888;font-size:13px;margin:0;">Olá, ${usuarioLogado.nome || 'Cliente'}!</p>
+                </div>
+            </div>
             
-            const modal = document.getElementById('loginModal');
-            
-            const loginTabs = document.querySelector('.login-tabs');
-            if (loginTabs) loginTabs.style.display = 'none';
-            
-            const panelLogin = document.getElementById('panelLogin');
-            if (panelLogin) panelLogin.classList.add('active');
-            
-            const panelCadastro = document.getElementById('panelCadastro');
-            if (panelCadastro) panelCadastro.classList.remove('active');
-            
-            const pedidosLogado = document.getElementById('pedidosLogado');
-            if (pedidosLogado) {
-                pedidosLogado.style.display = 'block';
-            }
-            
-            const titulo = document.getElementById('loginPedidosTitulo');
-            if (titulo) titulo.textContent = '📦 Meus Pedidos';
-            
-            if (modal) modal.style.display = 'block';
-        }
+            <div id="listaPedidosContainer" style="max-height:500px;overflow-y:auto;">
+                <div style="text-align:center;padding:30px;color:#999;">
+                    <i class="fas fa-spinner fa-spin" style="font-size:24px;display:block;margin-bottom:10px;"></i>
+                    Carregando pedidos...
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // CARREGA OS PEDIDOS DENTRO DO MODAL
+    carregarPedidosClienteModal(usuarioLogado.email);
+}
 
-     async function carregarPedidosCliente(email) {
+
+// ============================================================
+// CARREGAR PEDIDOS NO MODAL (SEM LOGIN)
+// ============================================================
+async function carregarPedidosClienteModal(email) {
     try {
-        console.log('🔍 Buscando pedidos para:', email);
-        const response = await fetch(API_URL);
-        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
-        const data = await response.json();
-        const pedidos = data.pedidos || [];
+        var container = document.getElementById('listaPedidosContainer');
+        if (!container) return;
         
-        const pedidosCliente = pedidos.filter(p => {
-            const pEmail = String(p.cliente_email || '').toLowerCase().trim();
+        var response = await fetch(API_URL);
+        if (!response.ok) throw new Error('Erro HTTP: ' + response.status);
+        
+        var data = await response.json();
+        var pedidos = data.pedidos || [];
+        
+        var pedidosCliente = pedidos.filter(function(p) {
+            var pEmail = String(p.cliente_email || '').toLowerCase().trim();
             return pEmail === email.toLowerCase().trim();
         });
         
         // FILTRO DE 60 DIAS
-        const hoje = new Date();
-        const sessentaDiasAtras = new Date();
+        var hoje = new Date();
+        var sessentaDiasAtras = new Date();
         sessentaDiasAtras.setDate(hoje.getDate() - 60);
         
-        const pedidosFiltrados = pedidosCliente.filter(p => {
+        var pedidosFiltrados = pedidosCliente.filter(function(p) {
             if (!p.data_pedido) return true;
             try {
-                let dataPedido;
+                var dataPedido;
                 if (p.data_pedido.includes('/')) {
-                    const partes = p.data_pedido.split(',')[0].trim().split('/');
+                    var partes = p.data_pedido.split(',')[0].trim().split('/');
                     if (partes.length === 3) {
                         dataPedido = new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
                     }
@@ -7164,17 +7412,155 @@ function ajustarPacoteCarrinho(index, delta) {
             }
         });
         
-        pedidosFiltrados.sort((a, b) => {
-            const idA = parseInt(a.id_pedido) || 0;
-            const idB = parseInt(b.id_pedido) || 0;
+        pedidosFiltrados.sort(function(a, b) {
+            var idA = parseInt(a.id_pedido) || 0;
+            var idB = parseInt(b.id_pedido) || 0;
             return idB - idA;
         });
         
-        const container = document.getElementById('listaPedidosLogado');
+        if (pedidosFiltrados.length === 0) {
+            container.innerHTML = `
+                <div class="login-pedido-vazio" style="text-align:center;padding:40px 20px;color:#999;">
+                    <i class="fas fa-box-open" style="font-size:48px;color:#ddd;display:block;margin-bottom:12px;"></i>
+                    <p style="font-size:16px;font-weight:600;color:#666;">Nenhum pedido encontrado</p>
+                    <span style="font-size:13px;color:#aaa;">Você ainda não tem pedidos nos últimos 60 dias.</span>
+                </div>
+            `;
+            return;
+        }
         
-        let avisoHtml = '';
+        var html = '';
+        pedidosFiltrados.forEach(function(p) {
+            // CORREÇÃO: TROCA "Pendente" por "Pedido efetuado com sucesso"
+            var statusExibido = p.status || 'Pendente';
+            if (statusExibido.toLowerCase() === 'pendente') {
+                statusExibido = 'Pedido efetuado com sucesso';
+            }
+            
+            var statusColor = {
+                'pendente': '#27ae60',
+                'em andamento': '#3498db',
+                'enviado': '#2ecc71',
+                'entregue': '#27ae60',
+                'cancelado': '#e74c3c'
+            }[p.status?.toLowerCase()] || '#888';
+            
+            var dataExibicao = p.data_pedido || '';
+            if (dataExibicao.includes('T')) {
+                dataExibicao = dataExibicao.replace('T', ' ').substring(0, 16);
+            }
+            
+            // CONTA ITENS
+            var itensCount = 1;
+            try {
+                var textoItens = p.itens || '';
+                if (typeof textoItens === 'string' && textoItens.includes(' | ')) {
+                    itensCount = textoItens.split(' | ').length;
+                }
+            } catch (e) {}
+            
+            html += `
+                <div class="login-pedido-item" style="
+                    cursor:pointer;
+                    transition:all 0.3s;
+                    border-radius:8px;
+                    padding:12px 14px;
+                    border:1px solid #f0f0f0;
+                    margin-bottom:8px;
+                    background:white;
+                " onclick="verDetalhesPedido(${p.id_pedido})"
+                onmouseover="this.style.background='#f8f9fa';this.style.borderColor='#1a3a5c';"
+                onmouseout="this.style.background='white';this.style.borderColor='#f0f0f0';">
+                    <div class="pedido-info" style="flex:1;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+                            <div>
+                                <span class="numero" style="font-weight:600;color:var(--primary-dark);font-size:15px;">#${p.id_pedido}</span>
+                                <span class="data" style="font-size:12px;color:#888;margin-left:8px;">${dataExibicao}</span>
+                            </div>
+                            <span style="background:${statusColor};color:white;padding:2px 12px;border-radius:12px;font-size:11px;font-weight:600;">
+                                ${statusExibido}
+                            </span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-top:4px;">
+                            <span style="font-size:13px;color:#888;">${itensCount} itens</span>
+                            <span class="total" style="font-weight:700;color:var(--primary-blue);font-size:15px;">R$ ${parseFloat(p.total || 0).toFixed(2)}</span>
+                        </div>
+                        <div style="font-size:11px;color:#aaa;margin-top:4px;">
+                            <i class="fas fa-chevron-right"></i> Clique para ver detalhes
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar pedidos:', error);
+        var container = document.getElementById('listaPedidosContainer');
+        if (container) {
+            container.innerHTML = `
+                <div style="text-align:center;padding:30px;color:#e74c3c;">
+                    <i class="fas fa-exclamation-circle" style="font-size:32px;display:block;margin-bottom:10px;"></i>
+                    <p>Erro ao carregar pedidos.</p>
+                    <p style="font-size:12px;color:#888;">Tente novamente mais tarde.</p>
+                </div>
+            `;
+        }
+    }
+}
+
+    // ============================================================
+// CARREGAR PEDIDOS DO CLIENTE - CORRIGIDO
+// ============================================================
+async function carregarPedidosCliente(email) {
+    try {
+        console.log('🔍 Buscando pedidos para:', email);
+        var response = await fetch(API_URL);
+        if (!response.ok) throw new Error('Erro HTTP: ' + response.status);
+        var data = await response.json();
+        var pedidos = data.pedidos || [];
+        
+        var pedidosCliente = pedidos.filter(function(p) {
+            var pEmail = String(p.cliente_email || '').toLowerCase().trim();
+            return pEmail === email.toLowerCase().trim();
+        });
+        
+        // FILTRO DE 60 DIAS
+        var hoje = new Date();
+        var sessentaDiasAtras = new Date();
+        sessentaDiasAtras.setDate(hoje.getDate() - 60);
+        
+        var pedidosFiltrados = pedidosCliente.filter(function(p) {
+            if (!p.data_pedido) return true;
+            try {
+                var dataPedido;
+                if (p.data_pedido.includes('/')) {
+                    var partes = p.data_pedido.split(',')[0].trim().split('/');
+                    if (partes.length === 3) {
+                        dataPedido = new Date(parseInt(partes[2]), parseInt(partes[1]) - 1, parseInt(partes[0]));
+                    }
+                } else {
+                    dataPedido = new Date(p.data_pedido);
+                }
+                if (isNaN(dataPedido.getTime())) return true;
+                return dataPedido >= sessentaDiasAtras;
+            } catch (e) {
+                return true;
+            }
+        });
+        
+        pedidosFiltrados.sort(function(a, b) {
+            var idA = parseInt(a.id_pedido) || 0;
+            var idB = parseInt(b.id_pedido) || 0;
+            return idB - idA;
+        });
+        
+        var container = document.getElementById('listaPedidosLogado');
+        
+        var avisoHtml = '';
         if (pedidosCliente.length > pedidosFiltrados.length) {
-            const removidos = pedidosCliente.length - pedidosFiltrados.length;
+            var removidos = pedidosCliente.length - pedidosFiltrados.length;
             avisoHtml = `
                 <div style="background:#fff3cd;padding:10px 14px;border-radius:8px;margin-bottom:12px;border-left:4px solid #f39c12;font-size:13px;color:#856404;">
                     <i class="fas fa-info-circle"></i> 
@@ -7195,8 +7581,16 @@ function ajustarPacoteCarrinho(index, delta) {
             `;
         } else {
             container.innerHTML = avisoHtml + pedidosFiltrados.map(function(p) {
+                // ============================================================
+                // 🔧 CORREÇÃO: TROCA "Pendente" por "Pedido efetuado com sucesso"
+                // ============================================================
+                var statusExibido = p.status || 'Pendente';
+                if (statusExibido.toLowerCase() === 'pendente') {
+                    statusExibido = 'Pedido efetuado com sucesso';
+                }
+                
                 var statusColor = {
-                    'pendente': '#f39c12',
+                    'pendente': '#27ae60',
                     'em andamento': '#3498db',
                     'enviado': '#2ecc71',
                     'entregue': '#27ae60',
@@ -7208,17 +7602,11 @@ function ajustarPacoteCarrinho(index, delta) {
                 
                 try {
                     var textoItens = p.itens || '';
-                    console.log('📝 Processando itens do pedido #' + p.id_pedido + ':', textoItens);
-                    
-                    // ============================================================
-                    // 🔧 EXTRAI OS ITENS DIRETAMENTE DO TEXTO DA PLANILHA
-                    // ============================================================
                     if (typeof textoItens === 'string' && textoItens.includes(' | ')) {
                         var partes = textoItens.split(' | ');
                         itensCount = partes.length;
                         
                         var itensProcessados = partes.map(function(part) {
-                            // Extrai nome, quantidade e preço
                             var match = part.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
                             if (match) {
                                 var nomeCompleto = match[1].trim();
@@ -7227,9 +7615,6 @@ function ajustarPacoteCarrinho(index, delta) {
                                 var preco = parseFloat(match[4].replace(',', '.')) || 0;
                                 var totalUnidades = qtd * pacote;
                                 
-                                // ============================================================
-                                // 🔧 VERIFICA SE É PRODUÇÃO PELO NOME
-                                // ============================================================
                                 var statusTag = '';
                                 if (nomeCompleto.includes('Produção')) {
                                     var prazoMatch = nomeCompleto.match(/Produção\s*(\d*)\s*dias?/);
@@ -7239,7 +7624,6 @@ function ajustarPacoteCarrinho(index, delta) {
                                     statusTag = ' ✅ Disponível';
                                 }
                                 
-                                // Remove o status do nome para não duplicar
                                 var nomeLimpo = nomeCompleto;
                                 nomeLimpo = nomeLimpo.replace(/\(Produção\s*\d*\s*dias?\)/g, '');
                                 nomeLimpo = nomeLimpo.replace(/\(Produção\)/g, '');
@@ -7253,7 +7637,6 @@ function ajustarPacoteCarrinho(index, delta) {
                         });
                         
                         itensHtml = itensProcessados.join('%0A');
-                        console.log('📦 Itens processados:', itensHtml);
                     } else {
                         itensHtml = textoItens || 'Itens não disponíveis';
                         itensCount = 1;
@@ -7281,7 +7664,7 @@ function ajustarPacoteCarrinho(index, delta) {
                                     <span class="data" style="font-size:12px;color:#888;margin-left:8px;">${dataExibicao}</span>
                                 </div>
                                 <span style="background:${statusColor};color:white;padding:2px 12px;border-radius:12px;font-size:11px;font-weight:600;">
-                                    ${p.status || 'Pendente'}
+                                    ${statusExibido}
                                 </span>
                             </div>
                             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-top:4px;">
@@ -7371,6 +7754,9 @@ function ajustarPacoteCarrinho(index, delta) {
  // ============================================================
 // MOSTRAR DETALHES DO PEDIDO - CORRIGIDO (RASTREIO)
 // ============================================================
+// ============================================================
+// MOSTRAR DETALHES DO PEDIDO - CORRIGIDO
+// ============================================================
 function mostrarDetalhesPedido(pedido) {
     var modalAntigo = document.getElementById('detalhesPedidoModal');
     if (modalAntigo) modalAntigo.remove();
@@ -7394,6 +7780,15 @@ function mostrarDetalhesPedido(pedido) {
     // ============================================================
     var idPedido = pedidoObj?.id_pedido || '???';
     var status = pedidoObj?.status || 'Pendente';
+    
+    // ============================================================
+    // 🔧 CORREÇÃO: TROCA "Pendente" por "Pedido efetuado com sucesso"
+    // ============================================================
+    var statusExibido = status;
+    if (statusExibido.toLowerCase() === 'pendente') {
+        statusExibido = 'Pedido efetuado com sucesso';
+    }
+    
     var total = parseFloat(pedidoObj?.total || 0) || 0;
     var data = pedidoObj?.data_pedido || '';
     var clienteNome = pedidoObj?.cliente_nome || 'Não identificado';
@@ -7403,10 +7798,8 @@ function mostrarDetalhesPedido(pedido) {
     var dataFormatada = data.replace('T', ' ').substring(0, 16);
     
     // ============================================================
-    // 🔧 EXTRAIR TUDO DAS OBSERVAÇÕES (CORRIGIDO)
+    // EXTRAIR FRETE
     // ============================================================
-    
-    // 1. EXTRAIR FRETE
     var freteNome = 'Retirada na Loja';
     var freteValor = 0;
     var freteMatch = observacoes.match(/Frete:\s*([^(]+?)\s*\(R\$\s*([\d,.]+)\)/i);
@@ -7415,14 +7808,18 @@ function mostrarDetalhesPedido(pedido) {
         freteValor = parseFloat(freteMatch[2].replace(',', '.')) || 0;
     }
     
-    // 2. EXTRAIR PAGAMENTO
+    // ============================================================
+    // EXTRAIR PAGAMENTO
+    // ============================================================
     var pagamento = 'Não informado';
     var pagamentoMatch = observacoes.match(/Pagamento:\s*([^|]+)/i);
     if (pagamentoMatch) {
         pagamento = pagamentoMatch[1].trim();
     }
     
-    // 3. EXTRAIR PRAZO
+    // ============================================================
+    // EXTRAIR PRAZO
+    // ============================================================
     var prazoEntrega = 0;
     var prazoMatch = observacoes.match(/Prazo:\s*(\d+)\s*dias?/i);
     if (prazoMatch) {
@@ -7430,40 +7827,28 @@ function mostrarDetalhesPedido(pedido) {
     }
     
     // ============================================================
-    // 🔧 EXTRAIR CÓDIGO DE RASTREIO (CORRIGIDO)
+    // EXTRAIR CÓDIGO DE RASTREIO
     // ============================================================
     var codigoRastreio = 'Não informado';
     var observacoesLimpa = observacoes;
     
-    // Tenta vários formatos de rastreio
     var rastreioMatch = observacoes.match(/\|\s*Rastreio:\s*([A-Za-z0-9]+)/i);
     if (!rastreioMatch) {
-        // Tenta sem o "Rastreio:"
         rastreioMatch = observacoes.match(/\|\s*([A-Za-z0-9]{8,})/i);
     }
     if (!rastreioMatch) {
-        // Tenta formato BR123456789AR
         rastreioMatch = observacoes.match(/\b([A-Z]{2}\d{9,12}[A-Z]{2})\b/i);
     }
     if (!rastreioMatch) {
-        // Tenta qualquer código alfanumérico com mais de 6 caracteres
         rastreioMatch = observacoes.match(/\b([A-Za-z0-9]{6,})\b/);
     }
     
     if (rastreioMatch) {
         codigoRastreio = rastreioMatch[1].toUpperCase();
-        // Remove o rastreio das observações para não duplicar
         observacoesLimpa = observacoesLimpa.replace(rastreioMatch[0], '').trim();
         observacoesLimpa = observacoesLimpa.replace(/\s*\|\s*$/, '').trim();
         observacoesLimpa = observacoesLimpa.replace(/^\s*\|\s*/, '').trim();
     }
-    
-    console.log('📊 Dados extraídos das observações:');
-    console.log('  Frete:', freteNome, 'R$', freteValor);
-    console.log('  Pagamento:', pagamento);
-    console.log('  Prazo:', prazoEntrega);
-    console.log('  Rastreio:', codigoRastreio);
-    console.log('  Observações limpas:', observacoesLimpa);
     
     // ============================================================
     // STATUS E CORES
@@ -7472,14 +7857,14 @@ function mostrarDetalhesPedido(pedido) {
     var isCancelado = statusLower === 'cancelado';
     var isPendente = statusLower === 'pendente' || statusLower === 'pending' || statusLower === '';
     
-    var statusColors = {
-        'pendente': '#f39c12',
+    // COR VERDE PARA "Pedido efetuado com sucesso"
+    var statusColor = {
+        'pendente': '#27ae60',
         'em andamento': '#3498db',
         'enviado': '#2ecc71',
         'entregue': '#27ae60',
         'cancelado': '#e74c3c'
-    };
-    var statusColor = statusColors[statusLower] || '#888';
+    }[statusLower] || '#888';
     
     // ============================================================
     // STATUS DO PAGAMENTO
@@ -7491,27 +7876,19 @@ function mostrarDetalhesPedido(pedido) {
     // PROCESSAR ITENS DA PLANILHA
     // ============================================================
     var itensHtml = '';
-    var totalItens = 0;
     var totalProdutos = 0;
+    var totalItens = 0;
     
     try {
-        console.log('📝 Processando itens do pedido #' + idPedido + ':', itensTexto);
-        
         var itens = [];
         
-        // ============================================================
-        // EXTRAIR ITENS DO TEXTO DA PLANILHA
-        // ============================================================
         if (typeof itensTexto === 'string' && itensTexto.includes(' | ')) {
             var partes = itensTexto.split(' | ');
             partes.forEach(function(part) {
-                // 🔧 CORREÇÃO: Extrai (1x 50 un) ou (1x 100 un) etc
                 var match = part.match(/^(.+?)\s*\((\d+)x\s*(\d+)\s*un\)\s*-\s*R\$\s*([\d,.]+)/);
-                
                 if (!match) {
                     match = part.match(/^(.+?)\s*\((\d+)x\s*(\d+)\)\s*-\s*R\$\s*([\d,.]+)/);
                 }
-                
                 if (match) {
                     var nomeCompleto = match[1].trim();
                     var qtdPacotes = parseInt(match[2]) || 1;
@@ -7604,9 +7981,6 @@ function mostrarDetalhesPedido(pedido) {
             });
         }
         
-        // ============================================================
-        // MONTAR HTML DOS ITENS
-        // ============================================================
         totalItens = itens.length;
         itens.forEach(function(item, index) {
             var preco = parseFloat(item.price) || 0;
@@ -7806,7 +8180,7 @@ function mostrarDetalhesPedido(pedido) {
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;flex-wrap:wrap;gap:8px;">
                 <h2 style="color:var(--primary-dark);margin:0;font-size:20px;">📦 Pedido #${idPedido}</h2>
                 <span style="background:${statusColor};color:white;padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;">
-                    ${status.toUpperCase()}
+                    ${statusExibido}
                 </span>
             </div>
             
