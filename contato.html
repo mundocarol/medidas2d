@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Entre em contato com a MC Embalagens BH. WhatsApp, telefone, e-mail, endereço e horários de funcionamento.">
+    <title>Contato - MC Embalagens BH</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary-blue: #1a3a5c;
+            --primary-dark: #0d1b2a;
+            --secondary-blue: #2a5a8c;
+            --success: #27ae60;
+            --whatsapp: #25D366;
+            --whatsapp-dark: #1da851;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f5f7fa;
+            color: #1a1a1a;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        /* ===== HEADER ===== */
+        .header-contato {
+            text-align: center;
+            margin-bottom: 35px;
+            padding-bottom: 25px;
+            border-bottom: 3px solid var(--primary-blue);
+        }
+
+        .header-contato .icon-top {
+            width: 70px;
+            height: 70px;
+            background: var(--primary-blue);
+            color: white;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 15px;
+            box-shadow: 0 6px 20px rgba(26,58,92,0.25);
+        }
+
+        .header-contato h1 {
+            color: var(--primary-blue);
+            font-size: 32px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header-contato p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* ===== BOTÃO VOLTAR ===== */
+        .voltar {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .voltar:hover {
+            background: #f0f4f8;
+            transform: translateX(-3px);
+        }
+
+        /* ===== GRID DE CONTATOS ===== */
+        .contatos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .contato-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 22px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            transition: all 0.3s;
+            border: 1px solid #eef1f4;
+        }
+
+        .contato-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            border-color: #dde4eb;
+        }
+
+        .contato-card .icone {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .icone.whatsapp { background: var(--whatsapp); }
+        .icone.telefone { background: var(--primary-blue); }
+        .icone.email { background: #e74c3c; }
+        .icone.instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+        .icone.local { background: #f39c12; }
+
+        .contato-card .info h3 {
+            font-size: 13px;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .contato-card .info a,
+        .contato-card .info span {
+            color: var(--primary-dark);
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            word-break: break-word;
+        }
+
+        .contato-card .info a:hover {
+            color: var(--primary-blue);
+            text-decoration: underline;
+        }
+
+        /* ===== BOTÃO WHATSAPP DESTAQUE ===== */
+        .btn-whatsapp-grande {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: var(--whatsapp);
+            color: white;
+            text-decoration: none;
+            padding: 18px 30px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            width: 100%;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(37,211,102,0.3);
+            margin-bottom: 30px;
+        }
+
+        .btn-whatsapp-grande:hover {
+            background: var(--whatsapp-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37,211,102,0.4);
+        }
+
+        .btn-whatsapp-grande i {
+            font-size: 26px;
+        }
+
+        /* ===== TÍTULOS DE SEÇÃO ===== */
+        .secao-titulo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary-blue);
+            font-size: 20px;
+            font-weight: 700;
+            margin: 35px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eef1f4;
+        }
+
+        .secao-titulo i {
+            font-size: 22px;
+        }
+
+        /* ===== HORÁRIOS ===== */
+        .horarios-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #eef2f6 100%);
+            border-radius: 12px;
+            padding: 25px;
+            border-left: 5px solid var(--primary-blue);
+        }
+
+        .horario-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e0e6ed;
+            font-size: 15px;
+        }
+
+        .horario-item:last-child {
+            border-bottom: none;
+        }
+
+        .horario-item .dia {
+            font-weight: 600;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .horario-item .dia i {
+            color: var(--primary-blue);
+            font-size: 14px;
+            width: 20px;
+        }
+
+        .horario-item .hora {
+            color: #555;
+            font-weight: 500;
+        }
+
+        .horario-item .hora.fechado {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .horario-item .hora.aberto {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .status-agora {
+            margin-top: 15px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-agora.aberto {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid var(--success);
+        }
+
+        .status-agora.fechado {
+            background: #fde8e8;
+            color: #c62828;
+            border-left: 4px solid #e74c3c;
+        }
+
+        /* ===== MAPA ===== */
+        .mapa-container {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+            margin-top: 10px;
+            border: 3px solid white;
+        }
+
+        .mapa-container iframe {
+            width: 100%;
+            height: 380px;
+            border: none;
+            display: block;
+        }
+
+        .endereco-completo {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+            border-left: 5px solid #f39c12;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .endereco-completo .icone-local {
+            font-size: 24px;
+            color: #f39c12;
+            margin-top: 2px;
+        }
+
+        .endereco-completo .texto {
+            font-size: 15px;
+            color: var(--primary-dark);
+            line-height: 1.7;
+        }
+
+        .endereco-completo .texto strong {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--primary-blue);
+        }
+
+        /* ===== REDES SOCIAIS ===== */
+        .redes-sociais {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .rede-social {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f8f9fa;
+            padding: 15px 22px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--primary-dark);
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s;
+            border: 1px solid #eef1f4;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .rede-social:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+        }
+
+        .rede-social .icone-rede {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .rede-social.instagram .icone-rede {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        }
+
+        .rede-social.facebook .icone-rede {
+            background: #1877f2;
+        }
+
+        .rede-social .texto-rede {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .rede-social .texto-rede small {
+            font-size: 12px;
+            color: #888;
+            font-weight: 400;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer-contato {
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 2px solid #eef1f4;
+            text-align: center;
+        }
+
+        .footer-contato .cnpj {
+            color: #999;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .btn-voltar {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--primary-blue);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 14px rgba(26,58,92,0.25);
+        }
+
+        .btn-voltar:hover {
+            background: var(--secondary-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26,58,92,0.35);
+        }
+
+        /* ===== RESPONSIVO ===== */
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .container { padding: 22px 18px; border-radius: 12px; }
+            .header-contato h1 { font-size: 24px; }
+            .header-contato p { font-size: 14px; }
+            .header-contato .icon-top { width: 60px; height: 60px; font-size: 26px; }
+            .contatos-grid { grid-template-columns: 1fr; gap: 12px; }
+            .contato-card { padding: 16px; }
+            .contato-card .info a,
+            .contato-card .info span { font-size: 15px; }
+            .btn-whatsapp-grande { padding: 16px 20px; font-size: 16px; }
+            .secao-titulo { font-size: 17px; margin: 28px 0 15px 0; }
+            .horarios-card { padding: 18px; }
+            .horario-item { font-size: 14px; padding: 10px 0; }
+            .mapa-container iframe { height: 280px; }
+            .rede-social { min-width: auto; padding: 12px 16px; font-size: 14px; }
+            .rede-social .icone-rede { width: 38px; height: 38px; font-size: 18px; }
+            .btn-voltar { padding: 12px 24px; font-size: 15px; width: 100%; justify-content: center; }
+        }
+
+        @media (max-width: 380px) {
+            .container { padding: 16px 12px; }
+            .header-contato h1 { font-size: 20px; }
+            .contato-card .info a,
+            .contato-card .info span { font-size: 14px; }
+            .btn-whatsapp-grande { font-size: 15px; padding: 14px 16px; }
+            .btn-whatsapp-grande i { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- BOTÃO VOLTAR TOPO -->
+        <a href="javascript:history.back()" class="voltar">
+            <i class="fas fa-arrow-left"></i> Voltar para a Loja
+        </a>
+
+        <!-- HEADER -->
+        <div class="header-contato">
+            <div class="icon-top">
+                <i class="fas fa-headset"></i>
+            </div>
+            <h1>Fale Conosco</h1>
+            <p>Estamos prontos para atender você da melhor forma possível</p>
+        </div>
+
+        <!-- BOTÃO WHATSAPP DESTAQUE -->
+        <a href="https://wa.me/5531984834383?text=Ol%C3%A1!%20Gostaria%20de%20informa%C3%A7%C3%B5es%20sobre%20embalagens." 
+           target="_blank" 
+           class="btn-whatsapp-grande">
+            <i class="fab fa-whatsapp"></i>
+            Falar no WhatsApp Agora
+        </a>
+
+        <!-- GRID DE CONTATOS -->
+        <div class="contatos-grid">
+            
+            <div class="contato-card">
+                <div class="icone whatsapp"><i class="fab fa-whatsapp"></i></div>
+                <div class="info">
+                    <h3>WhatsApp</h3>
+                    <a href="https://wa.me/5531984834383" target="_blank">(31) 98483-4383</a>
+                </div>
+            </div>
+
+            <div class="contato-card">
+                <div class="icone telefone"><i class="fas fa-phone"></i></div>
+                <div class="info">
+                    <h3>Telefone</h3>
+                    <a href="tel:+553134875905">(31) 3487-5905</a>
+                </div>
+            </div>
+
+            <div class="contato-card">
+                <div class="icone email"><i class="fas fa-envelope"></i></div>
+                <div class="info">
+                    <h3>E-mail</h3>
+                    <a href="mailto:mcembalagensbh@gmail.com">mcembalagensbh@gmail.com</a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- HORÁRIOS DE FUNCIONAMENTO -->
+        <h2 class="secao-titulo">
+            <i class="fas fa-clock"></i>
+            Horário de Funcionamento
+        </h2>
+
+        <div class="horarios-card">
+            <div class="horario-item">
+                <span class="dia"><i class="fas fa-calendar-day"></i> Segunda a Sexta</span>
+                <span class="hora">08:00 às 18:00</span>
+            </div>
+            <div class="horario-item">
+                <span class="dia"><i class="fas fa-calendar-day"></i> Sábado</span>
+                <span class="hora">08:00 às 12:00</span>
+            </div>
+            <div class="horario-item">
+                <span class="dia"><i class="fas fa-calendar-day"></i> Domingo e Feriados</span>
+                <span class="hora fechado">Fechado</span>
+            </div>
+
+            <div id="statusAgora" class="status-agora" style="display:none;">
+                <i class="fas fa-circle"></i>
+                <span id="statusTexto"></span>
+            </div>
+        </div>
+
+        <!-- LOCALIZAÇÃO / MAPA -->
+        <h2 class="secao-titulo">
+            <i class="fas fa-map-marker-alt"></i>
+            Onde Estamos
+        </h2>
+
+        <div class="mapa-container">
+            <iframe 
+                src="https://www.google.com/maps?q=Praça+Santuário+São+Geraldo,+46-B,+Bairro+São+Geraldo,+Belo+Horizonte+-+MG,+31050-650&output=embed"
+                allowfullscreen=""
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+        </div>
+
+        <div class="endereco-completo">
+            <i class="fas fa-map-pin icone-local"></i>
+            <div class="texto">
+                <strong>MC Embalagens BH</strong>
+                Praça Santuário São Geraldo, 46-B<br>
+                Bairro São Geraldo<br>
+                Belo Horizonte - MG<br>
+                CEP: 31050-650
+            </div>
+        </div>
+
+        <!-- REDES SOCIAIS -->
+        <h2 class="secao-titulo">
+            <i class="fas fa-share-alt"></i>
+            Redes Sociais
+        </h2>
+
+        <div class="redes-sociais">
+            <a href="https://www.instagram.com/mcembalagens.bh" target="_blank" class="rede-social instagram">
+                <div class="icone-rede"><i class="fab fa-instagram"></i></div>
+                <div class="texto-rede">
+                    <span>@mcembalagens.bh</span>
+                    <small>Siga no Instagram</small>
+                </div>
+            </a>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer-contato">
+            <p class="cnpj">MC Embalagens BH - Todos os direitos reservados</p>
+            <a href="javascript:history.back()" class="btn-voltar">
+                <i class="fas fa-arrow-left"></i>
+                Voltar para a Loja
+            </a>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT: STATUS ABERTO/FECHADO EM TEMPO REAL -->
+    <script>
+        function verificarStatusLoja() {
+            var agora = new Date();
+            var diaSemana = agora.getDay(); // 0=Dom, 1=Seg, ..., 6=Sáb
+            var hora = agora.getHours();
+            var minuto = agora.getMinutes();
+            var horaAtual = hora + (minuto / 60);
+
+            var aberto = false;
+            var mensagem = '';
+
+            // Segunda a Sexta (1 a 5) - 08:00 às 18:00
+            if (diaSemana >= 1 && diaSemana <= 5) {
+                if (horaAtual >= 8 && horaAtual < 18) {
+                    aberto = true;
+                    mensagem = '🟢 Loja ABERTA agora — até às 18:00';
+                } else if (horaAtual < 8) {
+                    mensagem = '🔴 Loja FECHADA — Abre hoje às 08:00';
+                } else {
+                    mensagem = '🔴 Loja FECHADA — Abre amanhã às 08:00';
+                }
+            }
+            // Sábado (6) - 08:00 às 12:00
+            else if (diaSemana === 6) {
+                if (horaAtual >= 8 && horaAtual < 12) {
+                    aberto = true;
+                    mensagem = '🟢 Loja ABERTA agora — até às 12:00';
+                } else if (horaAtual < 8) {
+                    mensagem = '🔴 Loja FECHADA — Abre hoje às 08:00';
+                } else {
+                    mensagem = '🔴 Loja FECHADA — Abre segunda às 08:00';
+                }
+            }
+            // Domingo (0) e Feriados
+            else {
+                mensagem = '🔴 Loja FECHADA — Abre segunda às 08:00';
+            }
+
+            var statusEl = document.getElementById('statusAgora');
+            var textoEl = document.getElementById('statusTexto');
+
+            if (statusEl && textoEl) {
+                textoEl.textContent = mensagem;
+                statusEl.className = 'status-agora ' + (aberto ? 'aberto' : 'fechado');
+                statusEl.style.display = 'flex';
+            }
+        }
+
+        // Verifica ao carregar e a cada 1 minuto
+        document.addEventListener('DOMContentLoaded', verificarStatusLoja);
+        setInterval(verificarStatusLoja, 60000);
+    </script>
+
+</body>
+</html>
