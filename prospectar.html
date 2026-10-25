@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎯 Prospecção Inteligente - Embalagens Express</title>
+<title>🎯 Prospecção Inteligente - MC Embalagens Caixas</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -101,6 +101,13 @@ body {
     cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.3s;
 }
 .header .btn-logout:hover { background: rgba(255,255,255,0.3); }
+.header .btn-copy-site {
+    background: white; color: var(--primary);
+    border: none; padding: 10px 18px; border-radius: 8px;
+    cursor: pointer; font-weight: 700; font-size: 13px;
+    transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px;
+}
+.header .btn-copy-site:hover { background: #f0f0f0; transform: scale(1.03); }
 
 /* ===================== KPI CARDS ===================== */
 .kpi-grid {
@@ -164,8 +171,6 @@ body {
 }
 .filters-bar .btn-primary { background: var(--primary); color: white; }
 .filters-bar .btn-primary:hover { background: var(--secondary); }
-.filters-bar .btn-whats { background: var(--whatsapp); color: white; }
-.filters-bar .btn-whats:hover { background: #1ebe5d; }
 .filters-bar .btn-purple { background: var(--purple); color: white; }
 .filters-bar .btn-purple:hover { background: #5a4bd1; }
 .filters-bar .btn-success { background: var(--success); color: white; }
@@ -247,6 +252,7 @@ body {
 .badge-prioridade { background: var(--danger); color: white; }
 .badge-manual { background: #6c5ce7; color: white; }
 .badge-convertido { background: #00b894; color: white; }
+.badge-comprou { background: #00b894; color: white; }
 
 .cliente-header .queue-pos {
     background: var(--primary); color: white;
@@ -494,17 +500,6 @@ body {
 }
 .spinner-box p { color: #555; font-weight: 600; font-size: 14px; }
 
-/* ===================== MODAL MASSA ===================== */
-.massa-warning {
-    background: #fff3cd;
-    border-left: 4px solid var(--warning);
-    padding: 10px 14px;
-    border-radius: 6px;
-    font-size: 12px;
-    color: #856404;
-    margin-bottom: 16px;
-}
-
 @media (max-width: 768px) {
     body { padding: 10px; }
     .header { padding: 14px; }
@@ -532,7 +527,7 @@ body {
     <div class="login-box">
         <div class="logo">🎯</div>
         <h1>Prospecção Inteligente</h1>
-        <p>Embalagens Express</p>
+        <p>MC Embalagens Caixas</p>
         <div class="input-group">
             <i class="fas fa-user"></i>
             <input type="text" id="loginNome" placeholder="Seu nome (prospectador)">
@@ -557,12 +552,17 @@ body {
 <div class="container" id="app">
     <div class="header">
         <h1>🎯 Prospecção de Clientes</h1>
-        <div class="user-info">
-            <i class="fas fa-user-circle"></i>
-            <span id="userNameDisplay">—</span>
-            <button class="btn-logout" onclick="fazerLogout()">
-                <i class="fas fa-sign-out-alt"></i> Sair
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <button class="btn-copy-site" onclick="copiarSite()">
+                <i class="fas fa-copy"></i> Copiar Site: www.mcembalagens.com.br
             </button>
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span id="userNameDisplay">—</span>
+                <button class="btn-logout" onclick="fazerLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+            </div>
         </div>
     </div>
 
@@ -638,21 +638,41 @@ body {
                    oninput="renderizarClientes()">
         </div>
         <select id="filtroStatus" onchange="renderizarClientes()">
-            <option value="fila">📋 Fila de Prospecção</option>
-            <option value="todos">👥 Todos Clientes</option>
-            <option value="nunca">🆕 Nunca Contatados</option>
-            <option value="hoje">📞 Contatados Hoje</option>
-            <option value="revendedores">👑 Revendedores</option>
-            <option value="semana">📅 Contatados esta semana</option>
-            <option value="prioridade">🔥 Prioridade Alta</option>
-            <option value="manuais">👤 Cadastrei Manual</option>
-            <option value="convertidos">✅ Viraram Cliente Site</option>
+            <optgroup label="📋 Prospecção">
+                <option value="fila">📋 Fila de Prospecção</option>
+                <option value="nunca">🆕 Nunca Contatados</option>
+                <option value="hoje">📞 Contatados Hoje</option>
+                <option value="semana">📅 Contatados esta semana</option>
+                <option value="prioridade">🔥 Prioridade Alta</option>
+            </optgroup>
+            <optgroup label="🛒 Compras">
+                <option value="comprou">💰 Já Compraram</option>
+                <option value="nunca_comprou">💸 Nunca Compraram</option>
+                <option value="comprou_30d">📅 Compraram nos últimos 30 dias</option>
+                <option value="comprou_60d">📅 Compraram nos últimos 60 dias</option>
+                <option value="comprou_90d">📅 Compraram nos últimos 90 dias</option>
+                <option value="sem_compra_30d">😴 Sem comprar há 30+ dias</option>
+                <option value="sem_compra_60d">😴 Sem comprar há 60+ dias</option>
+                <option value="sem_compra_90d">😴 Sem comprar há 90+ dias</option>
+            </optgroup>
+            <optgroup label="👥 Clientes">
+                <option value="todos">👥 Todos Clientes</option>
+                <option value="revendedores">👑 Revendedores</option>
+                <option value="manuais">👤 Cadastrei Manual</option>
+                <option value="convertidos">✅ Viraram Cliente Site</option>
+            </optgroup>
         </select>
         <select id="filtroOrdem" onchange="renderizarClientes()">
             <option value="fila">⏱️ Fila (mais antigo)</option>
             <option value="recentes">🕐 Cadastro recente</option>
-            <option value="compras">💰 Mais compras</option>
             <option value="nome">🔤 Alfabética</option>
+            <option value="maior_valor">💎 Maior valor total (R$)</option>
+            <option value="menor_valor">💵 Menor valor total (R$)</option>
+            <option value="mais_pedidos">🛒 Mais pedidos</option>
+            <option value="menos_pedidos">📦 Menos pedidos</option>
+            <option value="maior_ticket">🎯 Maior ticket médio</option>
+            <option value="ultima_compra">🕐 Última compra (mais recente)</option>
+            <option value="ultima_compra_antiga">🕰️ Última compra (mais antiga)</option>
         </select>
         <button class="btn btn-purple" onclick="abrirCadastroCliente()">
             <i class="fas fa-user-plus"></i> Cadastrar Cliente
@@ -662,9 +682,6 @@ body {
         </button>
         <button class="btn btn-primary" onclick="carregarDados()">
             <i class="fas fa-sync-alt"></i> Atualizar
-        </button>
-        <button class="btn btn-whats" onclick="abrirMensagemMassa()">
-            <i class="fab fa-whatsapp"></i> Mensagem em Massa
         </button>
     </div>
 
@@ -727,51 +744,6 @@ body {
             <button class="btn-cancel" onclick="fecharModal('modalContato')">Cancelar</button>
             <button class="btn-save" onclick="salvarContato()">
                 <i class="fas fa-check"></i> Confirmar Contato
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ===================== MODAL MENSAGEM EM MASSA ===================== -->
-<div class="modal-overlay" id="modalMassa">
-    <div class="modal" style="max-width: 650px;">
-        <div class="modal-header">
-            <h2><i class="fab fa-whatsapp" style="color: var(--whatsapp);"></i> Mensagem em Massa</h2>
-            <button class="modal-close" onclick="fecharModal('modalMassa')">&times;</button>
-        </div>
-        
-        <div class="form-group">
-            <label>Template da Mensagem</label>
-            <textarea id="massaTemplate" rows="6" placeholder="Digite sua mensagem..."></textarea>
-            <div style="font-size: 11px; color: #888; margin-top: 6px;">
-                Variáveis: <code>{nome}</code>, <code>{primeiro_nome}</code>, <code>{ultima_compra}</code>, <code>{total_compras}</code>
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label>Enviar para</label>
-            <select id="massaFiltro" onchange="atualizarPreviewMassa()">
-                <option value="fila">📋 Fila (mais antigos primeiro)</option>
-                <option value="nunca">🆕 Nunca Contatados</option>
-                <option value="revendedores">👑 Apenas Revendedores</option>
-                <option value="30dias">📅 Sem contato há 30+ dias</option>
-                <option value="60dias">📅 Sem contato há 60+ dias</option>
-                <option value="todos">👥 Todos com telefone</option>
-            </select>
-        </div>
-        
-        <div id="massaPreview" style="background: #f0f4f8; padding: 12px; border-radius: 8px; font-size: 12px; margin-bottom: 12px;">
-            <strong>Prévia:</strong> <span id="massaCount">0</span> clientes serão incluídos
-        </div>
-        
-        <div class="massa-warning">
-            <i class="fas fa-info-circle"></i> O WhatsApp abrirá um por vez, na ordem da fila. Você confirma cada envio manualmente.
-        </div>
-        
-        <div class="form-actions">
-            <button class="btn-cancel" onclick="fecharModal('modalMassa')">Cancelar</button>
-            <button class="btn-save" onclick="iniciarMassa()" style="background: var(--whatsapp);">
-                <i class="fab fa-whatsapp"></i> Iniciar Envio
             </button>
         </div>
     </div>
@@ -842,9 +814,10 @@ body {
 // CONFIGURAÇÃO
 // ============================================================
 const API_URL = 'https://script.google.com/macros/s/AKfycbyYsK2yKe0lTfOHadXQOd9XTUMNAQRySrw4bgg6Zboc2hWS6-losCnZspwCTzII7QmNWg/exec';
-const SENHA_ACESSO = '123456';
-const STORAGE_KEY = 'prospeccao_dados_v2';
-const SESSION_KEY = 'prospeccao_sessao_v2';
+const SENHA_ACESSO = 'Cal@562938';
+const SITE_URL = 'www.mcembalagens.com.br';
+const STORAGE_KEY = 'prospeccao_dados_v3';
+const SESSION_KEY = 'prospeccao_sessao_v3';
 
 // ============================================================
 // ESTADO
@@ -859,8 +832,6 @@ let dados = {
 
 let usuarioAtual = null;
 let clienteSelecionado = null;
-let filaMassa = [];
-let indexMassa = 0;
 
 // ============================================================
 // INICIALIZAÇÃO
@@ -882,6 +853,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     document.getElementById('loginNome').focus();
 });
+
+// ============================================================
+// COPIAR SITE
+// ============================================================
+async function copiarSite() {
+    try {
+        await navigator.clipboard.writeText(SITE_URL);
+        toast('✅ Site copiado: ' + SITE_URL, 'success');
+    } catch (e) {
+        // Fallback para navegadores antigos
+        const textarea = document.createElement('textarea');
+        textarea.value = SITE_URL;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            toast('✅ Site copiado: ' + SITE_URL, 'success');
+        } catch (err) {
+            toast('❌ Não foi possível copiar. Copie manualmente: ' + SITE_URL, 'erro');
+        }
+        document.body.removeChild(textarea);
+    }
+}
 
 // ============================================================
 // LOGIN
@@ -928,7 +924,7 @@ async function carregarDados() {
     mostrarSpinner('Carregando dados...');
     
     try {
-        // 1. Carrega dados principais (clientes, pedidos, produtos)
+        // 1. Carrega dados principais
         let dataMain = null;
         try {
             const resp = await fetch(API_URL + '?t=' + Date.now());
@@ -968,7 +964,7 @@ async function carregarDados() {
             dados.contatos = JSON.parse(localStorage.getItem(STORAGE_KEY + '_contatos') || '[]');
         }
         
-        // 3. Carrega clientes de prospecção (cadastros manuais)
+        // 3. Carrega clientes de prospecção
         try {
             const respPC = await fetch(API_URL + '?acao=buscar_prospeccao_clientes&t=' + Date.now());
             const dataPC = await respPC.json();
@@ -983,7 +979,7 @@ async function carregarDados() {
         // 4. Mescla contatos com clientes
         mesclarContatos();
         
-        // 5. Detecta automaticamente conversões
+        // 5. Detecta conversões automaticamente
         verificarConversoesAuto();
         
         esconderSpinner();
@@ -1064,12 +1060,62 @@ function renderizarKPIs() {
     document.getElementById('kpiCadastrados').textContent = cadastradosManual;
     document.getElementById('kpiConvertidos').textContent = convertidos;
     
-    // Progresso
     const percentual = total > 0 ? Math.round((contatados / total) * 100) : 0;
     document.getElementById('progressoTexto').textContent = percentual + '%';
     const fill = document.getElementById('progressoFill');
     fill.style.width = percentual + '%';
     fill.textContent = percentual > 8 ? percentual + '%' : '';
+}
+
+// ============================================================
+// HELPERS DE COMPRA
+// ============================================================
+function getPedidosCliente(cliente) {
+    return dados.pedidos.filter(p => 
+        (cliente.email && String(p.cliente_email || '').toLowerCase() === String(cliente.email).toLowerCase()) ||
+        (cliente.telefone && String(p.cliente_telefone || '').replace(/\D/g,'') === String(cliente.telefone).replace(/\D/g,''))
+    );
+}
+
+function calcularTotalCompras(cliente) {
+    return getPedidosCliente(cliente).reduce((s, p) => s + (parseFloat(p.total) || 0), 0);
+}
+
+function calcularTicketMedio(cliente) {
+    const pedidos = getPedidosCliente(cliente);
+    if (pedidos.length === 0) return 0;
+    const total = pedidos.reduce((s, p) => s + (parseFloat(p.total) || 0), 0);
+    return total / pedidos.length;
+}
+
+function getUltimaCompra(cliente) {
+    const pedidos = getPedidosCliente(cliente);
+    if (pedidos.length === 0) return null;
+    
+    let ultimaData = null;
+    pedidos.forEach(p => {
+        if (!p.data_pedido) return;
+        try {
+            const d = new Date(p.data_pedido.replace('T', ' ').split(' ')[0].split('/').reverse().join('-'));
+            if (!isNaN(d.getTime()) && (!ultimaData || d > ultimaData)) {
+                ultimaData = d;
+            }
+        } catch(e) {
+            try {
+                const d = new Date(p.data_pedido);
+                if (!isNaN(d.getTime()) && (!ultimaData || d > ultimaData)) {
+                    ultimaData = d;
+                }
+            } catch(e2) {}
+        }
+    });
+    return ultimaData;
+}
+
+function getDiasSemComprar(cliente) {
+    const ultima = getUltimaCompra(cliente);
+    if (!ultima) return null;
+    return Math.floor((new Date() - ultima) / (1000*60*60*24));
 }
 
 // ============================================================
@@ -1081,7 +1127,6 @@ function calcularPrioridade(cliente) {
         new Date(cliente.data_cadastro.split('/').reverse().join('-')) : 
         new Date(0);
     
-    // Cliente novo (< 3 dias) = final da fila
     const diasDesdeCadastro = (agora - dataCadastro) / (1000*60*60*24);
     if (diasDesdeCadastro < 3) {
         return 999999;
@@ -1093,7 +1138,6 @@ function calcularPrioridade(cliente) {
         diasSemContato = (agora - dataContato) / (1000*60*60*24);
     }
     
-    // Bônus para revendedores
     const isRev = String(cliente.observacoes || '').toUpperCase().includes('REVENDA');
     if (isRev) diasSemContato -= 3;
     
@@ -1116,7 +1160,7 @@ function filtrarClientes() {
     const status = document.getElementById('filtroStatus').value;
     const ordem = document.getElementById('filtroOrdem').value;
     
-    // Filtros especiais de prospecção manual
+    // Filtros especiais (prospecção manual)
     if (status === 'manuais') {
         let manuais = dados.prospeccao_clientes.slice();
         if (busca) {
@@ -1152,6 +1196,7 @@ function filtrarClientes() {
     
     let filtrados = [...dados.clientes];
     
+    // Busca
     if (busca) {
         filtrados = filtrados.filter(c => {
             const nome = String(c.nome || '').toLowerCase();
@@ -1164,6 +1209,7 @@ function filtrarClientes() {
     const hoje = new Date().toDateString();
     const semanaAtras = new Date(Date.now() - 7*24*60*60*1000);
     
+    // Filtros de status
     if (status === 'nunca') {
         filtrados = filtrados.filter(c => !c._ultimoContato);
     } else if (status === 'hoje') {
@@ -1183,7 +1229,44 @@ function filtrarClientes() {
     } else if (status === 'prioridade') {
         filtrados = filtrados.filter(c => calcularPrioridade(c) > 30);
     }
+    // Filtros de compra
+    else if (status === 'comprou') {
+        filtrados = filtrados.filter(c => getPedidosCliente(c).length > 0);
+    } else if (status === 'nunca_comprou') {
+        filtrados = filtrados.filter(c => getPedidosCliente(c).length === 0);
+    } else if (status === 'comprou_30d') {
+        filtrados = filtrados.filter(c => {
+            const dias = getDiasSemComprar(c);
+            return dias !== null && dias <= 30;
+        });
+    } else if (status === 'comprou_60d') {
+        filtrados = filtrados.filter(c => {
+            const dias = getDiasSemComprar(c);
+            return dias !== null && dias <= 60;
+        });
+    } else if (status === 'comprou_90d') {
+        filtrados = filtrados.filter(c => {
+            const dias = getDiasSemComprar(c);
+            return dias !== null && dias <= 90;
+        });
+    } else if (status === 'sem_compra_30d') {
+        filtrados = filtrados.filter(c => {
+            const dias = getDiasSemComprar(c);
+            return dias !== null && dias >= 30;
+        });
+    } else if (status === 'sem_compra_60d') {
+        filtrados = filtrados.filter(c => {
+            const dias = getDiasSemComprar(c);
+            return dias !== null && dias >= 60;
+        });
+    } else if (status === 'sem_compra_90d') {
+        filtrados = filtrados.filter(c => {
+            const dias = getDiasSemComprar(c);
+            return dias !== null && dias >= 90;
+        });
+    }
     
+    // Ordenação
     if (ordem === 'fila' || status === 'fila') {
         filtrados = ordenarFila(filtrados);
     } else if (ordem === 'recentes') {
@@ -1192,12 +1275,38 @@ function filtrarClientes() {
             const db = b.data_cadastro ? new Date(b.data_cadastro.split('/').reverse().join('-')) : new Date(0);
             return db - da;
         });
-    } else if (ordem === 'compras') {
-        filtrados.sort((a, b) => calcularTotalCompras(b) - calcularTotalCompras(a));
     } else if (ordem === 'nome') {
         filtrados.sort((a, b) => 
             String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR')
         );
+    } else if (ordem === 'maior_valor') {
+        filtrados.sort((a, b) => calcularTotalCompras(b) - calcularTotalCompras(a));
+    } else if (ordem === 'menor_valor') {
+        filtrados.sort((a, b) => calcularTotalCompras(a) - calcularTotalCompras(b));
+    } else if (ordem === 'mais_pedidos') {
+        filtrados.sort((a, b) => getPedidosCliente(b).length - getPedidosCliente(a).length);
+    } else if (ordem === 'menos_pedidos') {
+        filtrados.sort((a, b) => getPedidosCliente(a).length - getPedidosCliente(b).length);
+    } else if (ordem === 'maior_ticket') {
+        filtrados.sort((a, b) => calcularTicketMedio(b) - calcularTicketMedio(a));
+    } else if (ordem === 'ultima_compra') {
+        filtrados.sort((a, b) => {
+            const ua = getUltimaCompra(a);
+            const ub = getUltimaCompra(b);
+            if (!ua && !ub) return 0;
+            if (!ua) return 1;
+            if (!ub) return -1;
+            return ub - ua;
+        });
+    } else if (ordem === 'ultima_compra_antiga') {
+        filtrados.sort((a, b) => {
+            const ua = getUltimaCompra(a);
+            const ub = getUltimaCompra(b);
+            if (!ua && !ub) return 0;
+            if (!ua) return -1;
+            if (!ub) return 1;
+            return ua - ub;
+        });
     }
     
     return filtrados;
@@ -1249,6 +1358,14 @@ function renderizarCard(c, posicao, total) {
     const prioridade = calcularPrioridade(c);
     const prioridadeAlta = prioridade > 30;
     
+    const pedidosCliente = getPedidosCliente(c);
+    const totalCompras = pedidosCliente.length;
+    const valorTotal = calcularTotalCompras(c);
+    const ticketMedio = calcularTicketMedio(c);
+    const ultimaCompraData = getUltimaCompra(c);
+    const diasSemComprar = getDiasSemComprar(c);
+    const comprouAlguma = totalCompras > 0;
+    
     let classes = 'cliente-card';
     if (isRev) classes += ' revend';
     if (ehNovo) classes += ' novo';
@@ -1260,32 +1377,16 @@ function renderizarCard(c, posicao, total) {
     if (ehNovo) badges += '<span class="badge badge-novo">🆕 Novo</span>';
     if (contatadoHoje) badges += '<span class="badge badge-hoje">📞 Hoje</span>';
     if (prioridadeAlta && !ehNovo) badges += '<span class="badge badge-prioridade">🔥 Prioridade</span>';
+    if (comprouAlguma) badges += '<span class="badge badge-comprou">💰 Comprou</span>';
     
     let posClass = '';
     if (posicao === 1) posClass = 'primeiro';
     if (posicao > total - 3) posClass = 'ultimo';
     const posTexto = posicao === 1 ? '🥇 1º' : `${posicao}º de ${total}`;
     
-    const pedidosCliente = dados.pedidos.filter(p => 
-        (c.email && String(p.cliente_email || '').toLowerCase() === String(c.email).toLowerCase()) ||
-        (c.telefone && String(p.cliente_telefone || '').replace(/\D/g,'') === String(c.telefone).replace(/\D/g,''))
-    );
-    const totalCompras = pedidosCliente.length;
-    const valorTotal = pedidosCliente.reduce((s, p) => s + (parseFloat(p.total) || 0), 0);
-    
-    let ultimaCompra = '-';
-    if (pedidosCliente.length > 0) {
-        const datas = pedidosCliente
-            .map(p => p.data_pedido)
-            .filter(d => d)
-            .sort((a, b) => new Date(b) - new Date(a));
-        if (datas.length > 0) {
-            try {
-                ultimaCompra = new Date(datas[0]).toLocaleDateString('pt-BR');
-            } catch(e) {
-                ultimaCompra = String(datas[0]).substring(0, 10);
-            }
-        }
+    let ultimaCompraStr = '-';
+    if (ultimaCompraData) {
+        ultimaCompraStr = ultimaCompraData.toLocaleDateString('pt-BR');
     }
     
     let ultimoContatoHtml = '';
@@ -1341,10 +1442,16 @@ function renderizarCard(c, posicao, total) {
                         <div class="lbl">Total</div>
                     </div>
                     <div class="stat-mini">
-                        <div class="val">${ultimaCompra !== '-' ? ultimaCompra.substring(0,5) : '-'}</div>
+                        <div class="val">${ultimaCompraStr !== '-' ? ultimaCompraStr.substring(0,5) : '-'}</div>
                         <div class="lbl">Últ. Compra</div>
                     </div>
                 </div>
+                ${comprouAlguma ? `
+                    <div style="font-size: 11px; color: #666; text-align: center; padding: 4px; background: #f8f9fa; border-radius: 6px;">
+                        🎯 Ticket médio: <strong>R$ ${ticketMedio.toFixed(2)}</strong>
+                        ${diasSemComprar !== null ? ` • ${diasSemComprar}d sem comprar` : ''}
+                    </div>
+                ` : ''}
                 ${ultimoContatoHtml}
             </div>
             
@@ -1447,16 +1554,16 @@ function renderizarCardManual(c) {
                 ` : `
                     <div class="stats-grid">
                         <div class="stat-mini recente">
-                            <div class="val">R$ 0</div>
-                            <div class="lbl">Vendas</div>
+                            <div class="val">✓</div>
+                            <div class="lbl">Convertido</div>
                         </div>
                         <div class="stat-mini">
                             <div class="val">${dataCadastro.split('/')[0] || '-'}</div>
                             <div class="lbl">Cadastro</div>
                         </div>
                         <div class="stat-mini destaque">
-                            <div class="val">✓</div>
-                            <div class="lbl">Convertido</div>
+                            <div class="val">🔗</div>
+                            <div class="lbl">No Site</div>
                         </div>
                     </div>
                 `}
@@ -1487,27 +1594,11 @@ function renderizarCardManual(c) {
 }
 
 // ============================================================
-// HELPERS
+// MENSAGEM WHATSAPP
 // ============================================================
-function calcularTotalCompras(cliente) {
-    const pedidos = dados.pedidos.filter(p => 
-        (cliente.email && String(p.cliente_email || '').toLowerCase() === String(cliente.email).toLowerCase()) ||
-        (cliente.telefone && String(p.cliente_telefone || '').replace(/\D/g,'') === String(cliente.telefone).replace(/\D/g,''))
-    );
-    return pedidos.reduce((s, p) => s + (parseFloat(p.total) || 0), 0);
-}
-
 function mensagemPadrao(cliente) {
     const primeiroNome = String(cliente.nome || '').split(' ')[0] || 'cliente';
-    const pedidos = dados.pedidos.filter(p => 
-        (cliente.email && String(p.cliente_email || '').toLowerCase() === String(cliente.email).toLowerCase()) ||
-        (cliente.telefone && String(p.cliente_telefone || '').replace(/\D/g,'') === String(cliente.telefone).replace(/\D/g,''))
-    );
-    
-    if (pedidos.length > 0) {
-        return `Olá ${primeiroNome}! Tudo bem? 😊\n\nAqui é da Embalagens Express. Notamos que você já comprou com a gente e queremos saber se está tudo certo com seu pedido.\n\nTemos novidades e promoções especiais esta semana! Quer dar uma olhada? 🎁`;
-    }
-    return `Olá ${primeiroNome}! Tudo bem? 😊\n\nAqui é da Embalagens Express! Trabalhamos com embalagens de alta qualidade para o seu negócio.\n\nGostaria de conhecer nossas ofertas especiais? Posso te enviar nosso catálogo! 📦`;
+    return `Olá ${primeiroNome}! Tudo bem? 😊\n\nAqui é da MC Embalagens Caixas!`;
 }
 
 // ============================================================
@@ -1535,7 +1626,7 @@ function abrirWhatsAppManual(idManual) {
         return;
     }
     const primeiroNome = String(cliente.nome || '').split(' ')[0] || 'cliente';
-    const mensagem = `Olá ${primeiroNome}! Tudo bem? 😊\n\nAqui é da Embalagens Express! Trabalhamos com embalagens de alta qualidade para o seu negócio.\n\nGostaria de conhecer nossas ofertas especiais? Posso te enviar nosso catálogo! 📦`;
+    const mensagem = `Olá ${primeiroNome}! Tudo bem? 😊\n\nAqui é da MC Embalagens Caixas!`;
     const url = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
 }
@@ -1642,12 +1733,10 @@ function verDetalhes(idCliente) {
     document.getElementById('detalhesTitulo').textContent = cliente.nome || 'Detalhes';
     
     const isRev = String(cliente.observacoes || '').toUpperCase().includes('REVENDA');
-    const pedidosCliente = dados.pedidos.filter(p => 
-        (cliente.email && String(p.cliente_email || '').toLowerCase() === String(cliente.email).toLowerCase()) ||
-        (cliente.telefone && String(p.cliente_telefone || '').replace(/\D/g,'') === String(cliente.telefone).replace(/\D/g,''))
-    ).sort((a, b) => new Date(b.data_pedido || 0) - new Date(a.data_pedido || 0));
-    
+    const pedidosCliente = getPedidosCliente(cliente).sort((a, b) => new Date(b.data_pedido || 0) - new Date(a.data_pedido || 0));
     const contatosCliente = (cliente._contatos || []);
+    const valorTotal = calcularTotalCompras(cliente);
+    const ticketMedio = calcularTicketMedio(cliente);
     
     let html = '';
     
@@ -1661,7 +1750,24 @@ function verDetalhes(idCliente) {
                 <div><strong>Email:</strong> ${cliente.email || '-'}</div>
                 <div><strong>Cidade:</strong> ${cliente.cidade || '-'}/${cliente.estado || '-'}</div>
                 <div><strong>Cadastro:</strong> ${cliente.data_cadastro || '-'}</div>
-                <div><strong>Total de compras:</strong> R$ ${calcularTotalCompras(cliente).toFixed(2)} (${pedidosCliente.length} pedidos)</div>
+            </div>
+        </div>
+        
+        <div class="detalhe-section">
+            <h3><i class="fas fa-chart-line"></i> Resumo Financeiro</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 20px; font-weight: 700; color: var(--primary);">${pedidosCliente.length}</div>
+                    <div style="font-size: 11px; color: #888;">Pedidos</div>
+                </div>
+                <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 20px; font-weight: 700; color: var(--success);">R$ ${valorTotal.toFixed(2)}</div>
+                    <div style="font-size: 11px; color: #888;">Total Gasto</div>
+                </div>
+                <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 20px; font-weight: 700; color: var(--warning);">R$ ${ticketMedio.toFixed(2)}</div>
+                    <div style="font-size: 11px; color: #888;">Ticket Médio</div>
+                </div>
             </div>
         </div>
     `;
@@ -1740,150 +1846,6 @@ function verDetalhes(idCliente) {
     
     document.getElementById('detalhesContent').innerHTML = html;
     document.getElementById('modalDetalhes').classList.add('open');
-}
-
-// ============================================================
-// MENSAGEM EM MASSA
-// ============================================================
-function abrirMensagemMassa() {
-    document.getElementById('massaTemplate').value = 
-        `Olá {primeiro_nome}! Tudo bem? 😊\n\nAqui é da Embalagens Express! Estamos com promoções especiais esta semana. Posso te enviar nosso catálogo atualizado? 📦`;
-    atualizarPreviewMassa();
-    document.getElementById('modalMassa').classList.add('open');
-}
-
-function atualizarPreviewMassa() {
-    const filtro = document.getElementById('massaFiltro').value;
-    const clientes = filtrarParaMassa(filtro);
-    document.getElementById('massaCount').textContent = clientes.length;
-}
-
-function filtrarParaMassa(filtro) {
-    let base = dados.clientes.filter(c => String(c.telefone || '').replace(/\D/g,'').length >= 10);
-    
-    if (filtro === 'fila') {
-        base = ordenarFila(base);
-    } else if (filtro === 'nunca') {
-        base = base.filter(c => !c._ultimoContato);
-    } else if (filtro === 'revendedores') {
-        base = base.filter(c => String(c.observacoes || '').toUpperCase().includes('REVENDA'));
-    } else if (filtro === '30dias') {
-        base = base.filter(c => {
-            if (!c._ultimoContato) return true;
-            return (new Date() - new Date(c._ultimoContato.data_hora)) / (1000*60*60*24) >= 30;
-        });
-    } else if (filtro === '60dias') {
-        base = base.filter(c => {
-            if (!c._ultimoContato) return true;
-            return (new Date() - new Date(c._ultimoContato.data_hora)) / (1000*60*60*24) >= 60;
-        });
-    }
-    
-    return base;
-}
-
-function iniciarMassa() {
-    const filtro = document.getElementById('massaFiltro').value;
-    const template = document.getElementById('massaTemplate').value;
-    
-    if (!template.trim()) {
-        toast('Digite uma mensagem', 'erro');
-        return;
-    }
-    
-    filaMassa = filtrarParaMassa(filtro);
-    indexMassa = 0;
-    
-    if (filaMassa.length === 0) {
-        toast('Nenhum cliente com telefone encontrado', 'erro');
-        return;
-    }
-    
-    fecharModal('modalMassa');
-    abrirProximoMassa(template);
-}
-
-function abrirProximoMassa(template) {
-    if (indexMassa >= filaMassa.length) {
-        toast(`✅ Fila finalizada! (${filaMassa.length} clientes)`, 'success');
-        filaMassa = [];
-        indexMassa = 0;
-        return;
-    }
-    
-    const cliente = filaMassa[indexMassa];
-    const primeiroNome = String(cliente.nome || '').split(' ')[0] || 'cliente';
-    
-    const pedidos = dados.pedidos.filter(p => 
-        (cliente.email && String(p.cliente_email || '').toLowerCase() === String(cliente.email).toLowerCase()) ||
-        (cliente.telefone && String(p.cliente_telefone || '').replace(/\D/g,'') === String(cliente.telefone).replace(/\D/g,''))
-    );
-    
-    let ultimaCompra = 'nunca';
-    if (pedidos.length > 0) {
-        const datas = pedidos.map(p => p.data_pedido).filter(d => d).sort((a,b) => new Date(b) - new Date(a));
-        if (datas.length > 0) {
-            try {
-                ultimaCompra = new Date(datas[0]).toLocaleDateString('pt-BR');
-            } catch(e) {}
-        }
-    }
-    
-    const mensagem = template
-        .replace(/{nome}/g, cliente.nome || '')
-        .replace(/{primeiro_nome}/g, primeiroNome)
-        .replace(/{ultima_compra}/g, ultimaCompra)
-        .replace(/{total_compras}/g, pedidos.length);
-    
-    const tel = String(cliente.telefone || '').replace(/\D/g, '');
-    const url = `https://wa.me/55${tel}?text=${encodeURIComponent(mensagem)}`;
-    window.open(url, '_blank');
-    
-    setTimeout(() => {
-        if (confirm(`✅ Mensagem enviada para ${cliente.nome}?\n\n(${indexMassa + 1} de ${filaMassa.length})\n\nClique OK para registrar e ir para o próximo.`)) {
-            registrarContatoMassa(cliente, template);
-            indexMassa++;
-            setTimeout(() => abrirProximoMassa(template), 500);
-        } else {
-            if (confirm('Pular este cliente?')) {
-                indexMassa++;
-                setTimeout(() => abrirProximoMassa(template), 500);
-            }
-        }
-    }, 500);
-}
-
-async function registrarContatoMassa(cliente, template) {
-    const novoContato = {
-        id: Date.now(),
-        cliente_id: cliente.id_cliente,
-        cliente_nome: cliente.nome,
-        cliente_telefone: cliente.telefone,
-        cliente_email: cliente.email,
-        data_hora: new Date().toISOString().slice(0, 16),
-        resultado: 'enviado',
-        observacoes: 'Mensagem em massa',
-        prospectador: usuarioAtual.nome,
-        timestamp: Date.now()
-    };
-    
-    dados.contatos.push(novoContato);
-    localStorage.setItem(STORAGE_KEY + '_contatos', JSON.stringify(dados.contatos));
-    
-    try {
-        await fetch(API_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                acao: 'registrar_prospeccao',
-                contato: novoContato
-            })
-        });
-    } catch(e) {}
-    
-    mesclarContatos();
-    renderizarKPIs();
 }
 
 // ============================================================
@@ -1984,7 +1946,6 @@ async function sincronizarComSite() {
     mostrarSpinner('Verificando conversões...');
     
     try {
-        // 1. Busca clientes do site novamente
         const resp = await fetch(API_URL + '?t=' + Date.now());
         const data = await resp.json();
         
@@ -1992,7 +1953,6 @@ async function sincronizarComSite() {
             dados.clientes = data.clientes;
         }
         
-        // 2. Compara telefones
         const telefonesSite = {};
         dados.clientes.forEach(c => {
             const tel = String(c.telefone || '').replace(/\D/g, '');
@@ -2005,7 +1965,6 @@ async function sincronizarComSite() {
             }
         });
         
-        // 3. Atualiza prospeccao_clientes
         let convertidos = 0;
         dados.prospeccao_clientes.forEach(pc => {
             const tel = String(pc.telefone || '').replace(/\D/g, '');
@@ -2021,7 +1980,6 @@ async function sincronizarComSite() {
         
         localStorage.setItem(STORAGE_KEY + '_prosp_clientes', JSON.stringify(dados.prospeccao_clientes));
         
-        // 4. Salva no Sheets
         try {
             await fetch(API_URL, {
                 method: 'POST',
