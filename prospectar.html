@@ -38,10 +38,11 @@ body {
     background: linear-gradient(135deg, #1a3a5c 0%, #2a5a8c 100%);
     z-index: 999999;
     display: flex; justify-content: center; align-items: center;
+    padding: 20px;
 }
 #loginOverlay.hidden { display: none; }
 .login-box {
-    background: white; padding: 40px 50px;
+    background: white; padding: 40px 45px;
     border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     text-align: center; max-width: 420px; width: 100%;
     animation: fadeInUp 0.5s ease;
@@ -103,7 +104,7 @@ body {
 
 /* ===================== KPI CARDS ===================== */
 .kpi-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 12px; margin-bottom: 16px;
 }
 .kpi-card {
@@ -119,12 +120,14 @@ body {
     font-size: 22px; color: white; flex-shrink: 0;
 }
 .kpi-card .info .valor { font-size: 24px; font-weight: 700; color: var(--primary); line-height: 1; }
-.kpi-card .info .label { font-size: 12px; color: #888; margin-top: 4px; font-weight: 500; }
+.kpi-card .info .label { font-size: 11px; color: #888; margin-top: 4px; font-weight: 500; }
 .kpi-card.total .icon { background: var(--primary); }
+.kpi-card.fila .icon { background: var(--danger); }
 .kpi-card.contatados .icon { background: var(--success); }
 .kpi-card.hoje .icon { background: var(--purple); }
 .kpi-card.revendedores .icon { background: var(--warning); }
-.kpi-card.fila .icon { background: var(--danger); }
+.kpi-card.manual .icon { background: #6c5ce7; }
+.kpi-card.convertidos .icon { background: #00b894; }
 
 /* ===================== FILTROS ===================== */
 .filters-bar {
@@ -157,12 +160,41 @@ body {
     padding: 9px 16px; border: none; border-radius: 8px;
     cursor: pointer; font-weight: 600; font-size: 13px;
     transition: all 0.2s; display: inline-flex;
-    align-items: center; gap: 6px;
+    align-items: center; gap: 6px; white-space: nowrap;
 }
 .filters-bar .btn-primary { background: var(--primary); color: white; }
 .filters-bar .btn-primary:hover { background: var(--secondary); }
 .filters-bar .btn-whats { background: var(--whatsapp); color: white; }
 .filters-bar .btn-whats:hover { background: #1ebe5d; }
+.filters-bar .btn-purple { background: var(--purple); color: white; }
+.filters-bar .btn-purple:hover { background: #5a4bd1; }
+.filters-bar .btn-success { background: var(--success); color: white; }
+.filters-bar .btn-success:hover { background: #219a52; }
+
+/* ===================== BARRA PROGRESSO ===================== */
+.progresso-container {
+    background: white; border-radius: var(--radius);
+    padding: 14px 18px; box-shadow: var(--shadow);
+    margin-bottom: 16px;
+}
+.progresso-container .label {
+    display: flex; justify-content: space-between;
+    font-size: 13px; font-weight: 600; color: var(--primary);
+    margin-bottom: 8px;
+}
+.progresso-bar {
+    height: 14px; background: #e0e0e0;
+    border-radius: 10px; overflow: hidden;
+}
+.progresso-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), #2ecc71);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    display: flex; align-items: center;
+    justify-content: flex-end; padding-right: 8px;
+    color: white; font-size: 10px; font-weight: 700;
+}
 
 /* ===================== CARDS CLIENTES ===================== */
 .clientes-grid {
@@ -183,6 +215,12 @@ body {
 .cliente-card.novo { border-top: 4px solid var(--success); }
 .cliente-card.contatado-hoje { border-top: 4px solid var(--purple); }
 .cliente-card.prioridade-alta { border-top: 4px solid var(--danger); animation: pulse 2s infinite; }
+.cliente-card.manual { border-top: 4px solid #6c5ce7; }
+.cliente-card.convertido {
+    border: 3px solid #00b894;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fff8 100%);
+}
+
 @keyframes pulse {
     0%, 100% { box-shadow: var(--shadow); }
     50% { box-shadow: 0 0 0 4px rgba(231,76,60,0.15); }
@@ -207,6 +245,8 @@ body {
 .badge-novo { background: var(--success); color: white; }
 .badge-hoje { background: var(--purple); color: white; }
 .badge-prioridade { background: var(--danger); color: white; }
+.badge-manual { background: #6c5ce7; color: white; }
+.badge-convertido { background: #00b894; color: white; }
 
 .cliente-header .queue-pos {
     background: var(--primary); color: white;
@@ -245,7 +285,6 @@ body {
 }
 .stat-mini.destaque .val { color: var(--warning); }
 .stat-mini.recente .val { color: var(--success); }
-.stat-mini.urgente .val { color: var(--danger); }
 
 .ultimo-contato-box {
     padding: 8px 10px; background: #f0f4f8;
@@ -260,6 +299,17 @@ body {
 .ultimo-contato-box.recente { background: #d4edda; color: #155724; }
 .ultimo-contato-box.recente i { color: #155724; }
 
+.convertido-box {
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #d4edda 0%, #a8e6cf 100%);
+    border-radius: 8px;
+    font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+    color: #0c5460; font-weight: 600;
+    border-left: 4px solid #00b894;
+}
+.convertido-box i { font-size: 18px; color: #00b894; }
+
 .cliente-actions {
     padding: 12px 16px; border-top: 1px solid #f0f0f0;
     display: flex; gap: 6px; flex-wrap: wrap;
@@ -272,15 +322,20 @@ body {
     justify-content: center; gap: 5px;
 }
 .btn-whats-card { background: var(--whatsapp); color: white; }
-.btn-whats-card:hover { background: #1ebe5d; transform: scale(1.02); }
+.btn-whats-card:hover:not(:disabled) { background: #1ebe5d; transform: scale(1.02); }
 .btn-contato { background: var(--primary); color: white; }
-.btn-contato:hover { background: var(--secondary); transform: scale(1.02); }
+.btn-contato:hover:not(:disabled) { background: var(--secondary); transform: scale(1.02); }
 .btn-ver {
     background: #e8f4fd; color: var(--primary);
     flex: 0 0 auto !important; min-width: auto !important;
     padding: 9px 12px !important;
 }
 .btn-ver:hover { background: #d4e8f7; }
+.cliente-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
 
 /* ===================== MODAL ===================== */
 .modal-overlay {
@@ -331,6 +386,7 @@ body {
     border-color: var(--primary); outline: none;
     box-shadow: 0 0 0 3px rgba(26,58,92,0.08);
 }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-actions {
     display: flex; gap: 10px; margin-top: 20px;
     justify-content: flex-end;
@@ -392,6 +448,7 @@ body {
     z-index: 99999; font-weight: 600; font-size: 14px;
     animation: slideInRight 0.3s ease;
     display: flex; align-items: center; gap: 10px;
+    max-width: 400px;
 }
 .toast.erro { background: var(--danger); }
 .toast.info { background: var(--primary); }
@@ -437,29 +494,15 @@ body {
 }
 .spinner-box p { color: #555; font-weight: 600; font-size: 14px; }
 
-/* Barra de progresso */
-.progresso-container {
-    background: white; border-radius: var(--radius);
-    padding: 14px 18px; box-shadow: var(--shadow);
+/* ===================== MODAL MASSA ===================== */
+.massa-warning {
+    background: #fff3cd;
+    border-left: 4px solid var(--warning);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #856404;
     margin-bottom: 16px;
-}
-.progresso-container .label {
-    display: flex; justify-content: space-between;
-    font-size: 13px; font-weight: 600; color: var(--primary);
-    margin-bottom: 8px;
-}
-.progresso-bar {
-    height: 14px; background: #e0e0e0;
-    border-radius: 10px; overflow: hidden;
-}
-.progresso-bar .fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--success), #2ecc71);
-    border-radius: 10px;
-    transition: width 0.5s ease;
-    display: flex; align-items: center;
-    justify-content: flex-end; padding-right: 8px;
-    color: white; font-size: 10px; font-weight: 700;
 }
 
 @media (max-width: 768px) {
@@ -472,6 +515,7 @@ body {
     .filters-bar select, .filters-bar .btn { width: 100%; justify-content: center; }
     .login-box { padding: 30px 24px; }
     .modal { padding: 18px; }
+    .form-row { grid-template-columns: 1fr; }
     .cliente-actions button { min-width: 80px; font-size: 11px; }
 }
 
@@ -483,7 +527,7 @@ body {
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- ===================== LOGIN ===================== -->
 <div id="loginOverlay">
     <div class="login-box">
         <div class="logo">🎯</div>
@@ -509,7 +553,7 @@ body {
     </div>
 </div>
 
-<!-- APP -->
+<!-- ===================== APP ===================== -->
 <div class="container" id="app">
     <div class="header">
         <h1>🎯 Prospecção de Clientes</h1>
@@ -528,7 +572,7 @@ body {
             <div class="icon"><i class="fas fa-users"></i></div>
             <div class="info">
                 <div class="valor" id="kpiTotal">0</div>
-                <div class="label">Total de Clientes</div>
+                <div class="label">Total Clientes</div>
             </div>
         </div>
         <div class="kpi-card fila">
@@ -542,7 +586,7 @@ body {
             <div class="icon"><i class="fas fa-check-circle"></i></div>
             <div class="info">
                 <div class="valor" id="kpiContatados">0</div>
-                <div class="label">Já Prospectados</div>
+                <div class="label">Prospectados</div>
             </div>
         </div>
         <div class="kpi-card hoje">
@@ -557,6 +601,20 @@ body {
             <div class="info">
                 <div class="valor" id="kpiRevendedores">0</div>
                 <div class="label">Revendedores</div>
+            </div>
+        </div>
+        <div class="kpi-card manual">
+            <div class="icon"><i class="fas fa-user-plus"></i></div>
+            <div class="info">
+                <div class="valor" id="kpiCadastrados">0</div>
+                <div class="label">Cadastrei Manual</div>
+            </div>
+        </div>
+        <div class="kpi-card convertidos">
+            <div class="icon"><i class="fas fa-chart-line"></i></div>
+            <div class="info">
+                <div class="valor" id="kpiConvertidos">0</div>
+                <div class="label">Viraram Cliente Site</div>
             </div>
         </div>
     </div>
@@ -587,13 +645,21 @@ body {
             <option value="revendedores">👑 Revendedores</option>
             <option value="semana">📅 Contatados esta semana</option>
             <option value="prioridade">🔥 Prioridade Alta</option>
+            <option value="manuais">👤 Cadastrei Manual</option>
+            <option value="convertidos">✅ Viraram Cliente Site</option>
         </select>
         <select id="filtroOrdem" onchange="renderizarClientes()">
-            <option value="fila">⏱️ Fila (mais antigo primeiro)</option>
-            <option value="recentes">🕐 Cadastro mais recente</option>
+            <option value="fila">⏱️ Fila (mais antigo)</option>
+            <option value="recentes">🕐 Cadastro recente</option>
             <option value="compras">💰 Mais compras</option>
-            <option value="nome">🔤 Ordem alfabética</option>
+            <option value="nome">🔤 Alfabética</option>
         </select>
+        <button class="btn btn-purple" onclick="abrirCadastroCliente()">
+            <i class="fas fa-user-plus"></i> Cadastrar Cliente
+        </button>
+        <button class="btn btn-success" onclick="sincronizarComSite()">
+            <i class="fas fa-sync"></i> Verificar Conversões
+        </button>
         <button class="btn btn-primary" onclick="carregarDados()">
             <i class="fas fa-sync-alt"></i> Atualizar
         </button>
@@ -610,7 +676,7 @@ body {
     </div>
 </div>
 
-<!-- MODAL DETALHES -->
+<!-- ===================== MODAL DETALHES ===================== -->
 <div class="modal-overlay" id="modalDetalhes">
     <div class="modal">
         <div class="modal-header">
@@ -621,7 +687,7 @@ body {
     </div>
 </div>
 
-<!-- MODAL REGISTRAR CONTATO -->
+<!-- ===================== MODAL REGISTRAR CONTATO ===================== -->
 <div class="modal-overlay" id="modalContato">
     <div class="modal" style="max-width: 500px;">
         <div class="modal-header">
@@ -654,7 +720,7 @@ body {
         </div>
         
         <div style="background: #e8f4fd; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #0c5460; margin-bottom: 12px;">
-            <i class="fas fa-info-circle"></i> Após confirmar, este cliente vai para o <strong>final da fila</strong> e voltará a aparecer após todos os outros serem prospectados.
+            <i class="fas fa-info-circle"></i> Após confirmar, este cliente vai para o <strong>final da fila</strong>.
         </div>
         
         <div class="form-actions">
@@ -666,7 +732,7 @@ body {
     </div>
 </div>
 
-<!-- MODAL MENSAGEM EM MASSA -->
+<!-- ===================== MODAL MENSAGEM EM MASSA ===================== -->
 <div class="modal-overlay" id="modalMassa">
     <div class="modal" style="max-width: 650px;">
         <div class="modal-header">
@@ -698,7 +764,7 @@ body {
             <strong>Prévia:</strong> <span id="massaCount">0</span> clientes serão incluídos
         </div>
         
-        <div style="background: #fff3cd; border-left: 4px solid var(--warning); padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #856404; margin-bottom: 16px;">
+        <div class="massa-warning">
             <i class="fas fa-info-circle"></i> O WhatsApp abrirá um por vez, na ordem da fila. Você confirma cada envio manualmente.
         </div>
         
@@ -706,6 +772,58 @@ body {
             <button class="btn-cancel" onclick="fecharModal('modalMassa')">Cancelar</button>
             <button class="btn-save" onclick="iniciarMassa()" style="background: var(--whatsapp);">
                 <i class="fab fa-whatsapp"></i> Iniciar Envio
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== MODAL CADASTRO CLIENTE ===================== -->
+<div class="modal-overlay" id="modalCadastroCliente">
+    <div class="modal" style="max-width: 550px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-user-plus" style="color: var(--purple);"></i> Cadastrar Cliente (Prospecção)</h2>
+            <button class="modal-close" onclick="fecharModal('modalCadastroCliente')">&times;</button>
+        </div>
+        
+        <div style="background: #e8f4fd; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #0c5460; margin-bottom: 16px;">
+            <i class="fas fa-info-circle"></i> Este cadastro fica na aba <strong>prospeccao_clientes</strong> (separado do site). Se este cliente se cadastrar no site depois, o card será marcado automaticamente.
+        </div>
+        
+        <div class="form-group">
+            <label>Nome Completo *</label>
+            <input type="text" id="cadNome" placeholder="Ex: Maria Silva">
+        </div>
+        
+        <div class="form-group">
+            <label>Telefone / WhatsApp * <small style="color:#888;font-weight:400;">(chave de comparação)</small></label>
+            <input type="text" id="cadTelefone" placeholder="(31) 99999-9999" oninput="formatarTelefoneInput(this)">
+        </div>
+        
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="cadEmail" placeholder="email@exemplo.com">
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Cidade</label>
+                <input type="text" id="cadCidade" placeholder="Belo Horizonte">
+            </div>
+            <div class="form-group">
+                <label>Estado</label>
+                <input type="text" id="cadEstado" maxlength="2" placeholder="MG" style="text-transform:uppercase;">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Observações</label>
+            <textarea id="cadObs" rows="2" placeholder="Ex: Interessado em caixas personalizadas"></textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button class="btn-cancel" onclick="fecharModal('modalCadastroCliente')">Cancelar</button>
+            <button class="btn-save" onclick="salvarClienteProspeccao()" style="background: var(--purple);">
+                <i class="fas fa-save"></i> Cadastrar
             </button>
         </div>
     </div>
@@ -725,8 +843,8 @@ body {
 // ============================================================
 const API_URL = 'https://script.google.com/macros/s/AKfycbyYsK2yKe0lTfOHadXQOd9XTUMNAQRySrw4bgg6Zboc2hWS6-losCnZspwCTzII7QmNWg/exec';
 const SENHA_ACESSO = '123456';
-const STORAGE_KEY = 'prospeccao_dados_v1';
-const SESSION_KEY = 'prospeccao_sessao';
+const STORAGE_KEY = 'prospeccao_dados_v2';
+const SESSION_KEY = 'prospeccao_sessao_v2';
 
 // ============================================================
 // ESTADO
@@ -735,7 +853,8 @@ let dados = {
     clientes: [],
     pedidos: [],
     produtos: [],
-    contatos: JSON.parse(localStorage.getItem(STORAGE_KEY + '_contatos') || '[]')
+    contatos: [],
+    prospeccao_clientes: []
 };
 
 let usuarioAtual = null;
@@ -750,10 +869,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const sessao = localStorage.getItem(SESSION_KEY);
     if (sessao) {
         try {
-            usuarioAtual = JSON.parse(sessao);
-            if (usuarioAtual && usuarioAtual.nome && usuarioAtual.timestamp) {
-                const horas = (Date.now() - usuarioAtual.timestamp) / 3600000;
+            const s = JSON.parse(sessao);
+            if (s && s.nome && s.timestamp) {
+                const horas = (Date.now() - s.timestamp) / 3600000;
                 if (horas < 12) {
+                    usuarioAtual = s;
                     mostrarApp();
                     return;
                 }
@@ -805,36 +925,66 @@ function fazerLogout() {
 // CARREGAR DADOS
 // ============================================================
 async function carregarDados() {
-    mostrarSpinner('Carregando clientes...');
+    mostrarSpinner('Carregando dados...');
+    
     try {
-        // Tenta carregar da API
-        let data = null;
+        // 1. Carrega dados principais (clientes, pedidos, produtos)
+        let dataMain = null;
         try {
             const resp = await fetch(API_URL + '?t=' + Date.now());
-            data = await resp.json();
+            dataMain = await resp.json();
         } catch (e) {
-            console.warn('API indisponível, usando dados locais');
+            console.warn('API principal indisponível, usando cache local');
         }
         
-        if (data && data.clientes) {
-            dados.clientes = data.clientes || [];
-            dados.pedidos = data.pedidos || [];
-            dados.produtos = data.produtos || [];
+        if (dataMain && dataMain.clientes) {
+            dados.clientes = dataMain.clientes || [];
+            dados.pedidos = dataMain.pedidos || [];
+            dados.produtos = dataMain.produtos || [];
+            localStorage.setItem(STORAGE_KEY + '_main', JSON.stringify({
+                clientes: dados.clientes,
+                pedidos: dados.pedidos,
+                produtos: dados.produtos
+            }));
         } else {
-            // Fallback: dados locais
-            const local = localStorage.getItem(STORAGE_KEY);
-            if (local) {
-                const parsed = JSON.parse(local);
+            const cached = localStorage.getItem(STORAGE_KEY + '_main');
+            if (cached) {
+                const parsed = JSON.parse(cached);
                 dados.clientes = parsed.clientes || [];
                 dados.pedidos = parsed.pedidos || [];
+                dados.produtos = parsed.produtos || [];
             }
         }
         
-        // Carrega contatos do localStorage
-        dados.contatos = JSON.parse(localStorage.getItem(STORAGE_KEY + '_contatos') || '[]');
+        // 2. Carrega contatos de prospecção
+        try {
+            const respC = await fetch(API_URL + '?acao=buscar_prospeccoes&t=' + Date.now());
+            const dataC = await respC.json();
+            if (dataC && dataC.contatos) {
+                dados.contatos = dataC.contatos;
+                localStorage.setItem(STORAGE_KEY + '_contatos', JSON.stringify(dataC.contatos));
+            }
+        } catch (e) {
+            dados.contatos = JSON.parse(localStorage.getItem(STORAGE_KEY + '_contatos') || '[]');
+        }
         
-        // Mescla contatos com clientes
+        // 3. Carrega clientes de prospecção (cadastros manuais)
+        try {
+            const respPC = await fetch(API_URL + '?acao=buscar_prospeccao_clientes&t=' + Date.now());
+            const dataPC = await respPC.json();
+            if (dataPC && dataPC.clientes) {
+                dados.prospeccao_clientes = dataPC.clientes;
+                localStorage.setItem(STORAGE_KEY + '_prosp_clientes', JSON.stringify(dataPC.clientes));
+            }
+        } catch (e) {
+            dados.prospeccao_clientes = JSON.parse(localStorage.getItem(STORAGE_KEY + '_prosp_clientes') || '[]');
+        }
+        
+        // 4. Mescla contatos com clientes
         mesclarContatos();
+        
+        // 5. Detecta automaticamente conversões
+        verificarConversoesAuto();
         
         esconderSpinner();
         renderizarKPIs();
@@ -848,12 +998,11 @@ async function carregarDados() {
 }
 
 function mesclarContatos() {
-    // Anexa os contatos a cada cliente
     dados.clientes.forEach(c => {
         const contatosCliente = dados.contatos.filter(ct => 
             String(ct.cliente_id) === String(c.id_cliente) ||
-            (c.telefone && ct.cliente_telefone === c.telefone) ||
-            (c.email && ct.cliente_email === c.email)
+            (c.telefone && String(ct.cliente_telefone || '').replace(/\D/g,'') === String(c.telefone).replace(/\D/g,'')) ||
+            (c.email && String(ct.cliente_email || '').toLowerCase() === String(c.email).toLowerCase())
         );
         c._contatos = contatosCliente.sort((a,b) => 
             new Date(b.data_hora) - new Date(a.data_hora)
@@ -863,27 +1012,57 @@ function mesclarContatos() {
 }
 
 // ============================================================
-// RENDERIZAR KPIs
+// DETECTAR CONVERSÕES AUTOMATICAMENTE
+// ============================================================
+function verificarConversoesAuto() {
+    const telefonesSite = {};
+    dados.clientes.forEach(c => {
+        const tel = String(c.telefone || '').replace(/\D/g, '');
+        if (tel && tel.length >= 10) {
+            telefonesSite[tel] = {
+                id: c.id_cliente,
+                data: c.data_cadastro
+            };
+        }
+    });
+    
+    dados.prospeccao_clientes.forEach(pc => {
+        const tel = String(pc.telefone || '').replace(/\D/g, '');
+        if (tel && telefonesSite[tel]) {
+            pc.cadastrou_site = 'SIM';
+            pc.data_cadastro_site = telefonesSite[tel].data || '';
+            pc.cliente_id_site = telefonesSite[tel].id || '';
+        }
+    });
+    
+    localStorage.setItem(STORAGE_KEY + '_prosp_clientes', JSON.stringify(dados.prospeccao_clientes));
+}
+
+// ============================================================
+// KPIs
 // ============================================================
 function renderizarKPIs() {
     const total = dados.clientes.length;
     const contatados = dados.clientes.filter(c => c._ultimoContato).length;
     const hoje = dados.clientes.filter(c => {
         if (!c._ultimoContato) return false;
-        const dataContato = new Date(c._ultimoContato.data_hora);
-        const hoje = new Date();
-        return dataContato.toDateString() === hoje.toDateString();
+        return new Date(c._ultimoContato.data_hora).toDateString() === new Date().toDateString();
     }).length;
     const revendedores = dados.clientes.filter(c => 
         String(c.observacoes || '').toUpperCase().includes('REVENDA')
     ).length;
     const naFila = total - contatados;
     
+    const cadastradosManual = dados.prospeccao_clientes.length;
+    const convertidos = dados.prospeccao_clientes.filter(pc => pc.cadastrou_site === 'SIM').length;
+    
     document.getElementById('kpiTotal').textContent = total;
     document.getElementById('kpiFila').textContent = naFila;
     document.getElementById('kpiContatados').textContent = contatados;
     document.getElementById('kpiHoje').textContent = hoje;
     document.getElementById('kpiRevendedores').textContent = revendedores;
+    document.getElementById('kpiCadastrados').textContent = cadastradosManual;
+    document.getElementById('kpiConvertidos').textContent = convertidos;
     
     // Progresso
     const percentual = total > 0 ? Math.round((contatados / total) * 100) : 0;
@@ -894,7 +1073,7 @@ function renderizarKPIs() {
 }
 
 // ============================================================
-// LÓGICA DA FILA INTELIGENTE
+// FILA INTELIGENTE
 // ============================================================
 function calcularPrioridade(cliente) {
     const agora = new Date();
@@ -902,20 +1081,19 @@ function calcularPrioridade(cliente) {
         new Date(cliente.data_cadastro.split('/').reverse().join('-')) : 
         new Date(0);
     
-    // REGRA 1: Cliente novo (cadastrado há menos de 3 dias) = FINAL DA FILA
+    // Cliente novo (< 3 dias) = final da fila
     const diasDesdeCadastro = (agora - dataCadastro) / (1000*60*60*24);
     if (diasDesdeCadastro < 3) {
-        return 999999; // Prioridade máxima (vai pro final)
+        return 999999;
     }
     
-    // REGRA 2: Base = dias desde último contato (mais antigo = maior prioridade)
     let diasSemContato = 999999;
     if (cliente._ultimoContato) {
         const dataContato = new Date(cliente._ultimoContato.data_hora);
         diasSemContato = (agora - dataContato) / (1000*60*60*24);
     }
     
-    // REGRA 3: Bônus para revendedores (-3 dias = sobe na fila)
+    // Bônus para revendedores
     const isRev = String(cliente.observacoes || '').toUpperCase().includes('REVENDA');
     if (isRev) diasSemContato -= 3;
     
@@ -926,21 +1104,54 @@ function ordenarFila(clientes) {
     return [...clientes].sort((a, b) => {
         const pa = calcularPrioridade(a);
         const pb = calcularPrioridade(b);
-        return pb - pa; // Maior prioridade primeiro
+        return pb - pa;
     });
 }
 
 // ============================================================
-// FILTRAR CLIENTES
+// FILTRAR
 // ============================================================
 function filtrarClientes() {
     const busca = document.getElementById('filtroBusca').value.toLowerCase().trim();
     const status = document.getElementById('filtroStatus').value;
     const ordem = document.getElementById('filtroOrdem').value;
     
+    // Filtros especiais de prospecção manual
+    if (status === 'manuais') {
+        let manuais = dados.prospeccao_clientes.slice();
+        if (busca) {
+            manuais = manuais.filter(c => {
+                const nome = String(c.nome || '').toLowerCase();
+                const tel = String(c.telefone || '').toLowerCase();
+                const email = String(c.email || '').toLowerCase();
+                return nome.includes(busca) || tel.includes(busca) || email.includes(busca);
+            });
+        }
+        return manuais.map(pc => ({
+            ...pc,
+            _isManual: true,
+            _cadastrouSite: pc.cadastrou_site === 'SIM'
+        }));
+    }
+    
+    if (status === 'convertidos') {
+        let conv = dados.prospeccao_clientes.filter(pc => pc.cadastrou_site === 'SIM');
+        if (busca) {
+            conv = conv.filter(c => {
+                const nome = String(c.nome || '').toLowerCase();
+                const tel = String(c.telefone || '').toLowerCase();
+                return nome.includes(busca) || tel.includes(busca);
+            });
+        }
+        return conv.map(pc => ({
+            ...pc,
+            _isManual: true,
+            _cadastrouSite: true
+        }));
+    }
+    
     let filtrados = [...dados.clientes];
     
-    // Busca
     if (busca) {
         filtrados = filtrados.filter(c => {
             const nome = String(c.nome || '').toLowerCase();
@@ -950,13 +1161,10 @@ function filtrarClientes() {
         });
     }
     
-    // Status
     const hoje = new Date().toDateString();
     const semanaAtras = new Date(Date.now() - 7*24*60*60*1000);
     
-    if (status === 'fila') {
-        // Todos ordenados por prioridade
-    } else if (status === 'nunca') {
+    if (status === 'nunca') {
         filtrados = filtrados.filter(c => !c._ultimoContato);
     } else if (status === 'hoje') {
         filtrados = filtrados.filter(c => 
@@ -976,7 +1184,6 @@ function filtrarClientes() {
         filtrados = filtrados.filter(c => calcularPrioridade(c) > 30);
     }
     
-    // Ordenação
     if (ordem === 'fila' || status === 'fila') {
         filtrados = ordenarFila(filtrados);
     } else if (ordem === 'recentes') {
@@ -986,11 +1193,7 @@ function filtrarClientes() {
             return db - da;
         });
     } else if (ordem === 'compras') {
-        filtrados.sort((a, b) => {
-            const va = calcularTotalCompras(a);
-            const vb = calcularTotalCompras(b);
-            return vb - va;
-        });
+        filtrados.sort((a, b) => calcularTotalCompras(b) - calcularTotalCompras(a));
     } else if (ordem === 'nome') {
         filtrados.sort((a, b) => 
             String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR')
@@ -1018,16 +1221,23 @@ function renderizarClientes() {
         return;
     }
     
-    // Calcula posição na fila (para exibir "1º", "2º", etc.)
     const filaCompleta = ordenarFila(dados.clientes);
     const posicoes = {};
     filaCompleta.forEach((c, i) => {
         posicoes[c.id_cliente] = i + 1;
     });
     
-    container.innerHTML = clientes.map(c => renderizarCard(c, posicoes[c.id_cliente], filaCompleta.length)).join('');
+    container.innerHTML = clientes.map(c => {
+        if (c._isManual) {
+            return renderizarCardManual(c);
+        }
+        return renderizarCard(c, posicoes[c.id_cliente], filaCompleta.length);
+    }).join('');
 }
 
+// ============================================================
+// CARD DE CLIENTE (site)
+// ============================================================
 function renderizarCard(c, posicao, total) {
     const isRev = String(c.observacoes || '').toUpperCase().includes('REVENDA');
     const temContato = !!c._ultimoContato;
@@ -1039,27 +1249,23 @@ function renderizarCard(c, posicao, total) {
     const prioridade = calcularPrioridade(c);
     const prioridadeAlta = prioridade > 30;
     
-    // Classes
     let classes = 'cliente-card';
     if (isRev) classes += ' revend';
     if (ehNovo) classes += ' novo';
     if (contatadoHoje) classes += ' contatado-hoje';
     if (prioridadeAlta && !ehNovo) classes += ' prioridade-alta';
     
-    // Badges
     let badges = '';
     if (isRev) badges += '<span class="badge badge-rev">👑 Revendedor</span>';
     if (ehNovo) badges += '<span class="badge badge-novo">🆕 Novo</span>';
     if (contatadoHoje) badges += '<span class="badge badge-hoje">📞 Hoje</span>';
     if (prioridadeAlta && !ehNovo) badges += '<span class="badge badge-prioridade">🔥 Prioridade</span>';
     
-    // Posição na fila
     let posClass = '';
     if (posicao === 1) posClass = 'primeiro';
     if (posicao > total - 3) posClass = 'ultimo';
     const posTexto = posicao === 1 ? '🥇 1º' : `${posicao}º de ${total}`;
     
-    // Estatísticas
     const pedidosCliente = dados.pedidos.filter(p => 
         (c.email && String(p.cliente_email || '').toLowerCase() === String(c.email).toLowerCase()) ||
         (c.telefone && String(p.cliente_telefone || '').replace(/\D/g,'') === String(c.telefone).replace(/\D/g,''))
@@ -1082,7 +1288,6 @@ function renderizarCard(c, posicao, total) {
         }
     }
     
-    // Último contato
     let ultimoContatoHtml = '';
     if (c._ultimoContato) {
         const dataContato = new Date(c._ultimoContato.data_hora);
@@ -1107,12 +1312,8 @@ function renderizarCard(c, posicao, total) {
         `;
     }
     
-    // Telefone para WhatsApp
     const telefoneLimpo = String(c.telefone || '').replace(/\D/g, '');
     const temTelefone = telefoneLimpo.length >= 10;
-    const waLink = temTelefone ? 
-        `https://wa.me/55${telefoneLimpo}?text=${encodeURIComponent(mensagemPadrao(c))}` : 
-        '#';
     
     return `
         <div class="${classes}" data-id="${c.id_cliente}">
@@ -1153,7 +1354,7 @@ function renderizarCard(c, posicao, total) {
                         <i class="fab fa-whatsapp"></i> WhatsApp
                     </button>
                 ` : `
-                    <button class="btn-whats-card" disabled style="opacity:0.5;cursor:not-allowed;">
+                    <button class="btn-whats-card" disabled>
                         <i class="fab fa-whatsapp"></i> Sem tel.
                     </button>
                 `}
@@ -1163,6 +1364,123 @@ function renderizarCard(c, posicao, total) {
                 <button class="btn-ver" onclick="verDetalhes(${c.id_cliente})" title="Ver detalhes">
                     <i class="fas fa-eye"></i>
                 </button>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================
+// CARD MANUAL (prospecção)
+// ============================================================
+function renderizarCardManual(c) {
+    const convertido = c.cadastrou_site === 'SIM';
+    
+    let classes = 'cliente-card manual';
+    if (convertido) classes += ' convertido';
+    
+    let badges = '<span class="badge badge-manual">👤 Cadastro Manual</span>';
+    if (convertido) badges += '<span class="badge badge-convertido">✅ Virou Cliente</span>';
+    
+    const telefoneLimpo = String(c.telefone || '').replace(/\D/g, '');
+    const temTelefone = telefoneLimpo.length >= 10;
+    
+    let dataCadastro = c.data_cadastro || '-';
+    try {
+        if (typeof dataCadastro === 'string' && dataCadastro.includes('T')) {
+            dataCadastro = new Date(dataCadastro).toLocaleDateString('pt-BR');
+        }
+    } catch(e) {}
+    
+    let convertidoBox = '';
+    if (convertido) {
+        let dataSite = c.data_cadastro_site || '';
+        try {
+            if (dataSite && typeof dataSite === 'string' && dataSite.includes('T')) {
+                dataSite = new Date(dataSite).toLocaleDateString('pt-BR');
+            }
+        } catch(e) {}
+        convertidoBox = `
+            <div class="convertido-box">
+                <i class="fas fa-check-circle"></i>
+                <span>Cliente se cadastrou no site! ${dataSite ? 'Em ' + dataSite : ''}</span>
+            </div>
+        `;
+    }
+    
+    return `
+        <div class="${classes}">
+            <div class="cliente-header">
+                <div class="nome-wrapper">
+                    <div class="nome">${c.nome || 'Sem nome'} ${badges}</div>
+                    <div class="contato-info">
+                        ${c.telefone || 'sem telefone'} ${c.email ? '• ' + c.email.substring(0,25) : ''}
+                    </div>
+                </div>
+                <div class="queue-pos" style="background: ${convertido ? '#00b894' : '#6c5ce7'};">
+                    ${convertido ? '✅' : '👤'} Manual
+                </div>
+            </div>
+            
+            <div class="cliente-body">
+                ${convertidoBox}
+                ${!convertido ? `
+                    <div class="info-row">
+                        <i class="fas fa-calendar"></i>
+                        <span class="txt">Cadastrado em: ${dataCadastro}</span>
+                    </div>
+                    <div class="info-row">
+                        <i class="fas fa-user-tie"></i>
+                        <span class="txt">Por: ${c.prospectador || '-'}</span>
+                    </div>
+                    ${c.cidade || c.estado ? `
+                        <div class="info-row">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span class="txt">${c.cidade || '-'} ${c.estado ? '/ ' + c.estado : ''}</span>
+                        </div>
+                    ` : ''}
+                    ${c.observacoes ? `
+                        <div class="info-row">
+                            <i class="fas fa-comment"></i>
+                            <span class="txt">${c.observacoes}</span>
+                        </div>
+                    ` : ''}
+                ` : `
+                    <div class="stats-grid">
+                        <div class="stat-mini recente">
+                            <div class="val">R$ 0</div>
+                            <div class="lbl">Vendas</div>
+                        </div>
+                        <div class="stat-mini">
+                            <div class="val">${dataCadastro.split('/')[0] || '-'}</div>
+                            <div class="lbl">Cadastro</div>
+                        </div>
+                        <div class="stat-mini destaque">
+                            <div class="val">✓</div>
+                            <div class="lbl">Convertido</div>
+                        </div>
+                    </div>
+                `}
+            </div>
+            
+            <div class="cliente-actions">
+                ${!convertido ? `
+                    ${temTelefone ? `
+                        <button class="btn-whats-card" onclick="abrirWhatsAppManual(${c.id})">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </button>
+                    ` : `
+                        <button class="btn-whats-card" disabled>
+                            <i class="fab fa-whatsapp"></i> Sem tel.
+                        </button>
+                    `}
+                    <button class="btn-contato" onclick="abrirModalContatoManual(${c.id})">
+                        <i class="fas fa-check"></i> Contato
+                    </button>
+                ` : `
+                    <button class="btn-whats-card" disabled style="grid-column: 1 / -1;">
+                        <i class="fas fa-lock"></i> Bloqueado - Cliente no Site
+                    </button>
+                `}
             </div>
         </div>
     `;
@@ -1193,28 +1511,33 @@ function mensagemPadrao(cliente) {
 }
 
 // ============================================================
-// ABRIR WHATSAPP
+// WHATSAPP
 // ============================================================
 function abrirWhatsApp(idCliente) {
     const cliente = dados.clientes.find(c => String(c.id_cliente) === String(idCliente));
     if (!cliente) return;
-    
     const telefone = String(cliente.telefone || '').replace(/\D/g, '');
     if (telefone.length < 10) {
         toast('Telefone inválido', 'erro');
         return;
     }
-    
     const mensagem = mensagemPadrao(cliente);
     const url = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
-    
-    // Salva intenção (para o usuário registrar depois)
-    localStorage.setItem('ultimo_whatsapp', JSON.stringify({
-        cliente_id: cliente.id_cliente,
-        cliente_nome: cliente.nome,
-        timestamp: Date.now()
-    }));
+}
+
+function abrirWhatsAppManual(idManual) {
+    const cliente = dados.prospeccao_clientes.find(c => String(c.id) === String(idManual));
+    if (!cliente) return;
+    const telefone = String(cliente.telefone || '').replace(/\D/g, '');
+    if (telefone.length < 10) {
+        toast('Telefone inválido', 'erro');
+        return;
+    }
+    const primeiroNome = String(cliente.nome || '').split(' ')[0] || 'cliente';
+    const mensagem = `Olá ${primeiroNome}! Tudo bem? 😊\n\nAqui é da Embalagens Express! Trabalhamos com embalagens de alta qualidade para o seu negócio.\n\nGostaria de conhecer nossas ofertas especiais? Posso te enviar nosso catálogo! 📦`;
+    const url = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
 }
 
 // ============================================================
@@ -1224,18 +1547,35 @@ function abrirModalContato(idCliente) {
     const cliente = dados.clientes.find(c => String(c.id_cliente) === String(idCliente));
     if (!cliente) return;
     
-    clienteSelecionado = cliente;
+    clienteSelecionado = { tipo: 'site', cliente };
     
     document.getElementById('contatoClienteInfo').innerHTML = `
         <strong>${cliente.nome}</strong><br>
         ${cliente.telefone || 'sem telefone'} • ${cliente.email || 'sem email'}
     `;
     
-    // Data/hora atual
     const agora = new Date();
     agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
     document.getElementById('contatoDataHora').value = agora.toISOString().slice(0, 16);
+    document.getElementById('contatoResultado').value = 'enviado';
+    document.getElementById('contatoObs').value = '';
+    document.getElementById('modalContato').classList.add('open');
+}
+
+function abrirModalContatoManual(idManual) {
+    const cliente = dados.prospeccao_clientes.find(c => String(c.id) === String(idManual));
+    if (!cliente) return;
     
+    clienteSelecionado = { tipo: 'manual', cliente };
+    
+    document.getElementById('contatoClienteInfo').innerHTML = `
+        <strong>${cliente.nome}</strong> <span class="badge badge-manual">Manual</span><br>
+        ${cliente.telefone || 'sem telefone'} • ${cliente.email || 'sem email'}
+    `;
+    
+    const agora = new Date();
+    agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+    document.getElementById('contatoDataHora').value = agora.toISOString().slice(0, 16);
     document.getElementById('contatoResultado').value = 'enviado';
     document.getElementById('contatoObs').value = '';
     document.getElementById('modalContato').classList.add('open');
@@ -1253,23 +1593,24 @@ async function salvarContato() {
         return;
     }
     
+    const cliente = clienteSelecionado.cliente;
     const novoContato = {
         id: Date.now(),
-        cliente_id: clienteSelecionado.id_cliente,
-        cliente_nome: clienteSelecionado.nome,
-        cliente_telefone: clienteSelecionado.telefone,
-        cliente_email: clienteSelecionado.email,
+        cliente_id: clienteSelecionado.tipo === 'site' ? cliente.id_cliente : cliente.id,
+        cliente_nome: cliente.nome,
+        cliente_telefone: cliente.telefone,
+        cliente_email: cliente.email,
         data_hora: dataHora,
         resultado: resultado,
         observacoes: obs,
         prospectador: usuarioAtual.nome,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        tipo: clienteSelecionado.tipo
     };
     
     dados.contatos.push(novoContato);
     localStorage.setItem(STORAGE_KEY + '_contatos', JSON.stringify(dados.contatos));
     
-    // Tenta sincronizar com o backend (best effort)
     try {
         await fetch(API_URL, {
             method: 'POST',
@@ -1280,21 +1621,19 @@ async function salvarContato() {
                 contato: novoContato
             })
         });
-    } catch(e) {
-        console.warn('Sync com backend falhou, salvo apenas localmente');
-    }
+    } catch(e) {}
     
     mesclarContatos();
     fecharModal('modalContato');
     renderizarKPIs();
     renderizarClientes();
     
-    toast(`✅ Contato registrado! ${clienteSelecionado.nome} foi para o final da fila.`, 'success');
+    toast(`✅ Contato registrado! ${cliente.nome} foi para o final da fila.`, 'success');
     clienteSelecionado = null;
 }
 
 // ============================================================
-// VER DETALHES
+// DETALHES
 // ============================================================
 function verDetalhes(idCliente) {
     const cliente = dados.clientes.find(c => String(c.id_cliente) === String(idCliente));
@@ -1312,7 +1651,6 @@ function verDetalhes(idCliente) {
     
     let html = '';
     
-    // Info básica
     html += `
         <div class="detalhe-section">
             <h3><i class="fas fa-user"></i> Informações</h3>
@@ -1328,11 +1666,7 @@ function verDetalhes(idCliente) {
         </div>
     `;
     
-    // Histórico de compras
-    html += `
-        <div class="detalhe-section">
-            <h3><i class="fas fa-shopping-cart"></i> Histórico de Compras (${pedidosCliente.length})</h3>
-    `;
+    html += `<div class="detalhe-section"><h3><i class="fas fa-shopping-cart"></i> Histórico de Compras (${pedidosCliente.length})</h3>`;
     
     if (pedidosCliente.length === 0) {
         html += `<p style="color:#999;font-size:12px;text-align:center;padding:10px;">Nenhuma compra registrada</p>`;
@@ -1360,11 +1694,7 @@ function verDetalhes(idCliente) {
     }
     html += `</div>`;
     
-    // Histórico de contatos
-    html += `
-        <div class="detalhe-section">
-            <h3><i class="fas fa-phone"></i> Histórico de Prospecção (${contatosCliente.length})</h3>
-    `;
+    html += `<div class="detalhe-section"><h3><i class="fas fa-phone"></i> Histórico de Prospecção (${contatosCliente.length})</h3>`;
     
     if (contatosCliente.length === 0) {
         html += `<p style="color:#999;font-size:12px;text-align:center;padding:10px;">Nunca prospectado</p>`;
@@ -1396,7 +1726,6 @@ function verDetalhes(idCliente) {
     }
     html += `</div>`;
     
-    // Botão WhatsApp
     const telLimpo = String(cliente.telefone || '').replace(/\D/g, '');
     if (telLimpo.length >= 10) {
         html += `
@@ -1441,14 +1770,12 @@ function filtrarParaMassa(filtro) {
     } else if (filtro === '30dias') {
         base = base.filter(c => {
             if (!c._ultimoContato) return true;
-            const dias = (new Date() - new Date(c._ultimoContato.data_hora)) / (1000*60*60*24);
-            return dias >= 30;
+            return (new Date() - new Date(c._ultimoContato.data_hora)) / (1000*60*60*24) >= 30;
         });
     } else if (filtro === '60dias') {
         base = base.filter(c => {
             if (!c._ultimoContato) return true;
-            const dias = (new Date() - new Date(c._ultimoContato.data_hora)) / (1000*60*60*24);
-            return dias >= 60;
+            return (new Date() - new Date(c._ultimoContato.data_hora)) / (1000*60*60*24) >= 60;
         });
     }
     
@@ -1478,7 +1805,7 @@ function iniciarMassa() {
 
 function abrirProximoMassa(template) {
     if (indexMassa >= filaMassa.length) {
-        toast(`✅ Fila de mensagens finalizada (${filaMassa.length} clientes)!`, 'success');
+        toast(`✅ Fila finalizada! (${filaMassa.length} clientes)`, 'success');
         filaMassa = [];
         indexMassa = 0;
         return;
@@ -1512,9 +1839,8 @@ function abrirProximoMassa(template) {
     const url = `https://wa.me/55${tel}?text=${encodeURIComponent(mensagem)}`;
     window.open(url, '_blank');
     
-    // Diálogo para confirmar envio
     setTimeout(() => {
-        if (confirm(`✅ Mensagem enviada para ${cliente.nome}?\n\n(${indexMassa + 1} de ${filaMassa.length})\n\nClique OK para registrar o contato e ir para o próximo.`)) {
+        if (confirm(`✅ Mensagem enviada para ${cliente.nome}?\n\n(${indexMassa + 1} de ${filaMassa.length})\n\nClique OK para registrar e ir para o próximo.`)) {
             registrarContatoMassa(cliente, template);
             indexMassa++;
             setTimeout(() => abrirProximoMassa(template), 500);
@@ -1561,6 +1887,169 @@ async function registrarContatoMassa(cliente, template) {
 }
 
 // ============================================================
+// CADASTRO MANUAL DE CLIENTE
+// ============================================================
+function abrirCadastroCliente() {
+    document.getElementById('cadNome').value = '';
+    document.getElementById('cadTelefone').value = '';
+    document.getElementById('cadEmail').value = '';
+    document.getElementById('cadCidade').value = '';
+    document.getElementById('cadEstado').value = '';
+    document.getElementById('cadObs').value = '';
+    document.getElementById('modalCadastroCliente').classList.add('open');
+    setTimeout(() => document.getElementById('cadNome').focus(), 100);
+}
+
+function formatarTelefoneInput(input) {
+    let v = input.value.replace(/\D/g, '');
+    if (v.length > 11) v = v.slice(0, 11);
+    
+    if (v.length <= 10) {
+        v = v.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
+    } else {
+        v = v.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+    }
+    input.value = v;
+}
+
+async function salvarClienteProspeccao() {
+    const nome = document.getElementById('cadNome').value.trim();
+    const telefone = document.getElementById('cadTelefone').value.trim();
+    const email = document.getElementById('cadEmail').value.trim();
+    const cidade = document.getElementById('cadCidade').value.trim();
+    const estado = document.getElementById('cadEstado').value.trim().toUpperCase();
+    const obs = document.getElementById('cadObs').value.trim();
+    
+    if (!nome || nome.length < 3) {
+        toast('Digite o nome completo', 'erro');
+        return;
+    }
+    const telLimpo = telefone.replace(/\D/g, '');
+    if (telLimpo.length < 10) {
+        toast('Telefone inválido (mín. 10 dígitos)', 'erro');
+        return;
+    }
+    
+    const novoCliente = {
+        id: Date.now(),
+        nome: nome,
+        telefone: telefone,
+        email: email,
+        cidade: cidade,
+        estado: estado,
+        observacoes: obs,
+        prospectador: usuarioAtual.nome,
+        data_cadastro: new Date().toISOString(),
+        cadastrou_site: 'NÃO',
+        data_cadastro_site: '',
+        cliente_id_site: ''
+    };
+    
+    mostrarSpinner('Cadastrando cliente...');
+    
+    try {
+        dados.prospeccao_clientes.push(novoCliente);
+        localStorage.setItem(STORAGE_KEY + '_prosp_clientes', JSON.stringify(dados.prospeccao_clientes));
+        
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    acao: 'cadastrar_cliente_prospeccao',
+                    cliente: novoCliente
+                })
+            });
+        } catch(e) {}
+        
+        esconderSpinner();
+        fecharModal('modalCadastroCliente');
+        renderizarKPIs();
+        renderizarClientes();
+        
+        toast(`✅ ${nome} cadastrado!`, 'success');
+        
+    } catch (error) {
+        esconderSpinner();
+        console.error('Erro ao cadastrar:', error);
+        toast('Erro ao cadastrar cliente', 'erro');
+    }
+}
+
+// ============================================================
+// SINCRONIZAR COM SITE
+// ============================================================
+async function sincronizarComSite() {
+    mostrarSpinner('Verificando conversões...');
+    
+    try {
+        // 1. Busca clientes do site novamente
+        const resp = await fetch(API_URL + '?t=' + Date.now());
+        const data = await resp.json();
+        
+        if (data && data.clientes) {
+            dados.clientes = data.clientes;
+        }
+        
+        // 2. Compara telefones
+        const telefonesSite = {};
+        dados.clientes.forEach(c => {
+            const tel = String(c.telefone || '').replace(/\D/g, '');
+            if (tel && tel.length >= 10) {
+                telefonesSite[tel] = {
+                    id: c.id_cliente,
+                    data: c.data_cadastro,
+                    nome: c.nome
+                };
+            }
+        });
+        
+        // 3. Atualiza prospeccao_clientes
+        let convertidos = 0;
+        dados.prospeccao_clientes.forEach(pc => {
+            const tel = String(pc.telefone || '').replace(/\D/g, '');
+            if (tel && telefonesSite[tel]) {
+                if (pc.cadastrou_site !== 'SIM') {
+                    convertidos++;
+                }
+                pc.cadastrou_site = 'SIM';
+                pc.data_cadastro_site = telefonesSite[tel].data || '';
+                pc.cliente_id_site = telefonesSite[tel].id || '';
+            }
+        });
+        
+        localStorage.setItem(STORAGE_KEY + '_prosp_clientes', JSON.stringify(dados.prospeccao_clientes));
+        
+        // 4. Salva no Sheets
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ acao: 'sincronizar_prospeccao_site' })
+            });
+        } catch(e) {}
+        
+        esconderSpinner();
+        
+        if (convertidos > 0) {
+            toast(`🎉 ${convertidos} novo(s) cliente(s) viraram cliente do site!`, 'success');
+        } else {
+            toast('✅ Verificação concluída. Nenhuma conversão nova.', 'info');
+        }
+        
+        renderizarKPIs();
+        renderizarClientes();
+        
+    } catch (error) {
+        esconderSpinner();
+        console.error('Erro ao sincronizar:', error);
+        toast('Erro ao verificar conversões', 'erro');
+    }
+}
+
+// ============================================================
 // UTILITÁRIOS
 // ============================================================
 function mostrarSpinner(msg) {
@@ -1585,7 +2074,6 @@ function toast(msg, tipo = 'success') {
     }, 3500);
 }
 
-// Fecha modais ao clicar fora
 document.querySelectorAll('.modal-overlay').forEach(m => {
     m.addEventListener('click', (e) => {
         if (e.target === m) m.classList.remove('open');
