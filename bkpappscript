@@ -1,0 +1,3202 @@
+// ============================================================
+// APPS SCRIPT - SISTEMA COMPLETO DE GERENCIAMENTO
+// Versão ATUALIZADA com Pagar.me (PIX + Boleto + Cartão)
+// + Fretes Simulados + Produtos do Carrinho + Datas corrigidas
+// ============================================================
+
+// ============================================================
+// CONFIGURAÇÕES
+// ============================================================
+const SUPERFRETE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE3ODIxNTAxNjgsInN1YiI6IlNCOXc1dVFFU1NXTTZWUE5XZ2ZDVmVtMGRWeTIifQ.EP15WB_yJZ3GErK5HDlu-jRfFJc_-DPnj8jj_wJALGA';
+const CEP_ORIGEM = '31050650';
+
+
+// ============================================================
+// CACHE PARA FRETE (ARMAZENAMENTO TEMPORÁRIO)
+// ============================================================
+var cacheFrete = {};
+var cacheFreteTempo = 300000; // 5 minutos em milissegundos
+
+function salvarCacheFrete(chave, dados) {
+  cacheFrete[chave] = {
+    dados: dados,
+    timestamp: Date.now()
+  };
+  for (var key in cacheFrete) {
+    if (Date.now() - cacheFrete[key].timestamp > cacheFreteTempo) {
+      delete cacheFrete[key];
+    }
+  }
+}
+
+function buscarCacheFrete(chave) {
+  if (cacheFrete[chave] && (Date.now() - cacheFrete[chave].timestamp < cacheFreteTempo)) {
+    return cacheFrete[chave].dados;
+  }
+  return null;
+}
+
+
+// ============================================================
+// FUNÇÃO AUXILIAR PARA RESPOSTA
+// ============================================================
+function criarResposta(dados) {
+  return ContentService
+    .createTextOutput(JSON.stringify(dados))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ============================================================
+// FUNÇÃO AUXILIAR PARA DATA/HORA (FUSO BRASÍLIA)
+// ============================================================
+function dataHoraBrasilia(formato) {
+  formato = formato || "dd/MM/yyyy HH:mm:ss";
+  return Utilities.formatDate(new Date(), "America/Sao_Paulo", formato);
+}
+
+// ============================================================
+// PROXY PARA BUSCAR FRETE (EVITA CORS)
+// ============================================================
+function proxyFrete(cepDestino, peso, altura, largura, comprimento) {
+  try {
+    const resultado = calcularFreteSuperFrete(
+      cepDestino,
+      peso,
+      altura,
+      largura,
+      comprimento
+    );
+    return resultado;
+  } catch (error) {
+    return {
+      success: false,
+      error: error.toString(),
+      opcoes: gerarOpcoesFallback(cepDestino, peso, altura, largura, comprimento)
+    };
+  }
+}
+
+// ============================================================
+// 1. FUNÇÃO DO GET (COMPLETA COM FRETE, CACHE E PAGAR.ME)
+// ============================================================
+function doGet(e) {
+  try {
+    const params = e ? e.parameter : {};
+    const acao = params.acao || '';
+    
+    // ============================================================
+    // SE FOR CALCULAR FRETE, BUSCA DO CACHE
+    // ============================================================
+    if (acao === 'calcular_frete') {
+      const cepDestino = params.cepDestino || '';
+      const peso = parseFloat(params.peso) || 0.5;
+      const altura = parseFloat(params.altura) || 10;
+      const largura = parseFloat(params.largura) || 10;
+      const comprimento = parseFloat(params.comprimento) || 10;
+      
+      const chaveCache = 'frete_' + cepDestino + '_' + peso + '_' + altura + '_' + largura + '_' + comprimento;
+      
+      console.log('📥 GET - Buscando frete no cache:', chaveCache);
+      
+      let cacheResultado = buscarCacheFrete(chaveCache);
+      
+      if (!cacheResultado) {
+        console.log('⚠️ Cache não encontrado, calculando...');
+        cacheResultado = calcularFreteSuperFrete(
+          cepDestino,
+          peso,
+          altura,
+          largura,
+          comprimento
+        );
+        salvarCacheFrete(chaveCache, cacheResultado);
+      } else {
+        console.log('✅ Cache encontrado!');
+      }
+      
+      console.log('📤 GET - Resultado do frete:', cacheResultado);
+      return criarResposta(cacheResultado);
+    }
+    
+    // ============================================================
+    // BUSCAR ÚLTIMO FRETE CALCULADO
+    // ============================================================
+    if (acao === 'buscar_ultimo_frete') {
+      console.log('📥 Buscando último frete...');
+      const ultimoFrete = buscarUltimoFrete();
+      console.log('📤 Resultado:', ultimoFrete);
+      return criarResposta(ultimoFrete);
+    }
+    
+    // ============================================================
+    // 🔥 NOVO: BUSCAR FRETES SIMULADOS (PARA O BOTÃO DO GERENCIADOR)
+    // ============================================================
+    if (acao === 'buscar_fretes_simulados') {
+      console.log('📥 Buscando fretes simulados...');
+      
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      const sheet = ss.getSheetByName('fretes_calculados');
+      
+      if (!sheet || sheet.getLastRow() < 2) {
+        console.log('⚠️ Nenhum frete simulado encontrado');
+        return criarResposta({ success: true, fretes: [] });
+      }
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const dados = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
+      
+      const fretes = [];
+      // 🔥 MAIS RECENTES PRIMEIRO (de baixo para cima)
+      for (let i = dados.length - 1; i >= 0; i--) {
+        const obj = {};
+        for (let j = 0; j < cabecalhos.length; j++) {
+          obj[cabecalhos[j]] = dados[i][j];
+        }
+        fretes.push(obj);
+      }
+      
+      console.log('✅ Fretes encontrados:', fretes.length);
+      return criarResposta({ success: true, fretes: fretes });
+    }
+    
+    // ============================================================
+    // CRIAR LINK DE PAGAMENTO PAGAR.ME (VIA GET)
+    // ============================================================
+    if (acao === 'criar_link_pagamento') {
+      console.log('📥 Criando link de pagamento via GET...');
+      
+      try {
+        // Monta os dados a partir dos parâmetros
+        var dados = {
+          pedidoId: params.pedidoId || '',
+          clienteEmail: params.clienteEmail || '',
+          clienteNome: params.clienteNome || '',
+          clienteDocumento: params.clienteDocumento || '12345678909',
+          itens: JSON.parse(params.itens || '[]'),
+          metodosPagamento: [params.metodosPagamento || 'pix']
+        };
+        
+        console.log('📤 Dados recebidos:', dados);
+        
+        var linkResultado = criarLinkPagamento(dados);
+        console.log('📤 Resultado do Pagar.me:', linkResultado);
+        return criarResposta(linkResultado);
+        
+      } catch (error) {
+        console.error('❌ Erro ao criar link de pagamento:', error);
+        return criarResposta({
+          success: false,
+          error: error.message || 'Erro ao criar link de pagamento'
+        });
+      }
+    }
+    
+    // ============================================================
+    // VERIFICAR STATUS DO PAGAMENTO (VIA GET)
+    // ============================================================
+    if (acao === 'verificar_status_pagamento') {
+      console.log('📥 Verificando status via GET...');
+      
+      try {
+        var checkoutId = params.checkoutId || '';
+        var statusResultado = verificarStatusPagamento(checkoutId);
+        console.log('📤 Resultado:', statusResultado);
+        return criarResposta(statusResultado);
+        
+      } catch (error) {
+        console.error('❌ Erro ao verificar status:', error);
+        return criarResposta({
+          success: false,
+          error: error.message || 'Erro ao verificar status'
+        });
+      }
+    }
+    
+    // ============================================================
+    // SE NÃO FOR NENHUMA AÇÃO ESPECIAL, RETORNA OS DADOS NORMAIS
+    // ============================================================
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    let sheetProdutos = ss.getSheetByName('produtos');
+    let sheetCategorias = ss.getSheetByName('categorias');
+    let sheetPedidos = ss.getSheetByName('pedidos');
+    let sheetClientes = ss.getSheetByName('clientes');
+    
+    if (!sheetProdutos) {
+      sheetProdutos = ss.insertSheet('produtos');
+      const cabecalhos = [
+        'id', 'categoria', 'nome', 'descricao', 'imagem_principal', 
+        'imagens_carousel', 'quantidades', 'pesos_medidas', 'estoque', 
+        'prazo_producao', 'peso_unitario', 'preco_custo', 'preco_venda', 
+        'preco_promocional', 'data_estoque', 'produto_ativado', 
+        'vender_zerado', 'codigo_produto', 'ncm'
+      ];
+      sheetProdutos.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+      sheetProdutos.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
+      sheetProdutos.setFrozenRows(1);
+    }
+    
+    if (!sheetCategorias) {
+      sheetCategorias = ss.insertSheet('categorias');
+      const cabecalhos = ['id', 'nome', 'descricao', 'imagem'];
+      sheetCategorias.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+      sheetCategorias.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
+      sheetCategorias.setFrozenRows(1);
+    }
+    
+    if (!sheetPedidos) {
+      sheetPedidos = ss.insertSheet('pedidos');
+      const cabecalhos = [
+        'id_pedido', 'cliente_nome', 'cliente_email', 'cliente_telefone',
+        'itens', 'total', 'status', 'data_pedido', 'endereco_entrega', 
+        'observacoes', 'frete', 'pagamento', 'frete_valor', 'desconto',
+        'subtotal', 'prazo_entrega', 'producao_dias'
+      ];
+      sheetPedidos.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+      sheetPedidos.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
+      sheetPedidos.setFrozenRows(1);
+    }
+    
+    if (!sheetClientes) {
+      sheetClientes = ss.insertSheet('clientes');
+      const cabecalhos = [
+        'id_cliente', 'nome', 'email', 'telefone', 'cpf', 'senha',
+        'tipo_pessoa', 'inscricao_estadual', 'responsavel',
+        'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cep',
+        'endereco_entrega', 'cep_entrega',
+        'data_cadastro', 'ultimo_login', 'observacoes'
+      ];
+      sheetClientes.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+      sheetClientes.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
+      sheetClientes.setFrozenRows(1);
+    }
+    
+    const dadosProdutos = sheetProdutos.getLastRow() > 1 ? 
+      sheetProdutos.getRange(2, 1, sheetProdutos.getLastRow() - 1, sheetProdutos.getLastColumn()).getValues() : [];
+      
+    const dadosCategorias = sheetCategorias.getLastRow() > 1 ? 
+      sheetCategorias.getRange(2, 1, sheetCategorias.getLastRow() - 1, sheetCategorias.getLastColumn()).getValues() : [];
+      
+    const dadosPedidos = sheetPedidos.getLastRow() > 1 ? 
+      sheetPedidos.getRange(2, 1, sheetPedidos.getLastRow() - 1, sheetPedidos.getLastColumn()).getValues() : [];
+      
+    const dadosClientes = sheetClientes.getLastRow() > 1 ? 
+      sheetClientes.getRange(2, 1, sheetClientes.getLastRow() - 1, sheetClientes.getLastColumn()).getValues() : [];
+    
+    const cabecalhosProdutos = sheetProdutos.getRange(1, 1, 1, sheetProdutos.getLastColumn()).getValues()[0] || [];
+    const cabecalhosCategorias = sheetCategorias.getRange(1, 1, 1, sheetCategorias.getLastColumn()).getValues()[0] || [];
+    const cabecalhosPedidos = sheetPedidos.getRange(1, 1, 1, sheetPedidos.getLastColumn()).getValues()[0] || [];
+    const cabecalhosClientes = sheetClientes.getRange(1, 1, 1, sheetClientes.getLastColumn()).getValues()[0] || [];
+    
+    const produtos = [];
+    for (var i = 0; i < dadosProdutos.length; i++) {
+      var obj = {};
+      for (var j = 0; j < cabecalhosProdutos.length; j++) {
+        obj[cabecalhosProdutos[j]] = dadosProdutos[i][j];
+      }
+      produtos.push(obj);
+    }
+    
+    const categorias = [];
+    for (var i = 0; i < dadosCategorias.length; i++) {
+      var obj = {};
+      for (var j = 0; j < cabecalhosCategorias.length; j++) {
+        obj[cabecalhosCategorias[j]] = dadosCategorias[i][j];
+      }
+      categorias.push(obj);
+    }
+    
+    const pedidos = [];
+    for (var i = 0; i < dadosPedidos.length; i++) {
+      var obj = {};
+      for (var j = 0; j < cabecalhosPedidos.length; j++) {
+        obj[cabecalhosPedidos[j]] = dadosPedidos[i][j];
+      }
+      pedidos.push(obj);
+    }
+    
+    const clientes = [];
+    for (var i = 0; i < dadosClientes.length; i++) {
+      var obj = {};
+      for (var j = 0; j < cabecalhosClientes.length; j++) {
+        obj[cabecalhosClientes[j]] = dadosClientes[i][j];
+      }
+      clientes.push(obj);
+    }
+    
+    const resultadoFinal = {
+      produtos: produtos,
+      categorias: categorias,
+      pedidos: pedidos,
+      clientes: clientes,
+      cabecalhos: {
+        produtos: cabecalhosProdutos,
+        categorias: cabecalhosCategorias,
+        pedidos: cabecalhosPedidos,
+        clientes: cabecalhosClientes
+      }
+    };
+    
+    return criarResposta(resultadoFinal);
+    
+  } catch (error) {
+    return criarResposta({
+      erro: error.message,
+      stack: error.stack
+    });
+  }
+}
+
+// ============================================================
+// 1.1 FUNÇÃO PROXY PARA SUPERFRETE
+// ============================================================
+function calcularFreteSuperFrete(cepDestino, peso, altura, largura, comprimento) {
+  try {
+    if (!cepDestino || cepDestino.length < 8) {
+      return {
+        success: false,
+        error: 'CEP de destino inválido',
+        opcoes: []
+      };
+    }
+    
+    if (peso <= 0 || altura <= 0 || largura <= 0 || comprimento <= 0) {
+      return {
+        success: false,
+        error: 'Dimensões inválidas',
+        opcoes: []
+      };
+    }
+    
+    const alturaFinal = Math.max(altura, 2);
+    const larguraFinal = Math.max(largura, 11);
+    const comprimentoFinal = Math.max(comprimento, 16);
+    
+    const payload = {
+      from: {
+        postal_code: CEP_ORIGEM.replace(/\D/g, '')
+      },
+      to: {
+        postal_code: cepDestino.replace(/\D/g, '')
+      },
+      services: '1,2,3,31',
+      options: {
+        own_hand: false,
+        receipt: false,
+        insurance_value: 0,
+        use_insurance_value: false
+      },
+      package: {
+        height: alturaFinal,
+        width: larguraFinal,
+        length: comprimentoFinal,
+        weight: peso
+      }
+    };
+    
+    console.log('📤 Enviando para SuperFrete:', JSON.stringify(payload));
+    
+    const url = 'https://api.superfrete.com/api/v0/calculator';
+    
+    const options = {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPERFRETE_TOKEN,
+        'User-Agent': 'MC Embalagens BH (mundocarolpresentes@gmail.com)'
+      },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    };
+    
+    const response = UrlFetchApp.fetch(url, options);
+    const statusCode = response.getResponseCode();
+    const responseText = response.getContentText();
+    
+    console.log('📥 Status:', statusCode);
+    
+    if (statusCode === 200) {
+      try {
+        const data = JSON.parse(responseText);
+        console.log('✅ Resposta recebida com sucesso!');
+        
+        let opcoesFormatadas = [];
+        if (Array.isArray(data) && data.length > 0) {
+          opcoesFormatadas = data.map(item => {
+            const nomesServicos = {
+              1: 'PAC',
+              2: 'SEDEX',
+              3: 'Jadlog',
+              17: 'Mini Envios',
+              31: 'Loggi'
+            };
+            
+            return {
+              service: nomesServicos[item.id] || item.name || 'Frete',
+              price: parseFloat(item.price) || 0,
+              delivery_time: parseInt(item.delivery_time) || 0,
+              service_code: String(item.id || ''),
+              nome: nomesServicos[item.id] || item.name || 'Frete',
+              preco: parseFloat(item.price) || 0,
+              prazo: parseInt(item.delivery_time) || 0,
+              codigo: String(item.id || ''),
+              empresa: item.company?.name || '',
+              has_error: item.has_error || false
+            };
+          });
+        }
+        
+        if (opcoesFormatadas.length > 0) {
+          return {
+            success: true,
+            opcoes: opcoesFormatadas,
+            status: statusCode
+          };
+        } else {
+          console.log('⚠️ Nenhuma opção encontrada na resposta');
+        }
+      } catch (e) {
+        console.log('❌ Erro ao parsear JSON:', e.toString());
+      }
+    } else if (statusCode === 400 || statusCode === 500) {
+      try {
+        const data = JSON.parse(responseText);
+        let mensagemErro = 'Erro na requisição';
+        if (data.message) mensagemErro = data.message;
+        if (data.errors) {
+          const errors = Object.values(data.errors).flat().join(' | ');
+          mensagemErro += ' - ' + errors;
+        }
+        console.log('❌', mensagemErro);
+      } catch (e) {
+        console.log('❌ Resposta de erro:', responseText);
+      }
+    }
+    
+    console.log('⚠️ Usando fallback com valores simulados');
+    return {
+      success: true,
+      opcoes: gerarOpcoesFallback(cepDestino, peso, alturaFinal, larguraFinal, comprimentoFinal),
+      warning: 'Usando fallback'
+    };
+    
+  } catch (error) {
+    console.error('❌ Erro:', error.toString());
+    return {
+      success: true,
+      opcoes: gerarOpcoesFallback(cepDestino, peso, altura, largura, comprimento),
+      warning: 'Erro: ' + error.toString()
+    };
+  }
+}
+
+// ============================================================
+// FUNÇÃO DE FALLBACK PARA QUANDO A API NÃO RESPONDER
+// ============================================================
+function gerarOpcoesFallback(cepDestino, peso, altura, largura, comprimento) {
+  const cepNum = parseInt(cepDestino.replace(/\D/g, '')) || 0;
+  const cepOrigemNum = parseInt(CEP_ORIGEM.replace(/\D/g, '')) || 0;
+  const distancia = Math.abs(cepNum - cepOrigemNum) / 100000;
+  const prazoBase = Math.max(2, Math.min(10, Math.floor(distancia * 3) + 2));
+  
+  let valorPac = 15.90 + (peso * 1.5) + (distancia * 2);
+  valorPac = Math.round(valorPac * 100) / 100;
+  valorPac = Math.max(valorPac, 10);
+  const prazoPac = Math.min(prazoBase + 3, 12);
+  
+  let valorSedex = 32.50 + (peso * 2.5) + (distancia * 3);
+  valorSedex = Math.round(valorSedex * 100) / 100;
+  valorSedex = Math.max(valorSedex, 20);
+  const prazoSedex = Math.min(prazoBase + 1, 5);
+  
+  let valorTransportadora = 45.00 + (peso * 1.8) + (distancia * 1.5);
+  valorTransportadora = Math.round(valorTransportadora * 100) / 100;
+  valorTransportadora = Math.max(valorTransportadora, 30);
+  const prazoTransportadora = Math.min(prazoBase + 5, 15);
+  
+  return [
+    {
+      service: 'PAC',
+      nome: 'PAC',
+      price: valorPac,
+      preco: valorPac,
+      delivery_time: prazoPac,
+      prazo: prazoPac,
+      service_code: '04510',
+      codigo: '04510',
+      _fallback: true
+    },
+    {
+      service: 'SEDEX',
+      nome: 'SEDEX',
+      price: valorSedex,
+      preco: valorSedex,
+      delivery_time: prazoSedex,
+      prazo: prazoSedex,
+      service_code: '04014',
+      codigo: '04014',
+      _fallback: true
+    },
+    {
+      service: 'Transportadora',
+      nome: 'Transportadora',
+      price: valorTransportadora,
+      preco: valorTransportadora,
+      delivery_time: prazoTransportadora,
+      prazo: prazoTransportadora,
+      service_code: 'TRANSP',
+      codigo: 'TRANSP',
+      _fallback: true
+    }
+  ];
+}
+
+// ============================================================
+// 2. FUNÇÃO DO POST (TODAS AS AÇÕES) - COMPLETA
+// ============================================================
+function doPost(e) {
+  try {
+    const dados = JSON.parse(e.postData.contents);
+    const acao = dados.acao || '';
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // ============================================================
+    // 2.1 PROXY PARA FRETE
+    // ============================================================
+    if (acao === 'proxy_frete') {
+      console.log('📥 Proxy - Recebendo requisição de frete:', dados);
+      
+      const cepDestino = dados.cepDestino || '';
+      const peso = parseFloat(dados.peso) || 0.5;
+      const altura = parseFloat(dados.altura) || 10;
+      const largura = parseFloat(dados.largura) || 10;
+      const comprimento = parseFloat(dados.comprimento) || 10;
+      
+      const resultado = proxyFrete(
+        cepDestino,
+        peso,
+        altura,
+        largura,
+        comprimento
+      );
+      
+      console.log('📤 Proxy - Resultado do frete:', resultado);
+      return criarResposta(resultado);
+    }
+    
+    // ============================================================
+    // 2.2 ATUALIZAR ESTOQUE
+    // ============================================================
+    if (acao === 'atualizar_estoque') {
+      const sheet = ss.getSheetByName('produtos');
+      
+      if (!sheet) {
+        throw new Error('Aba "produtos" não encontrada');
+      }
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const colunaEstoque = cabecalhos.indexOf('estoque') + 1;
+      const colunaId = cabecalhos.indexOf('id') + 1;
+      const colunaDataEstoque = cabecalhos.indexOf('data_estoque') + 1;
+      
+      dados.itens.forEach(item => {
+        const id = parseInt(item.id);
+        const novoEstoque = parseInt(item.estoque);
+        const dataAtual = dataHoraBrasilia("dd/MM/yyyy");
+        
+        for (let i = 2; i <= sheet.getLastRow(); i++) {
+          const idCelula = sheet.getRange(i, colunaId).getValue();
+          if (parseInt(idCelula) === id) {
+            sheet.getRange(i, colunaEstoque).setValue(novoEstoque);
+            if (colunaDataEstoque > 0) {
+              sheet.getRange(i, colunaDataEstoque).setValue(dataAtual);
+            }
+            break;
+          }
+        }
+      });
+      
+      return criarResposta({
+        sucesso: true,
+        mensagem: 'Estoque atualizado com sucesso!'
+      });
+    }
+    
+    // ============================================================
+    // 2.3 SALVAR PEDIDO
+    // ============================================================
+    if (acao === 'salvar_pedido') {
+      let sheet = ss.getSheetByName('pedidos');
+      
+      if (!sheet) {
+        sheet = ss.insertSheet('pedidos');
+        const cabecalhos = [
+          'id_pedido', 'cliente_nome', 'cliente_email', 'cliente_telefone',
+          'itens', 'total', 'status', 'data_pedido', 'endereco_entrega', 
+          'observacoes', 'frete', 'pagamento', 'frete_valor', 'desconto',
+          'subtotal', 'prazo_entrega', 'producao_dias'
+        ];
+        sheet.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+        sheet.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
+        sheet.setFrozenRows(1);
+      }
+      
+      const pedido = dados.pedido;
+      const linha = sheet.getLastRow() + 1;
+      
+      const itensTexto = pedido.itens.map(item => {
+        const qtdPacotes = item.quantidade || 1;
+        const tamanhoPacote = item.pacote_tamanho || 1;
+        const totalUnidades = item.totalUnidades || (qtdPacotes * tamanhoPacote);
+        const preco = item.price || 0;
+        const nome = item.nome || 'Produto';
+        
+        return `${nome} (${qtdPacotes}x ${tamanhoPacote} un) - R$ ${preco.toFixed(2)}`;
+      }).join(' | ');
+      
+      // 🔥 FORMATO CORRETO: dd/MM/yyyy HH:mm:ss (horário de Brasília)
+      const dataFormatada = dataHoraBrasilia("dd/MM/yyyy HH:mm:ss");
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      
+      const colunas = {};
+      cabecalhos.forEach((nome, idx) => {
+        colunas[nome] = idx + 1;
+      });
+      
+      const dadosLinha = [];
+      
+      cabecalhos.forEach(nome => {
+        switch(nome) {
+          case 'id_pedido':
+            dadosLinha.push(pedido.id || Date.now());
+            break;
+          case 'cliente_nome':
+            dadosLinha.push(pedido.cliente_nome || 'Cliente não identificado');
+            break;
+          case 'cliente_email':
+            dadosLinha.push(pedido.cliente_email || '');
+            break;
+          case 'cliente_telefone':
+            dadosLinha.push(pedido.cliente_telefone || '');
+            break;
+          case 'itens':
+            dadosLinha.push(itensTexto);
+            break;
+          case 'total':
+            dadosLinha.push(pedido.total || 0);
+            break;
+          case 'status':
+            dadosLinha.push('Pendente');
+            break;
+          case 'data_pedido':
+            dadosLinha.push(dataFormatada);
+            break;
+          case 'endereco_entrega':
+            dadosLinha.push(pedido.endereco_entrega || '');
+            break;
+          case 'observacoes':
+            dadosLinha.push(pedido.observacoes || '');
+            break;
+          case 'frete':
+            dadosLinha.push(pedido.frete || '');
+            break;
+          case 'pagamento':
+            dadosLinha.push(pedido.pagamento || '');
+            break;
+          case 'frete_valor':
+            dadosLinha.push(pedido.frete_valor || 0);
+            break;
+          case 'desconto':
+            dadosLinha.push(pedido.desconto || 0);
+            break;
+          case 'subtotal':
+            dadosLinha.push(pedido.subtotal || pedido.total_produtos || 0);
+            break;
+          case 'prazo_entrega':
+            dadosLinha.push(pedido.prazo_entrega || 0);
+            break;
+          case 'producao_dias':
+            dadosLinha.push(pedido.producao_dias || 0);
+            break;
+          default:
+            dadosLinha.push('');
+        }
+      });
+      
+      sheet.getRange(linha, 1, 1, dadosLinha.length).setValues([dadosLinha]);
+      
+      const idGerado = sheet.getRange(linha, 1).getValue();
+      
+      return criarResposta({
+        sucesso: true,
+        mensagem: 'Pedido salvo com sucesso!',
+        id: idGerado || pedido.id || Date.now()
+      });
+    }
+    
+    // ============================================================
+    // 2.4 ATUALIZAR STATUS DO PEDIDO
+    // ============================================================
+    if (acao === 'atualizar_status_pedido') {
+      const sheet = ss.getSheetByName('pedidos');
+      
+      if (!sheet) {
+        throw new Error('Aba "pedidos" não encontrada');
+      }
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const colunaId = cabecalhos.indexOf('id_pedido') + 1;
+      const colunaStatus = cabecalhos.indexOf('status') + 1;
+      const colunaObservacoes = cabecalhos.indexOf('observacoes') + 1;
+      
+      const idPedido = parseInt(dados.id_pedido);
+      const novoStatus = dados.status;
+      const codigoRastreio = dados.rastreio || '';
+      const observacoesAdicionais = dados.observacoes || '';
+      
+      let linhaEncontrada = -1;
+      
+      for (let i = 2; i <= sheet.getLastRow(); i++) {
+        const idCelula = sheet.getRange(i, colunaId).getValue();
+        if (parseInt(idCelula) === idPedido) {
+          linhaEncontrada = i;
+          break;
+        }
+      }
+      
+      if (linhaEncontrada === -1) {
+        throw new Error('Pedido #' + idPedido + ' não encontrado');
+      }
+      
+      sheet.getRange(linhaEncontrada, colunaStatus).setValue(novoStatus);
+      console.log('✅ Status atualizado para: ' + novoStatus);
+      
+      // ============================================================
+      // ATUALIZA OBSERVAÇÕES COM RASTREIO
+      // ============================================================
+      if (colunaObservacoes > 0) {
+        let observacoesAtuais = sheet.getRange(linhaEncontrada, colunaObservacoes).getValue() || '';
+        
+        observacoesAtuais = observacoesAtuais.replace(/\s*\|\s*Rastreio:\s*[A-Za-z0-9\-]+/gi, '');
+        observacoesAtuais = observacoesAtuais.replace(/\s*\|\s*$/g, '');
+        observacoesAtuais = observacoesAtuais.trim();
+        
+        if (codigoRastreio) {
+          if (observacoesAtuais && !observacoesAtuais.endsWith('|')) {
+            observacoesAtuais += ' | ';
+          }
+          observacoesAtuais += 'Rastreio: ' + codigoRastreio;
+        }
+        
+        if (observacoesAdicionais) {
+          if (observacoesAtuais && !observacoesAtuais.endsWith('|')) {
+            observacoesAtuais += ' | ';
+          }
+          observacoesAtuais += observacoesAdicionais;
+        }
+        
+        sheet.getRange(linhaEncontrada, colunaObservacoes).setValue(observacoesAtuais);
+        console.log('✅ Observações atualizadas: ' + observacoesAtuais);
+      }
+      
+      return criarResposta({
+        sucesso: true,
+        mensagem: 'Status atualizado com sucesso!'
+      });
+    }
+    
+    // ============================================================
+    // 2.5 CADASTRAR/ATUALIZAR CLIENTE - CORRIGIDO
+    // ============================================================
+    if (acao === 'salvar_cliente') {
+      let sheet = ss.getSheetByName('clientes');
+      
+      if (!sheet) {
+        sheet = ss.insertSheet('clientes');
+        const cabecalhos = [
+          'id_cliente', 'nome', 'email', 'telefone', 'cpf', 'senha',
+          'tipo_pessoa', 'inscricao_estadual', 'responsavel',
+          'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cep',
+          'endereco_entrega', 'cep_entrega',
+          'data_cadastro', 'ultimo_login', 'observacoes'
+        ];
+        sheet.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+        sheet.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
+        sheet.setFrozenRows(1);
+      }
+      
+      let cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      let colunaObservacoes = cabecalhos.indexOf('observacoes') + 1;
+      
+      if (colunaObservacoes === 0) {
+        const novaColuna = cabecalhos.length + 1;
+        sheet.getRange(1, novaColuna).setValue('observacoes');
+        sheet.getRange(1, novaColuna).setFontWeight('bold');
+        cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+        colunaObservacoes = cabecalhos.indexOf('observacoes') + 1;
+        console.log('✅ Coluna "observacoes" criada na posição', colunaObservacoes);
+      }
+      
+      const cliente = dados.cliente;
+      const colunaEmail = cabecalhos.indexOf('email') + 1;
+      
+      let linhaExistente = -1;
+      for (let i = 2; i <= sheet.getLastRow(); i++) {
+        const emailCelula = sheet.getRange(i, colunaEmail).getValue();
+        if (emailCelula === cliente.email) {
+          linhaExistente = i;
+          break;
+        }
+      }
+      
+      const colunas = {};
+      cabecalhos.forEach((nome, idx) => {
+        colunas[nome] = idx + 1;
+      });
+      
+      if (!colunas.senha) {
+        const ultimaColuna = sheet.getLastColumn() + 1;
+        sheet.getRange(1, ultimaColuna).setValue('senha');
+        colunas.senha = ultimaColuna;
+        console.log('✅ Coluna "senha" criada na posição', ultimaColuna);
+      }
+      
+      if (linhaExistente > 0) {
+        if (colunas.nome && cliente.nome) sheet.getRange(linhaExistente, colunas.nome).setValue(cliente.nome);
+        if (colunas.telefone && cliente.telefone) sheet.getRange(linhaExistente, colunas.telefone).setValue(cliente.telefone);
+        if (colunas.cpf && cliente.documento) sheet.getRange(linhaExistente, colunas.cpf).setValue(cliente.documento);
+        if (colunas.senha && cliente.senha) sheet.getRange(linhaExistente, colunas.senha).setValue(cliente.senha);
+        if (colunas.tipo_pessoa && cliente.tipo_pessoa) sheet.getRange(linhaExistente, colunas.tipo_pessoa).setValue(cliente.tipo_pessoa);
+        if (colunas.inscricao_estadual && cliente.inscricao_estadual) sheet.getRange(linhaExistente, colunas.inscricao_estadual).setValue(cliente.inscricao_estadual);
+        if (colunas.responsavel && cliente.responsavel) sheet.getRange(linhaExistente, colunas.responsavel).setValue(cliente.responsavel);
+        if (colunas.endereco && cliente.endereco) sheet.getRange(linhaExistente, colunas.endereco).setValue(cliente.endereco);
+        if (colunas.numero && cliente.numero) sheet.getRange(linhaExistente, colunas.numero).setValue(cliente.numero);
+        if (colunas.complemento && cliente.complemento) sheet.getRange(linhaExistente, colunas.complemento).setValue(cliente.complemento);
+        if (colunas.bairro && cliente.bairro) sheet.getRange(linhaExistente, colunas.bairro).setValue(cliente.bairro);
+        if (colunas.cidade && cliente.cidade) sheet.getRange(linhaExistente, colunas.cidade).setValue(cliente.cidade);
+        if (colunas.estado && cliente.estado) sheet.getRange(linhaExistente, colunas.estado).setValue(cliente.estado);
+        if (colunas.cep && cliente.cep) sheet.getRange(linhaExistente, colunas.cep).setValue(cliente.cep);
+        if (colunas.endereco_entrega && cliente.endereco_entrega) sheet.getRange(linhaExistente, colunas.endereco_entrega).setValue(cliente.endereco_entrega);
+        if (colunas.cep_entrega && cliente.cep_entrega) sheet.getRange(linhaExistente, colunas.cep_entrega).setValue(cliente.cep_entrega);
+        if (colunas.ultimo_login) sheet.getRange(linhaExistente, colunas.ultimo_login).setValue(dataHoraBrasilia("dd/MM/yyyy HH:mm:ss"));
+        
+        if (colunas.observacoes && cliente.observacao) {
+          sheet.getRange(linhaExistente, colunas.observacoes).setValue(cliente.observacao);
+          console.log('✅ Observações atualizadas:', cliente.observacao);
+        }
+        
+      } else {
+        const linha = sheet.getLastRow() + 1;
+        
+        const novosDados = {};
+        cabecalhos.forEach(nome => {
+          switch(nome) {
+            case 'id_cliente': novosDados[nome] = Date.now(); break;
+            case 'nome': novosDados[nome] = cliente.nome || ''; break;
+            case 'email': novosDados[nome] = cliente.email || ''; break;
+            case 'telefone': novosDados[nome] = cliente.telefone || ''; break;
+            case 'cpf': novosDados[nome] = cliente.documento || ''; break;
+            case 'senha': novosDados[nome] = cliente.senha || ''; break;
+            case 'tipo_pessoa': novosDados[nome] = cliente.tipo_pessoa || 'FISICA'; break;
+            case 'inscricao_estadual': novosDados[nome] = cliente.inscricao_estadual || ''; break;
+            case 'responsavel': novosDados[nome] = cliente.responsavel || ''; break;
+            case 'endereco': novosDados[nome] = cliente.endereco || ''; break;
+            case 'numero': novosDados[nome] = cliente.numero || ''; break;
+            case 'complemento': novosDados[nome] = cliente.complemento || ''; break;
+            case 'bairro': novosDados[nome] = cliente.bairro || ''; break;
+            case 'cidade': novosDados[nome] = cliente.cidade || ''; break;
+            case 'estado': novosDados[nome] = cliente.estado || ''; break;
+            case 'cep': novosDados[nome] = cliente.cep || ''; break;
+            case 'endereco_entrega': novosDados[nome] = cliente.endereco_entrega || ''; break;
+            case 'cep_entrega': novosDados[nome] = cliente.cep_entrega || ''; break;
+            case 'data_cadastro': novosDados[nome] = dataHoraBrasilia("dd/MM/yyyy HH:mm:ss"); break;
+            case 'ultimo_login': novosDados[nome] = dataHoraBrasilia("dd/MM/yyyy HH:mm:ss"); break;
+            case 'observacoes': novosDados[nome] = cliente.observacao || ''; break;
+            default: novosDados[nome] = '';
+          }
+        });
+        
+        const valores = cabecalhos.map(nome => novosDados[nome] || '');
+        sheet.getRange(linha, 1, 1, valores.length).setValues([valores]);
+        console.log('✅ Novo cliente criado com observacoes:', cliente.observacao || '(vazio)');
+      }
+      
+      return criarResposta({
+        sucesso: true,
+        mensagem: 'Cliente salvo com sucesso!'
+      });
+    }
+    
+    // ============================================================
+    // 2.6 VERIFICAR LOGIN DO CLIENTE
+    // ============================================================
+    if (acao === 'verificar_login') {
+      const sheet = ss.getSheetByName('clientes');
+      
+      if (!sheet) {
+        throw new Error('Aba "clientes" não encontrada');
+      }
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const colunaEmail = cabecalhos.indexOf('email') + 1;
+      const colunaSenha = cabecalhos.indexOf('senha') + 1;
+      const colunaNome = cabecalhos.indexOf('nome') + 1;
+      
+      const email = dados.email;
+      const senha = dados.senha;
+      
+      let encontrado = false;
+      let clienteData = {};
+      
+      for (let i = 2; i <= sheet.getLastRow(); i++) {
+        const emailCelula = sheet.getRange(i, colunaEmail).getValue();
+        if (emailCelula === email) {
+          const senhaCelula = sheet.getRange(i, colunaSenha).getValue();
+          if (senhaCelula === senha) {
+            encontrado = true;
+            const cabecalhosLista = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+            const dadosLinha = sheet.getRange(i, 1, 1, sheet.getLastColumn()).getValues()[0];
+            
+            cabecalhosLista.forEach((col, idx) => {
+              clienteData[col] = dadosLinha[idx];
+            });
+            
+            const colunaLogin = cabecalhos.indexOf('ultimo_login') + 1;
+            if (colunaLogin > 0) {
+              sheet.getRange(i, colunaLogin).setValue(dataHoraBrasilia("dd/MM/yyyy HH:mm:ss"));
+            }
+            break;
+          }
+        }
+      }
+      
+      return criarResposta({
+        sucesso: encontrado,
+        cliente: clienteData,
+        mensagem: encontrado ? 'Login realizado com sucesso!' : 'Email ou senha incorretos.'
+      });
+    }
+    
+    // ============================================================
+    // 2.7 BUSCAR DADOS DO CLIENTE POR EMAIL
+    // ============================================================
+    if (acao === 'buscar_cliente') {
+      const sheet = ss.getSheetByName('clientes');
+      
+      if (!sheet) {
+        throw new Error('Aba "clientes" não encontrada');
+      }
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const colunaEmail = cabecalhos.indexOf('email') + 1;
+      
+      const email = dados.email;
+      let clienteData = null;
+      
+      for (let i = 2; i <= sheet.getLastRow(); i++) {
+        const emailCelula = sheet.getRange(i, colunaEmail).getValue();
+        if (emailCelula === email) {
+          const cabecalhosLista = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+          const dadosLinha = sheet.getRange(i, 1, 1, sheet.getLastColumn()).getValues()[0];
+          
+          clienteData = {};
+          cabecalhosLista.forEach((col, idx) => {
+            clienteData[col] = dadosLinha[idx];
+          });
+          break;
+        }
+      }
+      
+      return criarResposta({
+        sucesso: clienteData !== null,
+        cliente: clienteData,
+        mensagem: clienteData ? 'Cliente encontrado!' : 'Cliente não encontrado.'
+      });
+    }
+    
+    // ============================================================
+    // 2.8 ATUALIZAR PRODUTO COMPLETO
+    // ============================================================
+    if (acao === 'atualizar_produto') {
+      const sheet = ss.getSheetByName('produtos');
+      
+      if (!sheet) {
+        throw new Error('Aba "produtos" não encontrada');
+      }
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const colunaId = cabecalhos.indexOf('id') + 1;
+      
+      const produto = dados.produto;
+      const id = parseInt(produto.id);
+      
+      let linha = -1;
+      for (let i = 2; i <= sheet.getLastRow(); i++) {
+        const idCelula = sheet.getRange(i, colunaId).getValue();
+        if (parseInt(idCelula) === id) {
+          linha = i;
+          break;
+        }
+      }
+      
+      if (linha === -1) {
+        throw new Error('Produto não encontrado');
+      }
+      
+      const campos = {
+        categoria: 'categoria',
+        nome: 'nome',
+        descricao: 'descricao',
+        imagem_principal: 'imagem_principal',
+        imagens_carousel: 'imagens_carousel',
+        quantidades: 'quantidades',
+        pesos_medidas: 'pesos_medidas',
+        estoque: 'estoque',
+        prazo_producao: 'prazo_producao',
+        peso_unitario: 'peso_unitario',
+        preco_custo: 'preco_custo',
+        preco_venda: 'preco_venda',
+        preco_promocional: 'preco_promocional',
+        data_estoque: 'data_estoque',
+        produto_ativado: 'produto_ativado',
+        vender_zerado: 'vender_zerado',
+        codigo_produto: 'codigo_produto',
+        ncm: 'ncm',
+        observacoes: 'observacoes'
+      };
+      
+      for (const [campo, nomeColuna] of Object.entries(campos)) {
+        const coluna = cabecalhos.indexOf(nomeColuna) + 1;
+        if (coluna > 0 && produto[campo] !== undefined) {
+          sheet.getRange(linha, coluna).setValue(produto[campo]);
+        }
+      }
+      
+      if (produto.estoque !== undefined) {
+        const colunaData = cabecalhos.indexOf('data_estoque') + 1;
+        if (colunaData > 0 && !produto.data_estoque) {
+          sheet.getRange(linha, colunaData).setValue(dataHoraBrasilia("dd/MM/yyyy"));
+        }
+      }
+      
+      return criarResposta({
+        sucesso: true,
+        mensagem: 'Produto atualizado com sucesso!'
+      });
+    }
+    
+    // ============================================================
+    // 2.9 CRIAR NOVO PRODUTO
+    // ============================================================
+    if (acao === 'criar_produto') {
+      const sheet = ss.getSheetByName('produtos');
+      
+      if (!sheet) {
+        throw new Error('Aba "produtos" não encontrada');
+      }
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const novoProduto = dados.produto;
+      
+      let maxId = 0;
+      const colunaId = cabecalhos.indexOf('id') + 1;
+      if (colunaId > 0 && sheet.getLastRow() > 1) {
+        for (let i = 2; i <= sheet.getLastRow(); i++) {
+          const idCelula = sheet.getRange(i, colunaId).getValue();
+          if (parseInt(idCelula) > maxId) maxId = parseInt(idCelula);
+        }
+      }
+      const novoId = maxId + 1;
+      
+      const linha = sheet.getLastRow() + 1;
+      const novaLinha = [];
+      
+      cabecalhos.forEach(col => {
+        switch(col) {
+          case 'id': novaLinha.push(novoId); break;
+          case 'categoria': novaLinha.push(novoProduto.categoria || ''); break;
+          case 'nome': novaLinha.push(novoProduto.nome || ''); break;
+          case 'descricao': novaLinha.push(novoProduto.descricao || ''); break;
+          case 'imagem_principal': novaLinha.push(novoProduto.imagem_principal || ''); break;
+          case 'imagens_carousel': novaLinha.push(novoProduto.imagens_carousel || ''); break;
+          case 'quantidades': novaLinha.push(novoProduto.quantidades || ''); break;
+          case 'pesos_medidas': novaLinha.push(novoProduto.pesos_medidas || ''); break;
+          case 'estoque': novaLinha.push(parseInt(novoProduto.estoque) || 0); break;
+          case 'prazo_producao': novaLinha.push(parseInt(novoProduto.prazo_producao) || 0); break;
+          case 'peso_unitario': novaLinha.push(parseFloat(novoProduto.peso_unitario) || 0); break;
+          case 'preco_custo': novaLinha.push(parseFloat(novoProduto.preco_custo) || 0); break;
+          case 'preco_venda': novaLinha.push(novoProduto.preco_venda || ''); break;
+          case 'preco_promocional': novaLinha.push(novoProduto.preco_promocional || ''); break;
+          case 'data_estoque': novaLinha.push(dataHoraBrasilia("dd/MM/yyyy")); break;
+          case 'produto_ativado': novaLinha.push(novoProduto.produto_ativado || 'SIM'); break;
+          case 'vender_zerado': novaLinha.push(novoProduto.vender_zerado || 'NÃO'); break;
+          case 'codigo_produto': novaLinha.push(novoProduto.codigo_produto || ''); break;
+          case 'ncm': novaLinha.push(novoProduto.ncm || ''); break;
+          case 'observacoes': novaLinha.push(novoProduto.observacoes || ''); break;
+          default: novaLinha.push('');
+        }
+      });
+      
+      sheet.getRange(linha, 1, 1, novaLinha.length).setValues([novaLinha]);
+      
+      return criarResposta({
+        sucesso: true,
+        mensagem: 'Produto criado com sucesso!',
+        id: novoId
+      });
+    }
+    
+    // ============================================================
+    // 2.10 OBTER TODOS OS DADOS (VIA POST)
+    // ============================================================
+    if (acao === 'get_dados') {
+      const resultado = JSON.parse(doGet().getContent());
+      return criarResposta(resultado);
+    }
+    
+    // ============================================================
+    // 2.11 ATUALIZAR DADOS DO CLIENTE
+    // ============================================================
+    if (acao === 'atualizar_cliente') {
+      const sheet = ss.getSheetByName('clientes');
+      
+      if (!sheet) {
+        throw new Error('Aba "clientes" não encontrada');
+      }
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const colunaEmail = cabecalhos.indexOf('email') + 1;
+      const colunaSenha = cabecalhos.indexOf('senha') + 1;
+      
+      const cliente = dados.cliente;
+      const email = cliente.email;
+      const senhaAtual = cliente.senha_atual;
+      const novosDados = cliente.dados;
+      
+      let linha = -1;
+      for (let i = 2; i <= sheet.getLastRow(); i++) {
+        const emailCelula = sheet.getRange(i, colunaEmail).getValue();
+        if (emailCelula === email) {
+          const senhaCelula = sheet.getRange(i, colunaSenha).getValue();
+          if (senhaCelula === senhaAtual) {
+            linha = i;
+          }
+          break;
+        }
+      }
+      
+      if (linha === -1) {
+        throw new Error('Cliente não encontrado ou senha incorreta');
+      }
+      
+      const campos = {
+        nome: 'nome',
+        telefone: 'telefone',
+        cpf: 'cpf',
+        senha: 'senha',
+        tipo_pessoa: 'tipo_pessoa',
+        inscricao_estadual: 'inscricao_estadual',
+        responsavel: 'responsavel',
+        endereco: 'endereco',
+        numero: 'numero',
+        complemento: 'complemento',
+        bairro: 'bairro',
+        cidade: 'cidade',
+        estado: 'estado',
+        cep: 'cep',
+        endereco_entrega: 'endereco_entrega',
+        cep_entrega: 'cep_entrega'
+      };
+      
+      for (const [campo, nomeColuna] of Object.entries(campos)) {
+        const coluna = cabecalhos.indexOf(nomeColuna) + 1;
+        if (coluna > 0 && novosDados[campo] !== undefined) {
+          sheet.getRange(linha, coluna).setValue(novosDados[campo]);
+        }
+      }
+      
+      return criarResposta({
+        sucesso: true,
+        mensagem: 'Dados do cliente atualizados com sucesso!'
+      });
+    }
+    
+    // ============================================================
+    // 2.12 SALVAR FRETE NA PLANILHA (COM PRODUTOS DO CARRINHO)
+    // ============================================================
+    if (acao === 'salvar_frete') {
+      console.log('📥 Salvando frete na planilha...');
+      console.log('📦 Produtos do carrinho:', dados.produtos_carrinho || '(não informado)');
+      
+      const resultado = salvarFreteNaPlanilha(
+        dados.cepDestino,
+        parseFloat(dados.peso) || 0.5,
+        parseFloat(dados.altura) || 10,
+        parseFloat(dados.largura) || 10,
+        parseFloat(dados.comprimento) || 10,
+        dados.produtos_carrinho || ''
+      );
+      console.log('📤 Resultado:', resultado);
+      return criarResposta(resultado);
+    }
+    
+    // ============================================================
+    // 2.13 ATUALIZAR ESTOQUE MÚLTIPLO
+    // ============================================================
+    if (acao === 'atualizar_estoque_multiplo') {
+      const sheet = ss.getSheetByName('produtos');
+      
+      if (!sheet) {
+        throw new Error('Aba "produtos" não encontrada');
+      }
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const colunaEstoque = cabecalhos.indexOf('estoque') + 1;
+      const colunaId = cabecalhos.indexOf('id') + 1;
+      const colunaDataEstoque = cabecalhos.indexOf('data_estoque') + 1;
+      const dataAtual = dataHoraBrasilia("dd/MM/yyyy");
+      
+      const itens = dados.itens || {};
+      
+      for (const [productId, atualizacao] of Object.entries(itens)) {
+        const id = parseInt(productId);
+        const novoEstoque = parseInt(atualizacao.estoque);
+        
+        for (let i = 2; i <= sheet.getLastRow(); i++) {
+          const idCelula = sheet.getRange(i, colunaId).getValue();
+          if (parseInt(idCelula) === id) {
+            sheet.getRange(i, colunaEstoque).setValue(novoEstoque);
+            if (colunaDataEstoque > 0) {
+              sheet.getRange(i, colunaDataEstoque).setValue(dataAtual);
+            }
+            break;
+          }
+        }
+      }
+      
+      return criarResposta({
+        sucesso: true,
+        mensagem: 'Estoque atualizado com sucesso!'
+      });
+    }
+    
+    // ============================================================
+    // 2.14 CRIAR LINK DE PAGAMENTO PAGAR.ME
+    // ============================================================
+    if (acao === 'criar_link_pagamento') {
+      console.log('📥 Criando link de pagamento...');
+      var resultado = criarLinkPagamento(dados.dados);
+      console.log('📤 Resultado:', resultado);
+      return criarResposta(resultado);
+    }
+    
+    // ============================================================
+    // 2.15 ATUALIZAR OBSERVAÇÕES DO PEDIDO
+    // ============================================================
+    if (acao === 'atualizar_observacoes_pedido') {
+      const sheet = ss.getSheetByName('pedidos');
+      
+      if (!sheet) {
+        throw new Error('Aba "pedidos" não encontrada');
+      }
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const colunaId = cabecalhos.indexOf('id_pedido') + 1;
+      const colunaObservacoes = cabecalhos.indexOf('observacoes') + 1;
+      
+      if (colunaObservacoes === 0) {
+        throw new Error('Coluna "observacoes" não encontrada na aba "pedidos"!');
+      }
+      
+      const idPedido = parseInt(dados.id_pedido);
+      const novasObservacoes = dados.observacoes || '';
+      
+      let encontrado = false;
+      for (let i = 2; i <= sheet.getLastRow(); i++) {
+        const idCelula = sheet.getRange(i, colunaId).getValue();
+        if (parseInt(idCelula) === idPedido) {
+          sheet.getRange(i, colunaObservacoes).setValue(novasObservacoes);
+          encontrado = true;
+          console.log(`✅ Observações atualizadas para o pedido #${idPedido}:`, novasObservacoes);
+          break;
+        }
+      }
+      
+      if (!encontrado) {
+        throw new Error(`Pedido #${idPedido} não encontrado na planilha`);
+      }
+      
+      return criarResposta({
+        sucesso: true,
+        mensagem: 'Observações atualizadas com sucesso!',
+        id_pedido: idPedido,
+        observacoes: novasObservacoes
+      });
+    }
+
+    // ============================================================
+    // 2.16 ATUALIZAR PEDIDO COMPLETO
+    // ============================================================
+    if (acao === 'atualizar_pedido_completo') {
+      const sheet = ss.getSheetByName('pedidos');
+      
+      if (!sheet) {
+        throw new Error('Aba "pedidos" não encontrada');
+      }
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const colunaId = cabecalhos.indexOf('id_pedido') + 1;
+      
+      const idPedido = parseInt(dados.id_pedido);
+      let linhaEncontrada = -1;
+      
+      for (let i = 2; i <= sheet.getLastRow(); i++) {
+        const idCelula = sheet.getRange(i, colunaId).getValue();
+        if (parseInt(idCelula) === idPedido) {
+          linhaEncontrada = i;
+          break;
+        }
+      }
+      
+      if (linhaEncontrada === -1) {
+        throw new Error('Pedido #' + idPedido + ' não encontrado');
+      }
+      
+      const camposPermitidos = {
+        'cliente_nome': dados.cliente_nome,
+        'cliente_email': dados.cliente_email,
+        'cliente_telefone': dados.cliente_telefone,
+        'endereco_entrega': dados.endereco_entrega,
+        'status': dados.status,
+        'observacoes': dados.observacoes
+      };
+      
+      for (const [nomeColuna, valor] of Object.entries(camposPermitidos)) {
+        if (valor !== undefined && valor !== null) {
+          const coluna = cabecalhos.indexOf(nomeColuna) + 1;
+          if (coluna > 0) {
+            sheet.getRange(linhaEncontrada, coluna).setValue(valor);
+            console.log('✅ Atualizado: ' + nomeColuna + ' = ' + valor);
+          }
+        }
+      }
+      
+      return criarResposta({
+        sucesso: true,
+        mensagem: 'Pedido #' + idPedido + ' atualizado com sucesso!'
+      });
+    }
+
+    // ============================================================
+    // 2.17 ATUALIZAR STATUS + RASTREIO (DUPLICADO - MANTIDO POR SEGURANÇA)
+    // ============================================================
+    if (acao === 'atualizar_status_pedido') {
+      const sheet = ss.getSheetByName('pedidos');
+      
+      if (!sheet) {
+        throw new Error('Aba "pedidos" não encontrada');
+      }
+      
+      const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      const colunaId = cabecalhos.indexOf('id_pedido') + 1;
+      const colunaStatus = cabecalhos.indexOf('status') + 1;
+      const colunaObservacoes = cabecalhos.indexOf('observacoes') + 1;
+      
+      const idPedido = parseInt(dados.id_pedido);
+      const novoStatus = dados.status;
+      const codigoRastreio = dados.rastreio || '';
+      const observacoesAdicionais = dados.observacoes || '';
+      
+      let linhaEncontrada = -1;
+      
+      for (let i = 2; i <= sheet.getLastRow(); i++) {
+        const idCelula = sheet.getRange(i, colunaId).getValue();
+        if (parseInt(idCelula) === idPedido) {
+          linhaEncontrada = i;
+          break;
+        }
+      }
+      
+      if (linhaEncontrada === -1) {
+        throw new Error('Pedido #' + idPedido + ' não encontrado');
+      }
+      
+      sheet.getRange(linhaEncontrada, colunaStatus).setValue(novoStatus);
+      console.log('✅ Status atualizado para: ' + novoStatus);
+      
+      if (novoStatus === 'Enviado' && codigoRastreio) {
+        let observacoesAtuais = sheet.getRange(linhaEncontrada, colunaObservacoes).getValue() || '';
+        
+        observacoesAtuais = observacoesAtuais.replace(/\s*\|\s*Rastreio:\s*[A-Za-z0-9]+/gi, '');
+        observacoesAtuais = observacoesAtuais.replace(/\s*\|\s*$/g, '');
+        observacoesAtuais = observacoesAtuais.trim();
+        
+        if (observacoesAtuais && !observacoesAtuais.endsWith('|')) {
+          observacoesAtuais += ' | ';
+        }
+        observacoesAtuais += 'Rastreio: ' + codigoRastreio;
+        
+        if (observacoesAdicionais) {
+          observacoesAtuais += ' | ' + observacoesAdicionais;
+        }
+        
+        sheet.getRange(linhaEncontrada, colunaObservacoes).setValue(observacoesAtuais);
+        console.log('✅ Rastreio salvo: ' + codigoRastreio);
+        console.log('✅ Observações atualizadas: ' + observacoesAtuais);
+        
+      } else if (observacoesAdicionais) {
+        let observacoesAtuais = sheet.getRange(linhaEncontrada, colunaObservacoes).getValue() || '';
+        
+        observacoesAtuais = observacoesAtuais.replace(/\s*\|\s*Rastreio:\s*[A-Za-z0-9]+/gi, '');
+        observacoesAtuais = observacoesAtuais.replace(/\s*\|\s*$/g, '');
+        observacoesAtuais = observacoesAtuais.trim();
+        
+        if (observacoesAtuais && !observacoesAtuais.endsWith('|')) {
+          observacoesAtuais += ' | ';
+        }
+        observacoesAtuais += observacoesAdicionais;
+        
+        sheet.getRange(linhaEncontrada, colunaObservacoes).setValue(observacoesAtuais);
+        console.log('✅ Observações adicionais salvas: ' + observacoesAdicionais);
+      }
+      
+      return criarResposta({
+        sucesso: true,
+        mensagem: 'Status atualizado com sucesso!'
+      });
+    }
+    
+    // ============================================================
+    // RESPOSTA PADRÃO
+    // ============================================================
+    return criarResposta({
+      sucesso: false,
+      erro: 'Ação desconhecida: ' + acao
+    });
+    
+  } catch (error) {
+    return criarResposta({
+      sucesso: false,
+      erro: error.message,
+      stack: error.stack
+    });
+  }
+}
+
+// ============================================================
+// 3. FUNÇÃO PARA CRIAR ABAS MANUALMENTE
+// ============================================================
+function criarAbas() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  let sheetPedidos = ss.getSheetByName('pedidos');
+  if (!sheetPedidos) {
+    sheetPedidos = ss.insertSheet('pedidos');
+    const cabecalhos = [
+      'id_pedido', 'cliente_nome', 'cliente_email', 'cliente_telefone',
+      'itens', 'total', 'status', 'data_pedido', 'endereco_entrega', 
+      'observacoes', 'frete', 'pagamento', 'frete_valor', 'desconto',
+      'subtotal', 'prazo_entrega', 'producao_dias'
+    ];
+    sheetPedidos.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+    sheetPedidos.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
+    sheetPedidos.setFrozenRows(1);
+    sheetPedidos.autoResizeColumns(1, cabecalhos.length);
+    console.log('✅ Aba "pedidos" criada com novos campos');
+  } else {
+    const cabecalhos = sheetPedidos.getRange(1, 1, 1, sheetPedidos.getLastColumn()).getValues()[0];
+    const colunasNovas = ['frete_valor', 'desconto', 'subtotal', 'prazo_entrega'];
+    let colunaAtual = cabecalhos.length + 1;
+    
+    colunasNovas.forEach(nome => {
+      if (cabecalhos.indexOf(nome) === -1) {
+        sheetPedidos.getRange(1, colunaAtual).setValue(nome);
+        colunaAtual++;
+        console.log(`✅ Coluna "${nome}" adicionada à aba "pedidos"`);
+      }
+    });
+    console.log('ℹ️ Aba "pedidos" já existe - colunas verificadas');
+  }
+  
+  let sheetClientes = ss.getSheetByName('clientes');
+  if (!sheetClientes) {
+    sheetClientes = ss.insertSheet('clientes');
+    const cabecalhos = [
+      'id_cliente', 'nome', 'email', 'telefone', 'cpf', 'senha',
+      'tipo_pessoa', 'inscricao_estadual', 'responsavel',
+      'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cep',
+      'endereco_entrega', 'cep_entrega',
+      'data_cadastro', 'ultimo_login', 'observacoes'
+    ];
+    sheetClientes.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+    sheetClientes.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
+    sheetClientes.setFrozenRows(1);
+    sheetClientes.autoResizeColumns(1, cabecalhos.length);
+    console.log('✅ Aba "clientes" criada com todos os campos');
+  } else {
+    console.log('ℹ️ Aba "clientes" já existe');
+  }
+  
+  let sheetProdutos = ss.getSheetByName('produtos');
+  if (!sheetProdutos) {
+    sheetProdutos = ss.insertSheet('produtos');
+    const cabecalhos = [
+      'id', 'categoria', 'nome', 'descricao', 'imagem_principal', 
+      'imagens_carousel', 'quantidades', 'pesos_medidas', 'estoque', 
+      'prazo_producao', 'peso_unitario', 'preco_custo', 'preco_venda', 
+      'preco_promocional', 'data_estoque', 'produto_ativado', 
+      'vender_zerado', 'codigo_produto', 'ncm'
+    ];
+    sheetProdutos.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+    sheetProdutos.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
+    sheetProdutos.setFrozenRows(1);
+    sheetProdutos.autoResizeColumns(1, cabecalhos.length);
+    console.log('✅ Aba "produtos" criada');
+  } else {
+    console.log('ℹ️ Aba "produtos" já existe');
+  }
+  
+  let sheetCategorias = ss.getSheetByName('categorias');
+  if (!sheetCategorias) {
+    sheetCategorias = ss.insertSheet('categorias');
+    const cabecalhos = ['id', 'nome', 'descricao', 'imagem'];
+    sheetCategorias.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+    sheetCategorias.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
+    sheetCategorias.setFrozenRows(1);
+    sheetCategorias.autoResizeColumns(1, cabecalhos.length);
+    console.log('✅ Aba "categorias" criada');
+  } else {
+    console.log('ℹ️ Aba "categorias" já existe');
+  }
+  
+  criarAbaFretes();
+  
+  const sheets = ss.getSheets();
+  let msg = '📊 ABAS VERIFICADAS/CRIADAS:\n\n';
+  sheets.forEach(s => {
+    msg += '  - ' + s.getName() + ' (' + s.getLastRow() + ' linhas)\n';
+  });
+  console.log(msg);
+  
+  return '✅ Abas criadas/verificadas com sucesso!';
+}
+
+// ============================================================
+// FUNÇÃO PARA CRIAR ABA DE FRETES
+// ============================================================
+function criarAbaFretes() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('fretes_calculados');
+  
+  if (!sheet) {
+    sheet = ss.insertSheet('fretes_calculados');
+    const cabecalhos = [
+      'id', 'timestamp', 'cep_destino', 'peso', 'altura', 'largura', 'comprimento',
+      'produtos_carrinho',
+      'opcao_1_nome', 'opcao_1_valor', 'opcao_1_prazo',
+      'opcao_2_nome', 'opcao_2_valor', 'opcao_2_prazo',
+      'opcao_3_nome', 'opcao_3_valor', 'opcao_3_prazo',
+      'opcao_4_nome', 'opcao_4_valor', 'opcao_4_prazo',
+      'opcao_5_nome', 'opcao_5_valor', 'opcao_5_prazo'
+    ];
+    sheet.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+    sheet.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+    sheet.autoResizeColumns(1, cabecalhos.length);
+    console.log('✅ Aba "fretes_calculados" criada com coluna produtos_carrinho!');
+  } else {
+    // 🔥 VERIFICA SE A COLUNA produtos_carrinho JÁ EXISTE
+    const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const colProdutos = cabecalhos.indexOf('produtos_carrinho');
+    
+    if (colProdutos === -1) {
+      const novaColuna = cabecalhos.length + 1;
+      sheet.getRange(1, novaColuna).setValue('produtos_carrinho');
+      sheet.getRange(1, novaColuna).setFontWeight('bold');
+      console.log('✅ Coluna "produtos_carrinho" adicionada na aba "fretes_calculados"');
+    } else {
+      console.log('ℹ️ Aba "fretes_calculados" já tem a coluna produtos_carrinho');
+    }
+  }
+}
+
+// ============================================================
+// CALCULAR E SALVAR FRETE NA PLANILHA
+// ============================================================
+function salvarFreteNaPlanilha(cepDestino, peso, altura, largura, comprimento, produtosCarrinho) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let sheet = ss.getSheetByName('fretes_calculados');
+    
+    if (!sheet) {
+      sheet = ss.insertSheet('fretes_calculados');
+      const cabecalhos = [
+        'id', 'timestamp', 'cep_destino', 'peso', 'altura', 'largura', 'comprimento',
+        'produtos_carrinho',
+        'opcao_1_nome', 'opcao_1_valor', 'opcao_1_prazo',
+        'opcao_2_nome', 'opcao_2_valor', 'opcao_2_prazo',
+        'opcao_3_nome', 'opcao_3_valor', 'opcao_3_prazo',
+        'opcao_4_nome', 'opcao_4_valor', 'opcao_4_prazo',
+        'opcao_5_nome', 'opcao_5_valor', 'opcao_5_prazo'
+      ];
+      sheet.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+      sheet.getRange(1, 1, 1, cabecalhos.length).setFontWeight('bold');
+      sheet.setFrozenRows(1);
+    }
+    
+    // 🔥 GARANTE QUE A COLUNA produtos_carrinho EXISTE
+    let cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    let colProdutos = cabecalhos.indexOf('produtos_carrinho') + 1;
+    if (colProdutos === 0) {
+      colProdutos = cabecalhos.length + 1;
+      sheet.getRange(1, colProdutos).setValue('produtos_carrinho');
+      sheet.getRange(1, colProdutos).setFontWeight('bold');
+      cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      colProdutos = cabecalhos.indexOf('produtos_carrinho') + 1;
+      console.log('✅ Coluna produtos_carrinho criada na posição', colProdutos);
+    }
+    
+    const resultado = calcularFreteSuperFrete(cepDestino, peso, altura, largura, comprimento);
+    const opcoes = resultado.opcoes || [];
+    const id = Date.now();
+    
+    // 🔥 TIMESTAMP FORMATADO CORRETAMENTE (America/Sao_Paulo)
+    const timestamp = dataHoraBrasilia("dd/MM/yyyy HH:mm:ss");
+    
+    // 🔥 LIMPA LINHAS ANTIGAS (mantém últimas 200)
+    if (sheet.getLastRow() > 200) {
+      const totalLinhas = sheet.getLastRow();
+      sheet.deleteRows(2, totalLinhas - 200);
+    }
+    
+    // 🔥 MONTA A LINHA COMPLETA USANDO OS CABEÇALHOS COMO REFERÊNCIA
+    const novaLinha = [];
+    cabecalhos.forEach(nomeColuna => {
+      switch(nomeColuna) {
+        case 'id':
+          novaLinha.push(id);
+          break;
+        case 'timestamp':
+          novaLinha.push(timestamp);
+          break;
+        case 'cep_destino':
+          novaLinha.push(cepDestino);
+          break;
+        case 'peso':
+          novaLinha.push(peso);
+          break;
+        case 'altura':
+          novaLinha.push(altura);
+          break;
+        case 'largura':
+          novaLinha.push(largura);
+          break;
+        case 'comprimento':
+          novaLinha.push(comprimento);
+          break;
+        case 'produtos_carrinho':
+          novaLinha.push(produtosCarrinho || '');
+          break;
+        default:
+          // 🔥 COLUNAS DE OPÇÕES (opcao_1_nome, opcao_1_valor, etc)
+          const matchOpcao = nomeColuna.match(/^opcao_(\d+)_(nome|valor|prazo)$/);
+          if (matchOpcao) {
+            const numOpcao = parseInt(matchOpcao[1]) - 1;
+            const tipo = matchOpcao[2];
+            
+            if (opcoes[numOpcao]) {
+              if (tipo === 'nome') {
+                novaLinha.push(opcoes[numOpcao].nome || opcoes[numOpcao].service || 'Frete');
+              } else if (tipo === 'valor') {
+                novaLinha.push(opcoes[numOpcao].preco || opcoes[numOpcao].price || 0);
+              } else if (tipo === 'prazo') {
+                novaLinha.push(opcoes[numOpcao].prazo || opcoes[numOpcao].delivery_time || 0);
+              }
+            } else {
+              novaLinha.push(tipo === 'valor' || tipo === 'prazo' ? 0 : '');
+            }
+          } else {
+            novaLinha.push('');
+          }
+      }
+    });
+    
+    const linha = sheet.getLastRow() + 1;
+    sheet.getRange(linha, 1, 1, novaLinha.length).setValues([novaLinha]);
+    
+    console.log('✅ Frete salvo na linha', linha, '- produtos:', produtosCarrinho);
+    
+    return {
+      success: true,
+      id: id,
+      mensagem: 'Frete calculado e salvo!',
+      opcoes: opcoes
+    };
+    
+  } catch (error) {
+    console.error('❌ Erro ao salvar frete:', error);
+    return {
+      success: false,
+      erro: error.toString()
+    };
+  }
+}
+
+// ============================================================
+// BUSCAR ÚLTIMO FRETE CALCULADO
+// ============================================================
+function buscarUltimoFrete() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName('fretes_calculados');
+    
+    if (!sheet || sheet.getLastRow() < 2) {
+      return {
+        success: false,
+        mensagem: 'Nenhum frete calculado ainda'
+      };
+    }
+    
+    const ultimaLinha = sheet.getLastRow();
+    const dados = sheet.getRange(ultimaLinha, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    
+    const opcoes = [];
+    for (let i = 0; i < 5; i++) {
+      const idxNome = cabecalhos.indexOf(`opcao_${i+1}_nome`) + 1;
+      const idxValor = cabecalhos.indexOf(`opcao_${i+1}_valor`) + 1;
+      const idxPrazo = cabecalhos.indexOf(`opcao_${i+1}_prazo`) + 1;
+      
+      if (idxNome > 0 && dados[idxNome-1]) {
+        opcoes.push({
+          nome: dados[idxNome-1],
+          preco: parseFloat(dados[idxValor-1] || 0),
+          prazo: parseInt(dados[idxPrazo-1] || 0),
+          codigo: dados[idxNome-1].substring(0, 10).toUpperCase()
+        });
+      }
+    }
+    
+    return {
+      success: true,
+      opcoes: opcoes,
+      cep: dados[cabecalhos.indexOf('cep_destino')],
+      peso: dados[cabecalhos.indexOf('peso')],
+      timestamp: dados[cabecalhos.indexOf('timestamp')]
+    };
+    
+  } catch (error) {
+    return {
+      success: false,
+      erro: error.toString()
+    };
+  }
+}
+
+// ============================================================
+// 4. FUNÇÃO PARA TESTAR CONEXÃO
+// ============================================================
+function testarConexao() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheets = ss.getSheets();
+    
+    let msg = '📊 PLANILHA: ' + ss.getName() + '\n\n';
+    msg += '📋 ABAS ENCONTRADAS:\n';
+    sheets.forEach(s => {
+      msg += '  - ' + s.getName() + ' (' + s.getLastRow() + ' linhas)\n';
+    });
+    
+    console.log(msg);
+    return msg;
+    
+  } catch (error) {
+    console.error('❌ ERRO: ' + error.message);
+    return '❌ ERRO: ' + error.message;
+  }
+}
+
+// ============================================================
+// 5. FUNÇÃO PARA TESTAR SUPERFRETE
+// ============================================================
+function testarSuperFrete() {
+  try {
+    console.log('🚚 TESTANDO SUPERFRETE');
+    console.log('═══════════════════════════════════════════════');
+    
+    const resultado = calcularFreteSuperFrete(
+      '01001000',
+      2.5,
+      20,
+      20,
+      30
+    );
+    
+    console.log('📥 RESULTADO COMPLETO:');
+    console.log(JSON.stringify(resultado, null, 2));
+    console.log('');
+    
+    if (resultado.success) {
+      const opcoes = resultado.opcoes || [];
+      
+      console.log('📋 OPÇÕES DE FRETE:');
+      console.log('─────────────────────────────────────────');
+      
+      if (opcoes.length > 0) {
+        opcoes.forEach((op, i) => {
+          const valor = op.preco || op.price || 0;
+          const prazo = op.prazo || op.delivery_time || 0;
+          const origem = op._fallback ? '⚠️ FALLBACK' : '✅ REAL';
+          
+          console.log(`   ${i+1}. ${op.nome || op.service || 'Frete'} ${origem}`);
+          console.log(`      Valor: R$ ${valor.toFixed(2)}`);
+          console.log(`      Prazo: ${prazo} dias`);
+          console.log('');
+        });
+        
+        const temFallback = opcoes.some(op => op._fallback === true);
+        const valoresAltos = opcoes.some(op => (op.preco || op.price || 0) > 100);
+        
+        console.log('📊 ANÁLISE:');
+        if (temFallback || valoresAltos) {
+          console.log('   ⚠️ PARECE SER FALLBACK!');
+          console.log('   Valores muito altos (R$ 500+) indicam simulação.');
+          console.log('   🔧 Verifique seu token da SuperFrete.');
+        } else {
+          console.log('   ✅ PARECE SER VALORES REAIS!');
+          console.log('   Valores compatíveis com frete real.');
+        }
+      } else {
+        console.log('   ❌ Nenhuma opção encontrada');
+      }
+      
+    } else {
+      console.log('❌ ERRO:', resultado.error);
+    }
+    
+    console.log('═══════════════════════════════════════════════');
+    return resultado;
+    
+  } catch (error) {
+    console.error('❌ Erro no teste:', error);
+    return { error: error.toString() };
+  }
+}
+
+// ============================================================
+// 6. FUNÇÃO PARA VERIFICAR SENHA
+// ============================================================
+function verificarSenha(email) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName('clientes');
+    
+    if (!sheet) {
+      return '❌ Aba "clientes" não encontrada';
+    }
+    
+    const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const colunaEmail = cabecalhos.indexOf('email') + 1;
+    const colunaSenha = cabecalhos.indexOf('senha') + 1;
+    const colunaNome = cabecalhos.indexOf('nome') + 1;
+    
+    if (colunaSenha === 0) {
+      return '❌ Coluna "senha" não encontrada! Execute "criarAbas()" para recriar.';
+    }
+    
+    for (let i = 2; i <= sheet.getLastRow(); i++) {
+      const emailCelula = sheet.getRange(i, colunaEmail).getValue();
+      if (emailCelula === email) {
+        const senhaCelula = sheet.getRange(i, colunaSenha).getValue();
+        const nomeCelula = sheet.getRange(i, colunaNome).getValue();
+        return `✅ Cliente encontrado!\nNome: ${nomeCelula}\nEmail: ${email}\nSenha salva: ${senhaCelula ? '✅ Sim (' + senhaCelula + ')' : '❌ Não'}`;
+      }
+    }
+    
+    return `❌ Cliente com email "${email}" não encontrado`;
+    
+  } catch (error) {
+    return '❌ ERRO: ' + error.message;
+  }
+}
+
+// ============================================================
+// 7. FUNÇÃO PARA VERIFICAR E CORRIGIR DADOS DOS CLIENTES
+// ============================================================
+function corrigirClientes() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('clientes');
+  
+  if (!sheet) {
+    console.log('❌ Aba "clientes" não encontrada!');
+    return '❌ Aba "clientes" não encontrada!';
+  }
+  
+  const cabecalhos = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  
+  const colunasNecessarias = [
+    'id_cliente', 'nome', 'email', 'telefone', 'cpf', 'senha',
+    'tipo_pessoa', 'inscricao_estadual', 'responsavel',
+    'endereco', 'numero', 'complemento', 'bairro', 'cidade', 'estado', 'cep',
+    'endereco_entrega', 'cep_entrega'
+  ];
+  
+  let colunasFaltando = [];
+  colunasNecessarias.forEach(col => {
+    if (cabecalhos.indexOf(col) === -1) {
+      colunasFaltando.push(col);
+    }
+  });
+  
+  if (colunasFaltando.length > 0) {
+    const msg = '⚠️ COLUNAS FALTANDO:\n\n' + colunasFaltando.join('\n') + '\n\nExecute a função "criarAbas()" para corrigir.';
+    console.log(msg);
+    return msg;
+  }
+  
+  const msg = '✅ Tudo certo!\n\nA aba "clientes" está com todas as colunas necessárias.\nTotal de clientes: ' + (sheet.getLastRow() - 1);
+  console.log(msg);
+  return msg;
+}
+
+// ============================================================
+// 8. FUNÇÃO PARA LIMPAR DADOS DE TESTE
+// ============================================================
+function limparDadosTeste() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ui = SpreadsheetApp.getUi();
+  
+  const resposta = ui.alert(
+    '⚠️ ATENÇÃO',
+    'Isso vai LIMPAR TODOS os dados das abas (mantendo os cabeçalhos).\n\n' +
+    'Tem certeza que deseja continuar?',
+    ui.ButtonSet.YES_NO
+  );
+  
+  if (resposta !== ui.Button.YES) return;
+  
+  const abas = ['produtos', 'categorias', 'pedidos', 'clientes', 'fretes_calculados'];
+  abas.forEach(nome => {
+    const sheet = ss.getSheetByName(nome);
+    if (sheet && sheet.getLastRow() > 1) {
+      sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).clearContent();
+      console.log('✅ Dados da aba "' + nome + '" removidos');
+    }
+  });
+  
+  ui.alert('✅ Dados de teste removidos com sucesso!');
+}
+
+// ============================================================
+// CRIA LINK DE PAGAMENTO (COM MÉTODO ESCOLHIDO)
+// ============================================================
+function criarLinkPagamento(dados) {
+  try {
+    var secretKey = PropertiesService.getScriptProperties().getProperty('PAGARME_SECRET_KEY');
+    
+    if (!secretKey) {
+      console.error('❌ Chave secreta não configurada');
+      return {
+        success: false,
+        error: 'Chave secreta não configurada'
+      };
+    }
+    
+    if (!dados.itens || dados.itens.length === 0) {
+      return {
+        success: false,
+        error: 'Nenhum item para criar o link'
+      };
+    }
+    
+    var items = [];
+    var totalCentavos = 0;
+    
+    for (var i = 0; i < dados.itens.length; i++) {
+      var item = dados.itens[i];
+      var preco = parseFloat(item.price) || 0;
+      var precoCentavos = Math.round(preco * 100);
+      totalCentavos += precoCentavos;
+      
+      items.push({
+        name: String(item.nome || 'Produto').substring(0, 100),
+        amount: precoCentavos,
+        default_quantity: 1
+      });
+    }
+    
+    var metodos = dados.metodosPagamento || ['pix'];
+    var temCartao = metodos.indexOf('credit_card') !== -1;
+    var temPix = metodos.indexOf('pix') !== -1;
+    var temBoleto = metodos.indexOf('boleto') !== -1;
+    
+    var paymentSettings = {
+      accepted_payment_methods: metodos
+    };
+    
+    if (temPix) {
+      paymentSettings.pix_settings = {
+        expires_in: 60
+      };
+    }
+    
+    if (temBoleto) {
+      paymentSettings.boleto_settings = {
+        due_in: 3,
+        instructions: 'Pagamento via Boleto Bancário'
+      };
+    }
+    
+    if (temCartao) {
+      var installments = [];
+      installments.push({ number: 1, total: totalCentavos });
+      
+      var TAXA_JUROS = 0.0239;
+      var totalReais = totalCentavos / 100;
+      
+      for (var parcela = 2; parcela <= 6; parcela++) {
+        var fator = Math.pow(1 + TAXA_JUROS, parcela);
+        var valorParcela = (totalReais * fator) / parcela;
+        var totalComJuros = Math.round(valorParcela * parcela * 100);
+        installments.push({
+          number: parcela,
+          total: totalComJuros
+        });
+      }
+      
+      paymentSettings.credit_card_settings = {
+        operation_type: 'auth_and_capture',
+        installments: installments
+      };
+    }
+    
+    var documento = String(dados.clienteDocumento || '').replace(/\D/g, '');
+    var documentType = 'cpf';
+    
+    if (documento.length === 14) {
+      documentType = 'cnpj';
+    } else if (documento.length !== 11) {
+      documento = '12345678909';
+      documentType = 'cpf';
+    }
+    
+    var telefone = String(dados.clienteTelefone || '').replace(/\D/g, '');
+    if (telefone.length < 10) {
+      telefone = '31999999999';
+    }
+    
+    var endereco = String(dados.clienteEndereco || 'Rua Teste');
+    var numero = String(dados.clienteNumero || '123');
+    var bairro = String(dados.clienteBairro || 'Centro');
+    var cidade = String(dados.clienteCidade || 'Belo Horizonte');
+    var uf = String(dados.clienteUf || 'MG').toUpperCase().substring(0, 2);
+    var cep = String(dados.clienteCep || '30100000').replace(/\D/g, '').substring(0, 8);
+    
+    var payload = {
+      type: 'order',
+      payment_settings: paymentSettings,
+      cart_settings: {
+        items: items,
+        expires_in: 7
+      },
+      customer_settings: {
+        name: String(dados.clienteNome || 'Cliente').substring(0, 100),
+        email: String(dados.clienteEmail || 'cliente@email.com').substring(0, 100),
+        document: documento,
+        document_type: documentType,
+        phone: {
+          country_code: '55',
+          number: telefone
+        }
+      },
+      billing: {
+        name: String(dados.clienteNome || 'Cliente').substring(0, 100),
+        address: {
+          country: 'BR',
+          state: uf,
+          city: cidade,
+          neighborhood: bairro,
+          street: endereco,
+          street_number: numero,
+          zipcode: cep
+        }
+      },
+      shipping: {
+        name: String(dados.clienteNome || 'Cliente').substring(0, 100),
+        address: {
+          country: 'BR',
+          state: uf,
+          city: cidade,
+          neighborhood: bairro,
+          street: endereco,
+          street_number: numero,
+          zipcode: cep
+        }
+      },
+      metadata: {
+        pedido_id: String(dados.pedidoId || '')
+      }
+    };
+    
+    console.log('📤 Payload enviado:', JSON.stringify(payload, null, 2));
+    
+    var url = 'https://api.pagar.me/core/v5/paymentlinks';
+    var options = {
+      method: 'post',
+      headers: {
+        'Authorization': 'Basic ' + Utilities.base64Encode(secretKey + ':'),
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true,
+      timeout: 30000
+    };
+    
+    var response = UrlFetchApp.fetch(url, options);
+    var statusCode = response.getResponseCode();
+    var content = response.getContentText();
+    
+    console.log('📥 Status Code:', statusCode);
+    console.log('📥 Resposta:', content);
+    
+    if (!content || content.length === 0) {
+      return {
+        success: false,
+        error: 'Resposta vazia da API',
+        statusCode: statusCode
+      };
+    }
+    
+    try {
+      var result = JSON.parse(content);
+      
+      if (statusCode === 200 || statusCode === 201) {
+        var pixData = null;
+        var boletoData = null;
+        var cartaoData = null;
+        
+        if (result.payment_settings && result.payment_settings.pix_settings) {
+          var pixSettings = result.payment_settings.pix_settings;
+          
+          var qrCode = null;
+          var copiaCola = null;
+          
+          if (pixSettings.qr_code) qrCode = pixSettings.qr_code;
+          if (pixSettings.qr_code_text) copiaCola = pixSettings.qr_code_text;
+          if (!qrCode && result.qr_code) qrCode = result.qr_code;
+          if (!copiaCola && result.qr_code_text) copiaCola = result.qr_code_text;
+          
+          if (qrCode || copiaCola) {
+            pixData = {
+              qrCode: qrCode || null,
+              copiaCola: copiaCola || null,
+              expiresIn: pixSettings.expires_in || 60
+            };
+            console.log('✅ Dados do PIX extraídos');
+          } else {
+            console.log('⚠️ Nenhum dado PIX encontrado');
+          }
+        }
+        
+        if (result.payment_settings && result.payment_settings.boleto_settings) {
+          var boletoSettings = result.payment_settings.boleto_settings;
+          boletoData = {
+            url: boletoSettings.boleto_url || null,
+            barcode: boletoSettings.barcode || null
+          };
+        }
+        
+        if (result.payment_settings && result.payment_settings.credit_card_settings) {
+          cartaoData = {
+            available: true,
+            maxInstallments: result.payment_settings.credit_card_settings.max_installments || 6
+          };
+        }
+        
+        return {
+          success: true,
+          paymentLink: result.url,
+          checkoutId: result.id,
+          status: result.status,
+          pix: pixData,
+          boleto: boletoData,
+          cartao: cartaoData,
+          total: totalCentavos,
+          totalFormatado: (totalCentavos / 100).toFixed(2),
+          items: result.cart_settings?.items || [],
+          createdAt: result.created_at
+        };
+        
+      } else {
+        var mensagemErro = result.message || 'Erro ao criar link';
+        if (result.errors) {
+          var erros = [];
+          for (var key in result.errors) {
+            erros.push(key + ': ' + result.errors[key].join(', '));
+          }
+          mensagemErro += ' | ' + erros.join('; ');
+        }
+        return {
+          success: false,
+          error: mensagemErro,
+          details: result,
+          statusCode: statusCode
+        };
+      }
+      
+    } catch (parseError) {
+      console.error('❌ Erro ao parsear JSON:', parseError.message);
+      return {
+        success: false,
+        error: 'Erro ao processar resposta: ' + parseError.message,
+        rawResponse: content
+      };
+    }
+    
+  } catch (error) {
+    console.error('❌ Erro em criarLinkPagamento:', error);
+    return {
+      success: false,
+      error: error.message || 'Erro ao processar requisição',
+      stack: error.stack
+    };
+  }
+}
+
+// ============================================================
+// VERIFICAR STATUS DO PAGAMENTO
+// ============================================================
+function verificarStatusPagamento(checkoutId) {
+  try {
+    if (!checkoutId) {
+      return {
+        success: false,
+        error: 'ID do checkout não informado'
+      };
+    }
+    
+    var secretKey = PropertiesService.getScriptProperties().getProperty('PAGARME_SECRET_KEY');
+    
+    if (!secretKey) {
+      return {
+        success: false,
+        error: 'Chave secreta do Pagar.me não configurada'
+      };
+    }
+    
+    var url = 'https://api.pagar.me/core/v5/paymentlinks/' + checkoutId;
+    var options = {
+      method: 'get',
+      headers: {
+        'Authorization': 'Basic ' + Utilities.base64Encode(secretKey + ':'),
+        'Content-Type': 'application/json'
+      },
+      muteHttpExceptions: true
+    };
+    
+    var response = UrlFetchApp.fetch(url, options);
+    var result = JSON.parse(response.getContentText());
+    
+    if (response.getResponseCode() !== 200) {
+      return {
+        success: false,
+        error: result.message || 'Erro ao verificar status do pagamento'
+      };
+    }
+    
+    var status = result.status || 'pending';
+    var isPaid = status === 'paid';
+    
+    return {
+      success: true,
+      status: status,
+      isPaid: isPaid,
+      paymentLink: result.url,
+      expiresAt: result.expires_at
+    };
+    
+  } catch (error) {
+    return {
+      success: false,
+      error: error.message || 'Erro ao verificar status'
+    };
+  }
+}
+
+// ============================================================
+// WEBHOOK PARA RECEBER NOTIFICAÇÕES DO PAGAR.ME
+// ============================================================
+function doPostPagarMe(e) {
+  try {
+    if (!e || !e.postData) {
+      return ContentService.createTextOutput(JSON.stringify({ 
+        error: 'Requisição inválida' 
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    var data = JSON.parse(e.postData.contents);
+    console.log('📨 Webhook recebido:', JSON.stringify(data));
+    
+    if (data.type === 'order.paid' || data.type === 'payment.link.paid') {
+      var pedidoId = data.data && data.data.metadata && data.data.metadata.pedido_id;
+      var checkoutId = data.data && data.data.id;
+      
+      if (pedidoId) {
+        console.log('✅ Pedido #' + pedidoId + ' pago! Checkout ID: ' + checkoutId);
+        
+        atualizarStatusPedidoPlanilha(pedidoId, 'Pago', checkoutId);
+        
+        return ContentService.createTextOutput(JSON.stringify({ 
+          success: true, 
+          message: 'Pedido #' + pedidoId + ' atualizado para PAGO'
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({ 
+      success: true, 
+      message: 'Webhook recebido' 
+    })).setMimeType(ContentService.MimeType.JSON);
+    
+  } catch (error) {
+    console.error('❌ Erro no webhook:', error);
+    return ContentService.createTextOutput(JSON.stringify({ 
+      error: error.message 
+    })).setMimeType(ContentService.MimeType.JSON).setStatusCode(500);
+  }
+}
+
+// ============================================================
+// ATUALIZAR STATUS DO PEDIDO NA PLANILHA
+// ============================================================
+function atualizarStatusPedidoPlanilha(pedidoId, novoStatus, checkoutId) {
+  try {
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = spreadsheet.getSheetByName('pedidos');
+    
+    if (!sheet) {
+      console.error('❌ Planilha "pedidos" não encontrada');
+      return false;
+    }
+    
+    var data = sheet.getDataRange().getValues();
+    var headers = data[0];
+    
+    var colId = headers.indexOf('id_pedido');
+    var colStatus = headers.indexOf('status');
+    
+    if (colId === -1 || colStatus === -1) {
+      console.error('❌ Colunas "id_pedido" ou "status" não encontradas');
+      return false;
+    }
+    
+    colId++;
+    colStatus++;
+    
+    for (var i = 1; i < data.length; i++) {
+      var idAtual = String(data[i][colId - 1]).trim();
+      if (idAtual === String(pedidoId)) {
+        sheet.getRange(i + 1, colStatus).setValue(novoStatus);
+        console.log('✅ Pedido #' + pedidoId + ' atualizado para "' + novoStatus + '" na planilha');
+        return true;
+      }
+    }
+    
+    console.warn('⚠️ Pedido #' + pedidoId + ' não encontrado na planilha');
+    return false;
+    
+  } catch (error) {
+    console.error('❌ Erro ao atualizar status na planilha:', error);
+    return false;
+  }
+}
+
+function testarCriarLinkPagamento() {
+  console.log('🔍 TESTANDO criarLinkPagamento()');
+  console.log('═══════════════════════════════════════════════');
+  
+  var dadosTeste = {
+    itens: [
+      {
+        nome: 'Produto Teste',
+        price: 10.00,
+        quantity: 1
+      }
+    ],
+    clienteNome: 'Cliente Teste',
+    clienteEmail: 'teste@mcembalagens.com.br',
+    clienteDocumento: '12345678909',
+    pedidoId: 'TESTE-001'
+  };
+  
+  console.log('📤 Dados enviados:', JSON.stringify(dadosTeste, null, 2));
+  
+  var resultado = criarLinkPagamento(dadosTeste);
+  
+  console.log('📥 Resultado:', JSON.stringify(resultado, null, 2));
+  
+  if (resultado.success) {
+    console.log('✅✅✅ LINK GERADO COM SUCESSO!');
+    console.log('🔗 LINK:', resultado.paymentLink);
+    console.log('📋 ID:', resultado.checkoutId);
+    console.log('✅ PIX + BOLETO + CARTÃO disponíveis!');
+  } else {
+    console.log('❌ ERRO:', resultado.error);
+  }
+  
+  console.log('═══════════════════════════════════════════════');
+}
+
+function testarParcelas() {
+  console.log('🔍 TESTANDO PARCELAS COM JUROS');
+  console.log('═══════════════════════════════════════════════');
+  
+  var resultado = criarLinkPagamento({
+    itens: [{
+      nome: 'Produto Teste',
+      price: 100.00,
+      quantity: 1
+    }],
+    clienteNome: 'Cliente Teste',
+    clienteEmail: 'teste@mcembalagens.com.br',
+    clienteDocumento: '12345678909',
+    pedidoId: 'TESTE-PARCELAS'
+  });
+  
+  if (resultado.success) {
+    console.log('✅ LINK GERADO:', resultado.paymentLink);
+    console.log('📊 Parcelas: 1x sem juros | 2x a 6x com 2,39% a.m.');
+  } else {
+    console.log('❌ ERRO:', resultado.error);
+  }
+}
+
+
+// ============================================================
+// TESTES PARA CADA MÉTODO DE PAGAMENTO
+// ============================================================
+
+function testarApenasPix() {
+  console.log('🔍 TESTE - APENAS PIX');
+  console.log('═══════════════════════════════════════════════');
+  
+  var resultado = criarLinkPagamento({
+    itens: [{ nome: 'Produto Teste', price: 100.00, quantity: 1 }],
+    clienteNome: 'Cliente Teste',
+    clienteEmail: 'teste@mcembalagens.com.br',
+    clienteDocumento: '12345678909',
+    pedidoId: 'TESTE-PIX',
+    metodosPagamento: ['pix']
+  });
+  
+  if (resultado.success) {
+    console.log('✅ LINK GERADO (apenas PIX):', resultado.paymentLink);
+  } else {
+    console.log('❌ ERRO:', resultado.error);
+  }
+}
+
+function testarApenasBoleto() {
+  console.log('🔍 TESTE - APENAS BOLETO');
+  console.log('═══════════════════════════════════════════════');
+  
+  var resultado = criarLinkPagamento({
+    itens: [{ nome: 'Produto Teste', price: 100.00, quantity: 1 }],
+    clienteNome: 'Cliente Teste',
+    clienteEmail: 'teste@mcembalagens.com.br',
+    clienteDocumento: '12345678909',
+    pedidoId: 'TESTE-BOLETO',
+    metodosPagamento: ['boleto']
+  });
+  
+  if (resultado.success) {
+    console.log('✅ LINK GERADO (apenas Boleto):', resultado.paymentLink);
+  } else {
+    console.log('❌ ERRO:', resultado.error);
+  }
+}
+
+function testarApenasCartao() {
+  console.log('🔍 TESTE - APENAS CARTÃO');
+  console.log('═══════════════════════════════════════════════');
+  
+  var resultado = criarLinkPagamento({
+    itens: [{ nome: 'Produto Teste', price: 100.00, quantity: 1 }],
+    clienteNome: 'Cliente Teste',
+    clienteEmail: 'teste@mcembalagens.com.br',
+    clienteDocumento: '12345678909',
+    pedidoId: 'TESTE-CARTAO',
+    metodosPagamento: ['credit_card']
+  });
+  
+  if (resultado.success) {
+    console.log('✅ LINK GERADO (apenas Cartão):', resultado.paymentLink);
+  } else {
+    console.log('❌ ERRO:', resultado.error);
+  }
+}
+
+function testarTodosMetodos() {
+  console.log('🔍 TESTE - TODOS OS MÉTODOS');
+  console.log('═══════════════════════════════════════════════');
+  
+  var resultado = criarLinkPagamento({
+    itens: [{ nome: 'Produto Teste', price: 100.00, quantity: 1 }],
+    clienteNome: 'Cliente Teste',
+    clienteEmail: 'teste@mcembalagens.com.br',
+    clienteDocumento: '12345678909',
+    pedidoId: 'TESTE-TODOS',
+    metodosPagamento: ['pix', 'boleto', 'credit_card']
+  });
+  
+  if (resultado.success) {
+    console.log('✅ LINK GERADO (todos os métodos):', resultado.paymentLink);
+  } else {
+    console.log('❌ ERRO:', resultado.error);
+  }
+}
+
+
+function testarCriarLink() {
+  var teste = {
+    itens: [
+      { nome: 'Produto Teste', price: 69.35, quantity: 1 },
+      { nome: 'Frete (SEDEX)', price: 76.04, quantity: 1 }
+    ],
+    clienteNome: 'Cliente Teste',
+    clienteEmail: 'teste@email.com',
+    clienteDocumento: '12345678909',
+    pedidoId: 'TESTE-001',
+    metodosPagamento: ['pix']
+  };
+  
+  var resultado = criarLinkPagamento(teste);
+  console.log('📤 Resultado:', JSON.stringify(resultado, null, 2));
+}
+
+
+function testarPagamentoCompleto() {
+  console.log('🔍 TESTE - PAGAMENTO COMPLETO COM DADOS REAIS');
+  console.log('═══════════════════════════════════════════════');
+  
+  try {
+    var dadosTeste = {
+      itens: [
+        { 
+          nome: 'Caixa 30x20x10 Branca Triplex 350g', 
+          price: 281.15, 
+          quantity: 50 
+        },
+        { 
+          nome: 'Caixa 35x27x09 Branca Triplex 350g', 
+          price: 402.32, 
+          quantity: 100 
+        },
+        { 
+          nome: 'Frete (Entrega Própria)', 
+          price: 12.00, 
+          quantity: 1 
+        }
+      ],
+      clienteNome: 'Ana Cristina da Silva',
+      clienteEmail: 'ana.silva@exemplo.com',
+      clienteDocumento: '12345678909',
+      clienteTelefone: '31987654321',
+      clienteEndereco: 'Rua das Flores',
+      clienteNumero: '123',
+      clienteBairro: 'Jardim América',
+      clienteCidade: 'Belo Horizonte',
+      clienteUf: 'MG',
+      clienteCep: '30100000',
+      pedidoId: 'TESTE-001',
+      metodosPagamento: ['pix']
+    };
+    
+    console.log('📤 Dados enviados:', JSON.stringify(dadosTeste, null, 2));
+    console.log('');
+    
+    var resultado = criarLinkPagamento(dadosTeste);
+    
+    console.log('📥 Resultado:', JSON.stringify(resultado, null, 2));
+    console.log('');
+    
+    if (resultado.success) {
+      console.log('✅✅✅ SUCESSO! LINK GERADO! ✅✅✅');
+      console.log('═══════════════════════════════════════════════');
+      console.log('🔗 LINK DE PAGAMENTO:', resultado.paymentLink);
+      console.log('📋 ID:', resultado.checkoutId);
+      console.log('📊 Status:', resultado.status);
+      console.log('═══════════════════════════════════════════════');
+      console.log('');
+      console.log('📌 COPIE O LINK E COLE NO NAVEGADOR:');
+      console.log('   ' + resultado.paymentLink);
+      
+      try {
+        var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('logs');
+        if (!sheet) {
+          sheet = SpreadsheetApp.getActiveSpreadsheet().insertSheet('logs');
+          sheet.appendRow(['data', 'tipo', 'link', 'id', 'status']);
+        }
+        sheet.appendRow([
+          dataHoraBrasilia("dd/MM/yyyy HH:mm:ss"),
+          'TESTE_COMPLETO',
+          resultado.paymentLink,
+          resultado.checkoutId,
+          resultado.status
+        ]);
+        console.log('📊 Link salvo na aba "logs" da planilha!');
+      } catch (e) {
+        console.log('⚠️ Não foi possível salvar log:', e.message);
+      }
+      
+      return resultado;
+      
+    } else {
+      console.log('❌ ERRO:', resultado.error);
+      if (resultado.details) {
+        console.log('📄 Detalhes:', JSON.stringify(resultado.details, null, 2));
+      }
+      return null;
+    }
+    
+  } catch (error) {
+    console.error('❌ ERRO:', error.message);
+    console.log('📄 Stack:', error.stack);
+    return null;
+  }
+}
+
+
+function testarPreenchimentoCompleto() {
+  console.log('🔍 TESTE - PRÉ-PREENCHIMENTO COMPLETO');
+  console.log('═══════════════════════════════════════════════');
+  
+  try {
+    var secretKey = PropertiesService.getScriptProperties().getProperty('PAGARME_SECRET_KEY');
+    
+    if (!secretKey) {
+      console.log('❌ Chave secreta não configurada');
+      return;
+    }
+    
+    var payload = {
+      type: 'order',
+      payment_settings: {
+        accepted_payment_methods: ['pix', 'boleto', 'credit_card'],
+        pix_settings: {
+          expires_in: 60
+        },
+        boleto_settings: {
+          due_in: 3,
+          instructions: 'Pagamento via Boleto Bancário'
+        },
+        credit_card_settings: {
+          operation_type: 'auth_and_capture',
+          installments: [
+            { number: 1, total: 10000 },
+            { number: 2, total: 10000 },
+            { number: 3, total: 10000 }
+          ]
+        }
+      },
+      cart_settings: {
+        items: [{
+          name: 'Produto Teste',
+          amount: 10000,
+          default_quantity: 1
+        }],
+        expires_in: 7
+      },
+      customer_settings: {
+        name: 'Hugo Felipe Pereira Ribeiro',
+        email: 'hugo@exemplo.com',
+        document: '07033988656',
+        document_type: 'cpf',
+        phone: {
+          country_code: '55',
+          number: '31999999999'
+        }
+      },
+      billing: {
+        name: 'Hugo Felipe Pereira Ribeiro',
+        address: {
+          country: 'BR',
+          state: 'MG',
+          city: 'Belo Horizonte',
+          neighborhood: 'Centro',
+          street: 'Rua dos Testes',
+          street_number: '123',
+          zipcode: '30100000'
+        }
+      },
+      shipping: {
+        name: 'Hugo Felipe Pereira Ribeiro',
+        address: {
+          country: 'BR',
+          state: 'MG',
+          city: 'Belo Horizonte',
+          neighborhood: 'Centro',
+          street: 'Rua dos Testes',
+          street_number: '123',
+          zipcode: '30100000'
+        }
+      },
+      metadata: {
+        pedido_id: 'TESTE-PREENCHE-001',
+        origem: 'App Script'
+      }
+    };
+    
+    console.log('📤 Payload enviado:', JSON.stringify(payload, null, 2));
+    
+    var url = 'https://api.pagar.me/core/v5/paymentlinks';
+    var options = {
+      method: 'post',
+      headers: {
+        'Authorization': 'Basic ' + Utilities.base64Encode(secretKey + ':'),
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    };
+    
+    var response = UrlFetchApp.fetch(url, options);
+    var statusCode = response.getResponseCode();
+    var content = response.getContentText();
+    
+    console.log('📥 Status Code:', statusCode);
+    console.log('📥 Resposta:', content);
+    
+    if (statusCode === 200 || statusCode === 201) {
+      var result = JSON.parse(content);
+      console.log('✅✅✅ LINK GERADO!');
+      console.log('🔗 LINK:', result.url);
+      console.log('');
+      console.log('📌 COPIE O LINK E TESTE NO NAVEGADOR:');
+      console.log('   ' + result.url);
+    } else {
+      console.log('❌ ERRO:', content);
+    }
+    
+  } catch (error) {
+    console.log('❌ ERRO:', error.message);
+  }
+}
+
+
+
+function testarPixCompleto() {
+  console.log('🔍 TESTE - VERIFICANDO DADOS DO PIX');
+  console.log('═══════════════════════════════════════════════');
+  
+  try {
+    var secretKey = PropertiesService.getScriptProperties().getProperty('PAGARME_SECRET_KEY');
+    
+    if (!secretKey) {
+      console.log('❌ Chave secreta não configurada');
+      return;
+    }
+    
+    var dadosTeste = {
+      itens: [
+        { 
+          nome: 'Produto Teste PIX', 
+          price: 100.00, 
+          quantity: 1 
+        }
+      ],
+      clienteNome: 'Hugo Felipe Pereira Ribeiro',
+      clienteEmail: 'hugo@exemplo.com',
+      clienteDocumento: '07033988656',
+      clienteTelefone: '31999999999',
+      clienteEndereco: 'Rua dos Testes',
+      clienteNumero: '123',
+      clienteBairro: 'Centro',
+      clienteCidade: 'Belo Horizonte',
+      clienteUf: 'MG',
+      clienteCep: '30100000',
+      pedidoId: 'TESTE-PIX-001',
+      metodosPagamento: ['pix']
+    };
+    
+    console.log('📤 Dados enviados:', JSON.stringify(dadosTeste, null, 2));
+    console.log('');
+    
+    var resultado = criarLinkPagamento(dadosTeste);
+    
+    console.log('📥 RESULTADO COMPLETO:');
+    console.log(JSON.stringify(resultado, null, 2));
+    console.log('');
+    
+    console.log('📊 ANÁLISE:');
+    console.log('─────────────────────────────────────────');
+    
+    if (resultado.success) {
+      console.log('✅ Link criado com sucesso!');
+      console.log('🔗 Link:', resultado.paymentLink);
+      console.log('📋 ID:', resultado.checkoutId);
+      console.log('');
+      
+      if (resultado.pix) {
+        console.log('✅ DADOS DO PIX ENCONTRADOS!');
+        console.log('   QR Code:', resultado.pix.qrCode ? '✅ Presente' : '❌ Ausente');
+        console.log('   Cópia e Cola:', resultado.pix.copiaCola ? '✅ Presente' : '❌ Ausente');
+        console.log('   Expira em:', resultado.pix.expiresIn + ' minutos');
+        console.log('');
+        
+        if (resultado.pix.qrCode) {
+          console.log('📌 QR Code (primeiros 50 caracteres):');
+          console.log('   ' + resultado.pix.qrCode.substring(0, 50) + '...');
+        }
+        if (resultado.pix.copiaCola) {
+          console.log('📌 Código Copia e Cola (primeiros 50 caracteres):');
+          console.log('   ' + resultado.pix.copiaCola.substring(0, 50) + '...');
+        }
+      } else {
+        console.log('❌ NENHUM DADO DO PIX ENCONTRADO!');
+      }
+      
+      console.log('');
+      console.log('💰 Total: R$ ' + resultado.totalFormatado);
+      console.log('📦 Itens:', resultado.items.length);
+      
+    } else {
+      console.log('❌ ERRO:', resultado.error);
+      if (resultado.details) {
+        console.log('📄 Detalhes:', JSON.stringify(resultado.details, null, 2));
+      }
+    }
+    
+    console.log('');
+    console.log('═══════════════════════════════════════════════');
+    console.log('🏁 TESTE FINALIZADO');
+    
+    return resultado;
+    
+  } catch (error) {
+    console.log('❌ ERRO:', error.message);
+    console.log('📄 Stack:', error.stack);
+  }
+}
+
+function testarApiV1PixCorrigido() {
+  console.log('🔍 TESTE API V1 - PIX DIRETO (CORRIGIDO)');
+  console.log('═══════════════════════════════════════════════');
+  
+  try {
+    var secretKey = PropertiesService.getScriptProperties().getProperty('PAGARME_SECRET_KEY');
+    
+    if (!secretKey) {
+      console.log('❌ Chave secreta não configurada');
+      return;
+    }
+    
+    console.log('✅ Chave encontrada:', secretKey.substring(0, 15) + '...');
+    
+    var payload = {
+      api_key: secretKey,
+      amount: 1000,
+      payment_method: 'pix',
+      customer: {
+        name: 'Hugo Felipe Pereira Ribeiro',
+        email: 'hugo@exemplo.com',
+        document_number: '07033988656',
+        document_type: 'cpf'
+      },
+      metadata: {
+        pedido_id: 'TESTE-V1-001'
+      }
+    };
+    
+    console.log('📤 Payload:', JSON.stringify(payload, null, 2));
+    
+    var url = 'https://api.pagar.me/1/transactions';
+    var options = {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    };
+    
+    console.log('📤 Enviando para API v1 /transactions...');
+    var response = UrlFetchApp.fetch(url, options);
+    var statusCode = response.getResponseCode();
+    var content = response.getContentText();
+    
+    console.log('📥 Status Code:', statusCode);
+    
+    if (!content || content.length === 0) {
+      console.log('❌ Resposta vazia');
+      return;
+    }
+    
+    console.log('📥 Conteúdo:', content);
+    
+    try {
+      var result = JSON.parse(content);
+      
+      if (statusCode === 200 || statusCode === 201) {
+        console.log('✅✅✅ SUCESSO!');
+        
+        if (result.qr_code) {
+          console.log('🎉 QR CODE ENCONTRADO!');
+          console.log('   QR Code (base64):', result.qr_code.substring(0, 100) + '...');
+          console.log('   Código Copia e Cola:', result.qr_code_text || 'N/A');
+          console.log('');
+          console.log('📌 QR Code pronto para ser exibido!');
+        } else {
+          console.log('❌ QR CODE NÃO ENCONTRADO!');
+          console.log('   A resposta não contém qr_code.');
+          console.log('   Campos disponíveis:', Object.keys(result).join(', '));
+          
+          if (result.payment_url) {
+            console.log('🔗 Link de pagamento:', result.payment_url);
+          }
+        }
+        
+        console.log('📋 ID da transação:', result.id || 'N/A');
+        console.log('📊 Status:', result.status || 'N/A');
+        console.log('💳 Método:', result.payment_method || 'N/A');
+        
+      } else {
+        console.log('❌ ERRO:', result.message || 'Erro desconhecido');
+        if (result.errors) {
+          console.log('📋 Detalhes:', JSON.stringify(result.errors, null, 2));
+        }
+      }
+      
+    } catch (parseError) {
+      console.log('❌ Erro ao parsear JSON:', parseError.message);
+      console.log('📄 Conteúdo bruto:', content);
+    }
+    
+  } catch (error) {
+    console.log('❌ ERRO:', error.message);
+    console.log('📄 Stack:', error.stack);
+  }
+  
+  console.log('');
+  console.log('═══════════════════════════════════════════════');
+  console.log('🏁 TESTE FINALIZADO');
+}
+
+
+function testarApiV5Checkout() {
+  console.log('🔍 TESTE API V5 - CHECKOUT TRANSPARENTE');
+  console.log('═══════════════════════════════════════════════');
+  
+  try {
+    var secretKey = PropertiesService.getScriptProperties().getProperty('PAGARME_SECRET_KEY');
+    
+    if (!secretKey) {
+      console.log('❌ Chave secreta não configurada');
+      return;
+    }
+    
+    console.log('✅ Chave encontrada:', secretKey.substring(0, 15) + '...');
+    
+    var payload = {
+      type: 'order',
+      payment_settings: {
+        accepted_payment_methods: ['pix'],
+        pix_settings: {
+          expires_in: 60
+        }
+      },
+      cart_settings: {
+        items: [{
+          name: 'Produto Teste PIX',
+          amount: 1000,
+          default_quantity: 1
+        }],
+        expires_in: 7
+      },
+      customer_settings: {
+        name: 'Hugo Felipe Pereira Ribeiro',
+        email: 'hugo@exemplo.com',
+        document: '07033988656',
+        document_type: 'cpf',
+        phone: {
+          country_code: '55',
+          number: '31999999999'
+        }
+      },
+      billing: {
+        name: 'Hugo Felipe Pereira Ribeiro',
+        address: {
+          country: 'BR',
+          state: 'MG',
+          city: 'Belo Horizonte',
+          neighborhood: 'Centro',
+          street: 'Rua dos Testes',
+          street_number: '123',
+          zipcode: '30100000'
+        }
+      },
+      checkout_settings: {
+        enabled: true,
+        address_type: 'brazilian'
+      },
+      returns: {
+        pix: {
+          qr_code: true,
+          qr_code_text: true
+        }
+      },
+      metadata: {
+        pedido_id: 'TESTE-006'
+      }
+    };
+    
+    console.log('📤 Payload:', JSON.stringify(payload, null, 2));
+    
+    var url = 'https://api.pagar.me/core/v5/paymentlinks';
+    var options = {
+      method: 'post',
+      headers: {
+        'Authorization': 'Basic ' + Utilities.base64Encode(secretKey + ':'),
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    };
+    
+    console.log('📤 Enviando para API v5...');
+    var response = UrlFetchApp.fetch(url, options);
+    var statusCode = response.getResponseCode();
+    var content = response.getContentText();
+    
+    console.log('📥 Status Code:', statusCode);
+    
+    if (!content || content.length === 0) {
+      console.log('❌ Resposta vazia');
+      return;
+    }
+    
+    console.log('📥 Conteúdo:', content);
+    
+    try {
+      var result = JSON.parse(content);
+      
+      if (statusCode === 200 || statusCode === 201) {
+        console.log('✅✅✅ SUCESSO!');
+        
+        var qrCode = null;
+        var copiaCola = null;
+        
+        if (result.qr_code) {
+          qrCode = result.qr_code;
+          copiaCola = result.qr_code_text;
+        }
+        
+        if (!qrCode && result.payment_settings && result.payment_settings.pix_settings) {
+          var pixSettings = result.payment_settings.pix_settings;
+          qrCode = pixSettings.qr_code || null;
+          copiaCola = pixSettings.qr_code_text || null;
+        }
+        
+        if (!qrCode && result.pix) {
+          qrCode = result.pix.qr_code || null;
+          copiaCola = result.pix.qr_code_text || null;
+        }
+        
+        console.log('');
+        console.log('📊 ANÁLISE:');
+        console.log('─────────────────────────────────────────');
+        
+        if (qrCode) {
+          console.log('🎉 QR CODE ENCONTRADO!');
+          console.log('   QR Code (base64):', qrCode.substring(0, 100) + '...');
+          console.log('   Código Copia e Cola:', copiaCola || 'N/A');
+          console.log('');
+          console.log('📌 O QR Code está disponível na resposta!');
+        } else {
+          console.log('❌ QR CODE NÃO ENCONTRADO!');
+          console.log('   Campos disponíveis na resposta:');
+          console.log('   ' + Object.keys(result).join(', '));
+          
+          if (result.url) {
+            console.log('');
+            console.log('🔗 Link de pagamento:', result.url);
+            console.log('💡 O QR Code está disponível neste link.');
+          }
+        }
+        
+        console.log('📋 ID:', result.id || 'N/A');
+        console.log('📊 Status:', result.status || 'N/A');
+        
+      } else {
+        console.log('❌ ERRO:', result.message || 'Erro desconhecido');
+        if (result.errors) {
+          console.log('📋 Detalhes:', JSON.stringify(result.errors, null, 2));
+        }
+      }
+      
+    } catch (parseError) {
+      console.log('❌ Erro ao parsear JSON:', parseError.message);
+      console.log('📄 Conteúdo bruto:', content);
+    }
+    
+  } catch (error) {
+    console.log('❌ ERRO:', error.message);
+    console.log('📄 Stack:', error.stack);
+  }
+  
+  console.log('');
+  console.log('═══════════════════════════════════════════════');
+  console.log('🏁 TESTE FINALIZADO');
+}
+
+// ============================================================
+// PROSPECÇÃO - CRIAR ABA E CONFIGURAR
+// Execute UMA VEZ: criarAbaProspeccao()
+// ============================================================
+function criarAbaProspeccao() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('prospeccao');
+  
+  if (sheet) {
+    const msg = 'ℹ️ A aba "prospeccao" já existe!\n\nLinhas: ' + sheet.getLastRow();
+    console.log(msg);
+    SpreadsheetApp.getUi().alert(msg);
+    return msg;
+  }
+  
+  sheet = ss.insertSheet('prospeccao');
+  
+  const cabecalhos = [
+    'id',
+    'cliente_id',
+    'cliente_nome',
+    'cliente_telefone',
+    'cliente_email',
+    'data_hora',
+    'resultado',
+    'observacoes',
+    'prospectador',
+    'timestamp'
+  ];
+  
+  sheet.getRange(1, 1, 1, cabecalhos.length).setValues([cabecalhos]);
+  sheet.getRange(1, 1, 1, cabecalhos.length)
+    .setFontWeight('bold')
+    .setBackground('#1a3a5c')
+    .setFontColor('white')
+    .setHorizontalAlignment('center');
+  
+  sheet.setFrozenRows(1);
+  sheet.autoResizeColumns(1, cabecalhos.length);
+  
+  // Formata a coluna de data como texto para não bugar o formato brasileiro
+  sheet.getRange(2, 6, sheet.getMaxRows() - 1, 1).setNumberFormat('@STRING@');
+  sheet.getRange(2, 10, sheet.getMaxRows() - 1, 1).setNumberFormat('@STRING@');
+  
+  const msg = '✅ Aba "prospeccao" criada com sucesso!\n\nColunas: ' + cabecalhos.length + '\nPronta para receber contatos.';
+  console.log(msg);
+  SpreadsheetApp.getUi().alert(msg);
+  return msg;
+}
