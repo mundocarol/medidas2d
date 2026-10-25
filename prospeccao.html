@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎯 Prospecção Inteligente - Embalagens Express</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --primary: #1a3a5c;
+    --secondary: #2a5a8c;
+    --success: #27ae60;
+    --warning: #f39c12;
+    --danger: #e74c3c;
+    --purple: #6c5ce7;
+    --whatsapp: #25D366;
+    --gray: #95a5a6;
+    --shadow: 0 2px 10px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+    --radius: 12px;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    padding: 16px;
+    min-height: 100vh;
+}
+
+.container { max-width: 1600px; margin: 0 auto; }
+
+/* ===================== LOGIN ===================== */
+#loginOverlay {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #1a3a5c 0%, #2a5a8c 100%);
+    z-index: 999999;
+    display: flex; justify-content: center; align-items: center;
+}
+#loginOverlay.hidden { display: none; }
+.login-box {
+    background: white; padding: 40px 50px;
+    border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    text-align: center; max-width: 420px; width: 100%;
+    animation: fadeInUp 0.5s ease;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.login-box .logo { font-size: 48px; margin-bottom: 10px; }
+.login-box h1 { color: var(--primary); font-size: 22px; margin-bottom: 5px; }
+.login-box p { color: #888; font-size: 14px; margin-bottom: 25px; }
+.login-box .input-group { position: relative; margin-bottom: 16px; }
+.login-box .input-group i {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%); color: #999; font-size: 16px;
+}
+.login-box .input-group input {
+    width: 100%; padding: 14px 14px 14px 46px;
+    border: 2px solid #ddd; border-radius: 8px;
+    font-size: 15px; background: #f8f9fa; transition: all 0.3s;
+}
+.login-box .input-group input:focus {
+    border-color: var(--primary); outline: none;
+    background: white; box-shadow: 0 0 0 3px rgba(26,58,92,0.1);
+}
+.login-box .btn-login {
+    width: 100%; padding: 14px; background: var(--primary);
+    color: white; border: none; border-radius: 8px;
+    font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s;
+}
+.login-box .btn-login:hover { background: var(--secondary); transform: scale(1.02); }
+.login-box .erro { color: var(--danger); font-size: 13px; margin-top: 10px; display: none; }
+.login-box .erro.show { display: block; }
+.login-box .hint { font-size: 11px; color: #aaa; margin-top: 12px; line-height: 1.5; }
+
+#app { display: none; }
+#app.logged-in { display: block; }
+
+/* ===================== HEADER ===================== */
+.header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white; padding: 18px 24px;
+    border-radius: var(--radius); margin-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px; box-shadow: var(--shadow);
+}
+.header h1 { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.header .user-info {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; background: rgba(255,255,255,0.15);
+    padding: 8px 16px; border-radius: 8px;
+}
+.header .btn-logout {
+    background: rgba(255,255,255,0.2); color: white;
+    border: none; padding: 8px 14px; border-radius: 6px;
+    cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.3s;
+}
+.header .btn-logout:hover { background: rgba(255,255,255,0.3); }
+
+/* ===================== KPI CARDS ===================== */
+.kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px; margin-bottom: 16px;
+}
+.kpi-card {
+    background: white; border-radius: var(--radius);
+    padding: 18px 20px; box-shadow: var(--shadow);
+    display: flex; align-items: center; gap: 14px;
+    border-left: 4px solid var(--primary); transition: transform 0.2s;
+}
+.kpi-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.kpi-card .icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: white; flex-shrink: 0;
+}
+.kpi-card .info .valor { font-size: 24px; font-weight: 700; color: var(--primary); line-height: 1; }
+.kpi-card .info .label { font-size: 12px; color: #888; margin-top: 4px; font-weight: 500; }
+.kpi-card.total .icon { background: var(--primary); }
+.kpi-card.contatados .icon { background: var(--success); }
+.kpi-card.hoje .icon { background: var(--purple); }
+.kpi-card.revendedores .icon { background: var(--warning); }
+.kpi-card.fila .icon { background: var(--danger); }
+
+/* ===================== FILTROS ===================== */
+.filters-bar {
+    background: white; padding: 14px 18px;
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    margin-bottom: 16px;
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+}
+.filters-bar .search-wrapper { flex: 1; min-width: 220px; position: relative; }
+.filters-bar .search-wrapper input {
+    width: 100%; padding: 9px 12px 9px 36px;
+    border: 2px solid #e0e0e0; border-radius: 8px;
+    font-size: 13px; transition: all 0.3s;
+}
+.filters-bar .search-wrapper input:focus {
+    border-color: var(--primary); outline: none;
+    box-shadow: 0 0 0 3px rgba(26,58,92,0.08);
+}
+.filters-bar .search-wrapper i {
+    position: absolute; left: 12px; top: 50%;
+    transform: translateY(-50%); color: #999;
+}
+.filters-bar select {
+    padding: 9px 12px; border: 2px solid #e0e0e0;
+    border-radius: 8px; font-size: 13px;
+    background: white; cursor: pointer; font-weight: 500;
+}
+.filters-bar select:focus { border-color: var(--primary); outline: none; }
+.filters-bar .btn {
+    padding: 9px 16px; border: none; border-radius: 8px;
+    cursor: pointer; font-weight: 600; font-size: 13px;
+    transition: all 0.2s; display: inline-flex;
+    align-items: center; gap: 6px;
+}
+.filters-bar .btn-primary { background: var(--primary); color: white; }
+.filters-bar .btn-primary:hover { background: var(--secondary); }
+.filters-bar .btn-whats { background: var(--whatsapp); color: white; }
+.filters-bar .btn-whats:hover { background: #1ebe5d; }
+
+/* ===================== CARDS CLIENTES ===================== */
+.clientes-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(390px, 1fr));
+    gap: 14px;
+}
+.cliente-card {
+    background: white; border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden;
+    transition: all 0.25s; border: 2px solid transparent;
+    display: flex; flex-direction: column;
+}
+.cliente-card:hover {
+    box-shadow: var(--shadow-lg); transform: translateY(-2px);
+    border-color: #e0e0e0;
+}
+.cliente-card.revend { border-top: 4px solid var(--warning); }
+.cliente-card.novo { border-top: 4px solid var(--success); }
+.cliente-card.contatado-hoje { border-top: 4px solid var(--purple); }
+.cliente-card.prioridade-alta { border-top: 4px solid var(--danger); animation: pulse 2s infinite; }
+@keyframes pulse {
+    0%, 100% { box-shadow: var(--shadow); }
+    50% { box-shadow: 0 0 0 4px rgba(231,76,60,0.15); }
+}
+
+.cliente-header {
+    padding: 14px 16px; display: flex; justify-content: space-between;
+    align-items: flex-start; gap: 10px; border-bottom: 1px solid #f0f0f0;
+}
+.cliente-header .nome-wrapper { flex: 1; min-width: 0; }
+.cliente-header .nome {
+    font-size: 15px; font-weight: 700; color: var(--primary);
+    display: flex; align-items: center; gap: 6px;
+    flex-wrap: wrap; line-height: 1.3;
+}
+.cliente-header .badge {
+    font-size: 9px; padding: 2px 8px; border-radius: 10px;
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.badge-rev { background: var(--warning); color: white; }
+.badge-novo { background: var(--success); color: white; }
+.badge-hoje { background: var(--purple); color: white; }
+.badge-prioridade { background: var(--danger); color: white; }
+
+.cliente-header .queue-pos {
+    background: var(--primary); color: white;
+    font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 20px;
+    white-space: nowrap; flex-shrink: 0;
+}
+.queue-pos.primeiro { background: var(--danger); }
+.queue-pos.ultimo { background: var(--gray); }
+
+.cliente-body {
+    padding: 12px 16px; display: flex; flex-direction: column;
+    gap: 10px; flex: 1;
+}
+.cliente-body .info-row {
+    display: flex; gap: 8px; font-size: 12px; align-items: flex-start;
+}
+.cliente-body .info-row i {
+    color: var(--secondary); font-size: 12px;
+    margin-top: 2px; width: 14px; flex-shrink: 0;
+}
+.cliente-body .info-row .txt { flex: 1; color: #555; word-break: break-word; }
+
+.stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px; margin-top: 4px;
+}
+.stat-mini {
+    background: #f8f9fa; border-radius: 8px;
+    padding: 8px 6px; text-align: center;
+}
+.stat-mini .val { font-size: 16px; font-weight: 700; color: var(--primary); line-height: 1; }
+.stat-mini .lbl {
+    font-size: 9px; color: #888; margin-top: 3px;
+    text-transform: uppercase; letter-spacing: 0.3px;
+}
+.stat-mini.destaque .val { color: var(--warning); }
+.stat-mini.recente .val { color: var(--success); }
+.stat-mini.urgente .val { color: var(--danger); }
+
+.ultimo-contato-box {
+    padding: 8px 10px; background: #f0f4f8;
+    border-radius: 6px; font-size: 11px;
+    display: flex; align-items: center; gap: 6px; color: #555;
+}
+.ultimo-contato-box i { color: var(--purple); }
+.ultimo-contato-box.nunca { background: #fff3cd; color: #856404; }
+.ultimo-contato-box.nunca i { color: #856404; }
+.ultimo-contato-box.urgente { background: #fde8e8; color: #c0392b; }
+.ultimo-contato-box.urgente i { color: #c0392b; }
+.ultimo-contato-box.recente { background: #d4edda; color: #155724; }
+.ultimo-contato-box.recente i { color: #155724; }
+
+.cliente-actions {
+    padding: 12px 16px; border-top: 1px solid #f0f0f0;
+    display: flex; gap: 6px; flex-wrap: wrap;
+}
+.cliente-actions button {
+    flex: 1; min-width: 100px; padding: 9px 8px;
+    border: none; border-radius: 8px; cursor: pointer;
+    font-weight: 600; font-size: 12px; transition: all 0.2s;
+    display: inline-flex; align-items: center;
+    justify-content: center; gap: 5px;
+}
+.btn-whats-card { background: var(--whatsapp); color: white; }
+.btn-whats-card:hover { background: #1ebe5d; transform: scale(1.02); }
+.btn-contato { background: var(--primary); color: white; }
+.btn-contato:hover { background: var(--secondary); transform: scale(1.02); }
+.btn-ver {
+    background: #e8f4fd; color: var(--primary);
+    flex: 0 0 auto !important; min-width: auto !important;
+    padding: 9px 12px !important;
+}
+.btn-ver:hover { background: #d4e8f7; }
+
+/* ===================== MODAL ===================== */
+.modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 1000;
+    justify-content: center; align-items: center;
+    padding: 20px; backdrop-filter: blur(2px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+    background: white; border-radius: var(--radius);
+    padding: 24px; max-width: 720px; width: 100%;
+    max-height: 90vh; overflow-y: auto;
+    animation: slideUp 0.3s ease;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+.modal-header {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 16px;
+    padding-bottom: 12px; border-bottom: 2px solid #f0f0f0;
+}
+.modal-header h2 { font-size: 18px; color: var(--primary); }
+.modal-close {
+    background: none; border: none; font-size: 26px;
+    cursor: pointer; color: #999; transition: all 0.3s;
+}
+.modal-close:hover { color: var(--danger); transform: rotate(90deg); }
+
+.form-group { margin-bottom: 14px; }
+.form-group label {
+    display: block; font-weight: 600;
+    margin-bottom: 6px; font-size: 13px; color: #555;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%; padding: 10px 12px;
+    border: 2px solid #e0e0e0; border-radius: 8px;
+    font-size: 14px; transition: all 0.3s; font-family: inherit;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary); outline: none;
+    box-shadow: 0 0 0 3px rgba(26,58,92,0.08);
+}
+.form-actions {
+    display: flex; gap: 10px; margin-top: 20px;
+    justify-content: flex-end;
+}
+.form-actions button {
+    padding: 10px 24px; border: none; border-radius: 8px;
+    cursor: pointer; font-weight: 600;
+    transition: all 0.2s; font-size: 14px;
+}
+.btn-cancel { background: #e0e0e0; color: #333; }
+.btn-cancel:hover { background: #d0d0d0; }
+.btn-save { background: var(--success); color: white; }
+.btn-save:hover { background: #219a52; }
+
+/* Histórico */
+.historico-compras {
+    max-height: 240px; overflow-y: auto;
+    border: 1px solid #e0e0e0; border-radius: 8px;
+    padding: 8px; background: #fafafa;
+}
+.pedido-item {
+    padding: 8px 10px; border-bottom: 1px solid #eee; font-size: 12px;
+}
+.pedido-item:last-child { border-bottom: none; }
+.pedido-item .linha1 {
+    display: flex; justify-content: space-between;
+    font-weight: 600; margin-bottom: 2px;
+}
+.pedido-item .linha2 { color: #888; font-size: 11px; }
+
+.historico-contatos { max-height: 200px; overflow-y: auto; }
+.contato-item {
+    padding: 8px 10px; border-left: 3px solid var(--purple);
+    background: #f8f9fa; margin-bottom: 6px;
+    border-radius: 4px; font-size: 12px;
+}
+.contato-item .data { font-weight: 600; color: var(--primary); font-size: 11px; }
+.contato-item .prospectador { color: var(--purple); font-size: 11px; margin-top: 2px; }
+.contato-item .obs { color: #666; margin-top: 4px; font-size: 11px; font-style: italic; }
+
+.detalhe-section {
+    margin-bottom: 16px;
+    padding: 14px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+.detalhe-section h3 {
+    font-size: 14px; color: var(--primary);
+    margin-bottom: 10px; display: flex;
+    align-items: center; gap: 6px;
+}
+
+/* Toast */
+.toast {
+    position: fixed; top: 24px; right: 24px;
+    background: var(--success); color: white;
+    padding: 14px 22px; border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    z-index: 99999; font-weight: 600; font-size: 14px;
+    animation: slideInRight 0.3s ease;
+    display: flex; align-items: center; gap: 10px;
+}
+.toast.erro { background: var(--danger); }
+.toast.info { background: var(--primary); }
+@keyframes slideInRight {
+    from { transform: translateX(120%); }
+    to { transform: translateX(0); }
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center; padding: 60px 20px;
+    background: white; border-radius: var(--radius);
+    box-shadow: var(--shadow); grid-column: 1 / -1;
+}
+.empty-state i {
+    font-size: 60px; color: #ddd;
+    margin-bottom: 16px; display: block;
+}
+.empty-state h3 { color: #888; font-size: 18px; margin-bottom: 8px; }
+.empty-state p { color: #aaa; font-size: 13px; }
+
+/* Spinner */
+.spinner-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4); z-index: 99999;
+    justify-content: center; align-items: center;
+}
+.spinner-overlay.open { display: flex; }
+.spinner-box {
+    background: white; padding: 30px 40px;
+    border-radius: var(--radius); text-align: center;
+}
+.spinner-box .spinner {
+    width: 40px; height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary);
+    border-radius: 50%; animation: spin 1s linear infinite;
+    margin: 0 auto 12px;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.spinner-box p { color: #555; font-weight: 600; font-size: 14px; }
+
+/* Barra de progresso */
+.progresso-container {
+    background: white; border-radius: var(--radius);
+    padding: 14px 18px; box-shadow: var(--shadow);
+    margin-bottom: 16px;
+}
+.progresso-container .label {
+    display: flex; justify-content: space-between;
+    font-size: 13px; font-weight: 600; color: var(--primary);
+    margin-bottom: 8px;
+}
+.progresso-bar {
+    height: 14px; background: #e0e0e0;
+    border-radius: 10px; overflow: hidden;
+}
+.progresso-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), #2ecc71);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    display: flex; align-items: center;
+    justify-content: flex-end; padding-right: 8px;
+    color: white; font-size: 10px; font-weight: 700;
+}
+
+@media (max-width: 768px) {
+    body { padding: 10px; }
+    .header { padding: 14px; }
+    .header h1 { font-size: 16px; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .clientes-grid { grid-template-columns: 1fr; }
+    .filters-bar { flex-direction: column; align-items: stretch; }
+    .filters-bar select, .filters-bar .btn { width: 100%; justify-content: center; }
+    .login-box { padding: 30px 24px; }
+    .modal { padding: 18px; }
+    .cliente-actions button { min-width: 80px; font-size: 11px; }
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--secondary); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginOverlay">
+    <div class="login-box">
+        <div class="logo">🎯</div>
+        <h1>Prospecção Inteligente</h1>
+        <p>Embalagens Express</p>
+        <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" id="loginNome" placeholder="Seu nome (prospectador)">
+        </div>
+        <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="loginSenha" placeholder="Senha de acesso"
+                   onkeypress="if(event.key==='Enter') fazerLogin()">
+        </div>
+        <button class="btn-login" onclick="fazerLogin()">
+            <i class="fas fa-sign-in-alt"></i> Entrar
+        </button>
+        <div class="erro" id="loginErro"></div>
+        <div class="hint">
+            💡 Vários prospectadores podem usar ao mesmo tempo.<br>
+            Cada contato registra automaticamente quem prospectou.
+        </div>
+    </div>
+</div>
+
+<!-- APP -->
+<div class="container" id="app">
+    <div class="header">
+        <h1>🎯 Prospecção de Clientes</h1>
+        <div class="user-info">
+            <i class="fas fa-user-circle"></i>
+            <span id="userNameDisplay">—</span>
+            <button class="btn-logout" onclick="fazerLogout()">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+        <div class="kpi-card total">
+            <div class="icon"><i class="fas fa-users"></i></div>
+            <div class="info">
+                <div class="valor" id="kpiTotal">0</div>
+                <div class="label">Total de Clientes</div>
+            </div>
+        </div>
+        <div class="kpi-card fila">
+            <div class="icon"><i class="fas fa-tasks"></i></div>
+            <div class="info">
+                <div class="valor" id="kpiFila">0</div>
+                <div class="label">Na Fila</div>
+            </div>
+        </div>
+        <div class="kpi-card contatados">
+            <div class="icon"><i class="fas fa-check-circle"></i></div>
+            <div class="info">
+                <div class="valor" id="kpiContatados">0</div>
+                <div class="label">Já Prospectados</div>
+            </div>
+        </div>
+        <div class="kpi-card hoje">
+            <div class="icon"><i class="fas fa-calendar-day"></i></div>
+            <div class="info">
+                <div class="valor" id="kpiHoje">0</div>
+                <div class="label">Contatos Hoje</div>
+            </div>
+        </div>
+        <div class="kpi-card revendedores">
+            <div class="icon"><i class="fas fa-crown"></i></div>
+            <div class="info">
+                <div class="valor" id="kpiRevendedores">0</div>
+                <div class="label">Revendedores</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progresso -->
+    <div class="progresso-container">
+        <div class="label">
+            <span>📊 Progresso da Prospecção</span>
+            <span id="progressoTexto">0%</span>
+        </div>
+        <div class="progresso-bar">
+            <div class="fill" id="progressoFill" style="width: 0%;"></div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-bar">
+        <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="filtroBusca" placeholder="Buscar por nome, telefone, email..."
+                   oninput="renderizarClientes()">
+        </div>
+        <select id="filtroStatus" onchange="renderizarClientes()">
+            <option value="fila">📋 Fila de Prospecção</option>
+            <option value="todos">👥 Todos Clientes</option>
+            <option value="nunca">🆕 Nunca Contatados</option>
+            <option value="hoje">📞 Contatados Hoje</option>
+            <option value="revendedores">👑 Revendedores</option>
+            <option value="semana">📅 Contatados esta semana</option>
+            <option value="prioridade">🔥 Prioridade Alta</option>
+        </select>
+        <select id="filtroOrdem" onchange="renderizarClientes()">
+            <option value="fila">⏱️ Fila (mais antigo primeiro)</option>
+            <option value="recentes">🕐 Cadastro mais recente</option>
+            <option value="compras">💰 Mais compras</option>
+            <option value="nome">🔤 Ordem alfabética</option>
+        </select>
+        <button class="btn btn-primary" onclick="carregarDados()">
+            <i class="fas fa-sync-alt"></i> Atualizar
+        </button>
+        <button class="btn btn-whats" onclick="abrirMensagemMassa()">
+            <i class="fab fa-whatsapp"></i> Mensagem em Massa
+        </button>
+    </div>
+
+    <div id="clientesLista" class="clientes-grid">
+        <div class="empty-state">
+            <i class="fas fa-spinner fa-spin"></i>
+            <h3>Carregando clientes...</h3>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DETALHES -->
+<div class="modal-overlay" id="modalDetalhes">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 id="detalhesTitulo">Detalhes do Cliente</h2>
+            <button class="modal-close" onclick="fecharModal('modalDetalhes')">&times;</button>
+        </div>
+        <div id="detalhesContent"></div>
+    </div>
+</div>
+
+<!-- MODAL REGISTRAR CONTATO -->
+<div class="modal-overlay" id="modalContato">
+    <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2><i class="fas fa-check-circle" style="color: var(--success);"></i> Registrar Contato</h2>
+            <button class="modal-close" onclick="fecharModal('modalContato')">&times;</button>
+        </div>
+        <div id="contatoClienteInfo" style="background: #f0f4f8; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px;"></div>
+        
+        <div class="form-group">
+            <label>Data e Hora do Contato</label>
+            <input type="datetime-local" id="contatoDataHora">
+        </div>
+        
+        <div class="form-group">
+            <label>Resultado do Contato</label>
+            <select id="contatoResultado">
+                <option value="enviado">📤 Mensagem enviada (aguardando resposta)</option>
+                <option value="respondeu">💬 Cliente respondeu</option>
+                <option value="interessado">🔥 Cliente interessado</option>
+                <option value="sem_interesse">❄️ Sem interesse no momento</option>
+                <option value="nao_atende">📵 Não atendeu</option>
+                <option value="numero_invalido">❌ Número inválido</option>
+                <option value="pedido">🛒 Cliente fez pedido!</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Observações (opcional)</label>
+            <textarea id="contatoObs" rows="3" placeholder="Anotações sobre o contato..."></textarea>
+        </div>
+        
+        <div style="background: #e8f4fd; padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #0c5460; margin-bottom: 12px;">
+            <i class="fas fa-info-circle"></i> Após confirmar, este cliente vai para o <strong>final da fila</strong> e voltará a aparecer após todos os outros serem prospectados.
+        </div>
+        
+        <div class="form-actions">
+            <button class="btn-cancel" onclick="fecharModal('modalContato')">Cancelar</button>
+            <button class="btn-save" onclick="salvarContato()">
+                <i class="fas fa-check"></i> Confirmar Contato
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL MENSAGEM EM MASSA -->
+<div class="modal-overlay" id="modalMassa">
+    <div class="modal" style="max-width: 650px;">
+        <div class="modal-header">
+            <h2><i class="fab fa-whatsapp" style="color: var(--whatsapp);"></i> Mensagem em Massa</h2>
+            <button class="modal-close" onclick="fecharModal('modalMassa')">&times;</button>
+        </div>
+        
+        <div class="form-group">
+            <label>Template da Mensagem</label>
+            <textarea id="massaTemplate" rows="6" placeholder="Digite sua mensagem..."></textarea>
+            <div style="font-size: 11px; color: #888; margin-top: 6px;">
+                Variáveis: <code>{nome}</code>, <code>{primeiro_nome}</code>, <code>{ultima_compra}</code>, <code>{total_compras}</code>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Enviar para</label>
+            <select id="massaFiltro" onchange="atualizarPreviewMassa()">
+                <option value="fila">📋 Fila (mais antigos primeiro)</option>
+                <option value="nunca">🆕 Nunca Contatados</option>
+                <option value="revendedores">👑 Apenas Revendedores</option>
+                <option value="30dias">📅 Sem contato há 30+ dias</option>
+                <option value="60dias">📅 Sem contato há 60+ dias</option>
+                <option value="todos">👥 Todos com telefone</option>
+            </select>
+        </div>
+        
+        <div id="massaPreview" style="background: #f0f4f8; padding: 12px; border-radius: 8px; font-size: 12px; margin-bottom: 12px;">
+            <strong>Prévia:</strong> <span id="massaCount">0</span> clientes serão incluídos
+        </div>
+        
+        <div style="background: #fff3cd; border-left: 4px solid var(--warning); padding: 10px 14px; border-radius: 6px; font-size: 12px; color: #856404; margin-bottom: 16px;">
+            <i class="fas fa-info-circle"></i> O WhatsApp abrirá um por vez, na ordem da fila. Você confirma cada envio manualmente.
+        </div>
+        
+        <div class="form-actions">
+            <button class="btn-cancel" onclick="fecharModal('modalMassa')">Cancelar</button>
+            <button class="btn-save" onclick="iniciarMassa()" style="background: var(--whatsapp);">
+                <i class="fab fa-whatsapp"></i> Iniciar Envio
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Spinner -->
+<div class="spinner-overlay" id="spinner">
+    <div class="spinner-box">
+        <div class="spinner"></div>
+        <p id="spinnerMsg">Carregando...</p>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// CONFIGURAÇÃO
+// ============================================================
+const API_URL = 'https://script.google.com/macros/s/AKfycbyYsK2yKe0lTfOHadXQOd9XTUMNAQRySrw4bgg6Zboc2hWS6-losCnZspwCTzII7QmNWg/exec';
+const SENHA_ACESSO = '123456';
+const STORAGE_KEY = 'prospeccao_dados_v1';
+const SESSION_KEY = 'prospeccao_sessao';
+
+// ============================================================
+// ESTADO
+// ============================================================
+let dados = {
+    clientes: [],
+    pedidos: [],
+    produtos: [],
+    contatos: JSON.parse(localStorage.getItem(STORAGE_KEY + '_contatos') || '[]')
+};
+
+let usuarioAtual = null;
+let clienteSelecionado = null;
+let filaMassa = [];
+let indexMassa = 0;
+
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    const sessao = localStorage.getItem(SESSION_KEY);
+    if (sessao) {
+        try {
+            usuarioAtual = JSON.parse(sessao);
+            if (usuarioAtual && usuarioAtual.nome && usuarioAtual.timestamp) {
+                const horas = (Date.now() - usuarioAtual.timestamp) / 3600000;
+                if (horas < 12) {
+                    mostrarApp();
+                    return;
+                }
+            }
+        } catch(e) {}
+    }
+    document.getElementById('loginNome').focus();
+});
+
+// ============================================================
+// LOGIN
+// ============================================================
+function fazerLogin() {
+    const nome = document.getElementById('loginNome').value.trim();
+    const senha = document.getElementById('loginSenha').value.trim();
+    const erro = document.getElementById('loginErro');
+    
+    if (!nome) {
+        erro.textContent = '⚠️ Digite seu nome!';
+        erro.classList.add('show');
+        return;
+    }
+    if (senha !== SENHA_ACESSO) {
+        erro.textContent = '❌ Senha incorreta!';
+        erro.classList.add('show');
+        return;
+    }
+    
+    usuarioAtual = { nome: nome, timestamp: Date.now() };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(usuarioAtual));
+    erro.classList.remove('show');
+    mostrarApp();
+}
+
+function mostrarApp() {
+    document.getElementById('loginOverlay').classList.add('hidden');
+    document.getElementById('app').classList.add('logged-in');
+    document.getElementById('userNameDisplay').textContent = usuarioAtual.nome;
+    carregarDados();
+}
+
+function fazerLogout() {
+    if (!confirm('Deseja sair do sistema?')) return;
+    localStorage.removeItem(SESSION_KEY);
+    location.reload();
+}
+
+// ============================================================
+// CARREGAR DADOS
+// ============================================================
+async function carregarDados() {
+    mostrarSpinner('Carregando clientes...');
+    try {
+        // Tenta carregar da API
+        let data = null;
+        try {
+            const resp = await fetch(API_URL + '?t=' + Date.now());
+            data = await resp.json();
+        } catch (e) {
+            console.warn('API indisponível, usando dados locais');
+        }
+        
+        if (data && data.clientes) {
+            dados.clientes = data.clientes || [];
+            dados.pedidos = data.pedidos || [];
+            dados.produtos = data.produtos || [];
+        } else {
+            // Fallback: dados locais
+            const local = localStorage.getItem(STORAGE_KEY);
+            if (local) {
+                const parsed = JSON.parse(local);
+                dados.clientes = parsed.clientes || [];
+                dados.pedidos = parsed.pedidos || [];
+            }
+        }
+        
+        // Carrega contatos do localStorage
+        dados.contatos = JSON.parse(localStorage.getItem(STORAGE_KEY + '_contatos') || '[]');
+        
+        // Mescla contatos com clientes
+        mesclarContatos();
+        
+        esconderSpinner();
+        renderizarKPIs();
+        renderizarClientes();
+        
+    } catch (error) {
+        console.error('Erro ao carregar:', error);
+        esconderSpinner();
+        toast('Erro ao carregar dados. Verifique a conexão.', 'erro');
+    }
+}
+
+function mesclarContatos() {
+    // Anexa os contatos a cada cliente
+    dados.clientes.forEach(c => {
+        const contatosCliente = dados.contatos.filter(ct => 
+            String(ct.cliente_id) === String(c.id_cliente) ||
+            (c.telefone && ct.cliente_telefone === c.telefone) ||
+            (c.email && ct.cliente_email === c.email)
+        );
+        c._contatos = contatosCliente.sort((a,b) => 
+            new Date(b.data_hora) - new Date(a.data_hora)
+        );
+        c._ultimoContato = c._contatos.length > 0 ? c._contatos[0] : null;
+    });
+}
+
+// ============================================================
+// RENDERIZAR KPIs
+// ============================================================
+function renderizarKPIs() {
+    const total = dados.clientes.length;
+    const contatados = dados.clientes.filter(c => c._ultimoContato).length;
+    const hoje = dados.clientes.filter(c => {
+        if (!c._ultimoContato) return false;
+        const dataContato = new Date(c._ultimoContato.data_hora);
+        const hoje = new Date();
+        return dataContato.toDateString() === hoje.toDateString();
+    }).length;
+    const revendedores = dados.clientes.filter(c => 
+        String(c.observacoes || '').toUpperCase().includes('REVENDA')
+    ).length;
+    const naFila = total - contatados;
+    
+    document.getElementById('kpiTotal').textContent = total;
+    document.getElementById('kpiFila').textContent = naFila;
+    document.getElementById('kpiContatados').textContent = contatados;
+    document.getElementById('kpiHoje').textContent = hoje;
+    document.getElementById('kpiRevendedores').textContent = revendedores;
+    
+    // Progresso
+    const percentual = total > 0 ? Math.round((contatados / total) * 100) : 0;
+    document.getElementById('progressoTexto').textContent = percentual + '%';
+    const fill = document.getElementById('progressoFill');
+    fill.style.width = percentual + '%';
+    fill.textContent = percentual > 8 ? percentual + '%' : '';
+}
+
+// ============================================================
+// LÓGICA DA FILA INTELIGENTE
+// ============================================================
+function calcularPrioridade(cliente) {
+    const agora = new Date();
+    const dataCadastro = cliente.data_cadastro ? 
+        new Date(cliente.data_cadastro.split('/').reverse().join('-')) : 
+        new Date(0);
+    
+    // REGRA 1: Cliente novo (cadastrado há menos de 3 dias) = FINAL DA FILA
+    const diasDesdeCadastro = (agora - dataCadastro) / (1000*60*60*24);
+    if (diasDesdeCadastro < 3) {
+        return 999999; // Prioridade máxima (vai pro final)
+    }
+    
+    // REGRA 2: Base = dias desde último contato (mais antigo = maior prioridade)
+    let diasSemContato = 999999;
+    if (cliente._ultimoContato) {
+        const dataContato = new Date(cliente._ultimoContato.data_hora);
+        diasSemContato = (agora - dataContato) / (1000*60*60*24);
+    }
+    
+    // REGRA 3: Bônus para revendedores (-3 dias = sobe na fila)
+    const isRev = String(cliente.observacoes || '').toUpperCase().includes('REVENDA');
+    if (isRev) diasSemContato -= 3;
+    
+    return diasSemContato;
+}
+
+function ordenarFila(clientes) {
+    return [...clientes].sort((a, b) => {
+        const pa = calcularPrioridade(a);
+        const pb = calcularPrioridade(b);
+        return pb - pa; // Maior prioridade primeiro
+    });
+}
+
+// ============================================================
+// FILTRAR CLIENTES
+// ============================================================
+function filtrarClientes() {
+    const busca = document.getElementById('filtroBusca').value.toLowerCase().trim();
+    const status = document.getElementById('filtroStatus').value;
+    const ordem = document.getElementById('filtroOrdem').value;
+    
+    let filtrados = [...dados.clientes];
+    
+    // Busca
+    if (busca) {
+        filtrados = filtrados.filter(c => {
+            const nome = String(c.nome || '').toLowerCase();
+            const email = String(c.email || '').toLowerCase();
+            const tel = String(c.telefone || '').toLowerCase();
+            return nome.includes(busca) || email.includes(busca) || tel.includes(busca);
+        });
+    }
+    
+    // Status
+    const hoje = new Date().toDateString();
+    const semanaAtras = new Date(Date.now() - 7*24*60*60*1000);
+    
+    if (status === 'fila') {
+        // Todos ordenados por prioridade
+    } else if (status === 'nunca') {
+        filtrados = filtrados.filter(c => !c._ultimoContato);
+    } else if (status === 'hoje') {
+        filtrados = filtrados.filter(c => 
+            c._ultimoContato && 
+            new Date(c._ultimoContato.data_hora).toDateString() === hoje
+        );
+    } else if (status === 'revendedores') {
+        filtrados = filtrados.filter(c => 
+            String(c.observacoes || '').toUpperCase().includes('REVENDA')
+        );
+    } else if (status === 'semana') {
+        filtrados = filtrados.filter(c => 
+            c._ultimoContato && 
+            new Date(c._ultimoContato.data_hora) >= semanaAtras
+        );
+    } else if (status === 'prioridade') {
+        filtrados = filtrados.filter(c => calcularPrioridade(c) > 30);
+    }
+    
+    // Ordenação
+    if (ordem === 'fila' || status === 'fila') {
+        filtrados = ordenarFila(filtrados);
+    } else if (ordem === 'recentes') {
+        filtrados.sort((a, b) => {
+            const da = a.data_cadastro ? new Date(a.data_cadastro.split('/').reverse().join('-')) : new Date(0);
+            const db = b.data_cadastro ? new Date(b.data_cadastro.split('/').reverse().join('-')) : new Date(0);
+            return db - da;
+        });
+    } else if (ordem === 'compras') {
+        filtrados.sort((a, b) => {
+            const va = calcularTotalCompras(a);
+            const vb = calcularTotalCompras(b);
+            return vb - va;
+        });
+    } else if (ordem === 'nome') {
+        filtrados.sort((a, b) => 
+            String(a.nome || '').localeCompare(String(b.nome || ''), 'pt-BR')
+        );
+    }
+    
+    return filtrados;
+}
+
+// ============================================================
+// RENDERIZAR CLIENTES
+// ============================================================
+function renderizarClientes() {
+    const container = document.getElementById('clientesLista');
+    const clientes = filtrarClientes();
+    
+    if (clientes.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h3>Nenhum cliente encontrado</h3>
+                <p>Tente mudar os filtros ou buscar por outro termo.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Calcula posição na fila (para exibir "1º", "2º", etc.)
+    const filaCompleta = ordenarFila(dados.clientes);
+    const posicoes = {};
+    filaCompleta.forEach((c, i) => {
+        posicoes[c.id_cliente] = i + 1;
+    });
+    
+    container.innerHTML = clientes.map(c => renderizarCard(c, posicoes[c.id_cliente], filaCompleta.length)).join('');
+}
+
+function renderizarCard(c, posicao, total) {
+    const isRev = String(c.observacoes || '').toUpperCase().includes('REVENDA');
+    const temContato = !!c._ultimoContato;
+    const hoje = new Date().toDateString();
+    const contatadoHoje = temContato && new Date(c._ultimoContato.data_hora).toDateString() === hoje;
+    const ehNovo = c.data_cadastro && 
+        (new Date() - new Date(c.data_cadastro.split('/').reverse().join('-'))) < 3*24*60*60*1000;
+    
+    const prioridade = calcularPrioridade(c);
+    const prioridadeAlta = prioridade > 30;
+    
+    // Classes
+    let classes = 'cliente-card';
+    if (isRev) classes += ' revend';
+    if (ehNovo) classes += ' novo';
+    if (contatadoHoje) classes += ' contatado-hoje';
+    if (prioridadeAlta && !ehNovo) classes += ' prioridade-alta';
+    
+    // Badges
+    let badges = '';
+    if (isRev) badges += '<span class="badge badge-rev">👑 Revendedor</span>';
+    if (ehNovo) badges += '<span class="badge badge-novo">🆕 Novo</span>';
+    if (contatadoHoje) badges += '<span class="badge badge-hoje">📞 Hoje</span>';
+    if (prioridadeAlta && !ehNovo) badges += '<span class="badge badge-prioridade">🔥 Prioridade</span>';
+    
+    // Posição na fila
+    let posClass = '';
+    if (posicao === 1) posClass = 'primeiro';
+    if (posicao > total - 3) posClass = 'ultimo';
+    const posTexto = posicao === 1 ? '🥇 1º' : `${posicao}º de ${total}`;
+    
+    // Estatísticas
+    const pedidosCliente = dados.pedidos.filter(p => 
+        (c.email && String(p.cliente_email || '').toLowerCase() === String(c.email).toLowerCase()) ||
+        (c.telefone && String(p.cliente_telefone || '').replace(/\D/g,'') === String(c.telefone).replace(/\D/g,''))
+    );
+    const totalCompras = pedidosCliente.length;
+    const valorTotal = pedidosCliente.reduce((s, p) => s + (parseFloat(p.total) || 0), 0);
+    
+    let ultimaCompra = '-';
+    if (pedidosCliente.length > 0) {
+        const datas = pedidosCliente
+            .map(p => p.data_pedido)
+            .filter(d => d)
+            .sort((a, b) => new Date(b) - new Date(a));
+        if (datas.length > 0) {
+            try {
+                ultimaCompra = new Date(datas[0]).toLocaleDateString('pt-BR');
+            } catch(e) {
+                ultimaCompra = String(datas[0]).substring(0, 10);
+            }
+        }
+    }
+    
+    // Último contato
+    let ultimoContatoHtml = '';
+    if (c._ultimoContato) {
+        const dataContato = new Date(c._ultimoContato.data_hora);
+        const diasAtras = Math.floor((new Date() - dataContato) / (1000*60*60*24));
+        let classe = 'ultimo-contato-box';
+        if (diasAtras > 30) classe += ' urgente';
+        else if (diasAtras < 3) classe += ' recente';
+        
+        ultimoContatoHtml = `
+            <div class="${classe}">
+                <i class="fas fa-clock"></i>
+                <span>Último contato: ${dataContato.toLocaleDateString('pt-BR')} 
+                (${diasAtras === 0 ? 'hoje' : diasAtras === 1 ? 'ontem' : `há ${diasAtras} dias`})</span>
+            </div>
+        `;
+    } else {
+        ultimoContatoHtml = `
+            <div class="ultimo-contato-box nunca">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Nunca prospectado</span>
+            </div>
+        `;
+    }
+    
+    // Telefone para WhatsApp
+    const telefoneLimpo = String(c.telefone || '').replace(/\D/g, '');
+    const temTelefone = telefoneLimpo.length >= 10;
+    const waLink = temTelefone ? 
+        `https://wa.me/55${telefoneLimpo}?text=${encodeURIComponent(mensagemPadrao(c))}` : 
+        '#';
+    
+    return `
+        <div class="${classes}" data-id="${c.id_cliente}">
+            <div class="cliente-header">
+                <div class="nome-wrapper">
+                    <div class="nome">
+                        ${c.nome || 'Sem nome'}
+                        ${badges}
+                    </div>
+                    <div class="contato-info">
+                        ${c.telefone || 'sem telefone'} ${c.email ? '• ' + c.email.substring(0,25) : ''}
+                    </div>
+                </div>
+                <div class="queue-pos ${posClass}">${posTexto}</div>
+            </div>
+            
+            <div class="cliente-body">
+                <div class="stats-grid">
+                    <div class="stat-mini destaque">
+                        <div class="val">${totalCompras}</div>
+                        <div class="lbl">Compras</div>
+                    </div>
+                    <div class="stat-mini recente">
+                        <div class="val">R$ ${valorTotal.toFixed(0)}</div>
+                        <div class="lbl">Total</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="val">${ultimaCompra !== '-' ? ultimaCompra.substring(0,5) : '-'}</div>
+                        <div class="lbl">Últ. Compra</div>
+                    </div>
+                </div>
+                ${ultimoContatoHtml}
+            </div>
+            
+            <div class="cliente-actions">
+                ${temTelefone ? `
+                    <button class="btn-whats-card" onclick="abrirWhatsApp(${c.id_cliente})">
+                        <i class="fab fa-whatsapp"></i> WhatsApp
+                    </button>
+                ` : `
+                    <button class="btn-whats-card" disabled style="opacity:0.5;cursor:not-allowed;">
+                        <i class="fab fa-whatsapp"></i> Sem tel.
+                    </button>
+                `}
+                <button class="btn-contato" onclick="abrirModalContato(${c.id_cliente})">
+                    <i class="fas fa-check"></i> Contato
+                </button>
+                <button class="btn-ver" onclick="verDetalhes(${c.id_cliente})" title="Ver detalhes">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function calcularTotalCompras(cliente) {
+    const pedidos = dados.pedidos.filter(p => 
+        (cliente.email && String(p.cliente_email || '').toLowerCase() === String(cliente.email).toLowerCase()) ||
+        (cliente.telefone && String(p.cliente_telefone || '').replace(/\D/g,'') === String(cliente.telefone).replace(/\D/g,''))
+    );
+    return pedidos.reduce((s, p) => s + (parseFloat(p.total) || 0), 0);
+}
+
+function mensagemPadrao(cliente) {
+    const primeiroNome = String(cliente.nome || '').split(' ')[0] || 'cliente';
+    const pedidos = dados.pedidos.filter(p => 
+        (cliente.email && String(p.cliente_email || '').toLowerCase() === String(cliente.email).toLowerCase()) ||
+        (cliente.telefone && String(p.cliente_telefone || '').replace(/\D/g,'') === String(cliente.telefone).replace(/\D/g,''))
+    );
+    
+    if (pedidos.length > 0) {
+        return `Olá ${primeiroNome}! Tudo bem? 😊\n\nAqui é da Embalagens Express. Notamos que você já comprou com a gente e queremos saber se está tudo certo com seu pedido.\n\nTemos novidades e promoções especiais esta semana! Quer dar uma olhada? 🎁`;
+    }
+    return `Olá ${primeiroNome}! Tudo bem? 😊\n\nAqui é da Embalagens Express! Trabalhamos com embalagens de alta qualidade para o seu negócio.\n\nGostaria de conhecer nossas ofertas especiais? Posso te enviar nosso catálogo! 📦`;
+}
+
+// ============================================================
+// ABRIR WHATSAPP
+// ============================================================
+function abrirWhatsApp(idCliente) {
+    const cliente = dados.clientes.find(c => String(c.id_cliente) === String(idCliente));
+    if (!cliente) return;
+    
+    const telefone = String(cliente.telefone || '').replace(/\D/g, '');
+    if (telefone.length < 10) {
+        toast('Telefone inválido', 'erro');
+        return;
+    }
+    
+    const mensagem = mensagemPadrao(cliente);
+    const url = `https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+    
+    // Salva intenção (para o usuário registrar depois)
+    localStorage.setItem('ultimo_whatsapp', JSON.stringify({
+        cliente_id: cliente.id_cliente,
+        cliente_nome: cliente.nome,
+        timestamp: Date.now()
+    }));
+}
+
+// ============================================================
+// MODAL CONTATO
+// ============================================================
+function abrirModalContato(idCliente) {
+    const cliente = dados.clientes.find(c => String(c.id_cliente) === String(idCliente));
+    if (!cliente) return;
+    
+    clienteSelecionado = cliente;
+    
+    document.getElementById('contatoClienteInfo').innerHTML = `
+        <strong>${cliente.nome}</strong><br>
+        ${cliente.telefone || 'sem telefone'} • ${cliente.email || 'sem email'}
+    `;
+    
+    // Data/hora atual
+    const agora = new Date();
+    agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+    document.getElementById('contatoDataHora').value = agora.toISOString().slice(0, 16);
+    
+    document.getElementById('contatoResultado').value = 'enviado';
+    document.getElementById('contatoObs').value = '';
+    document.getElementById('modalContato').classList.add('open');
+}
+
+async function salvarContato() {
+    if (!clienteSelecionado) return;
+    
+    const dataHora = document.getElementById('contatoDataHora').value;
+    const resultado = document.getElementById('contatoResultado').value;
+    const obs = document.getElementById('contatoObs').value.trim();
+    
+    if (!dataHora) {
+        toast('Informe a data e hora', 'erro');
+        return;
+    }
+    
+    const novoContato = {
+        id: Date.now(),
+        cliente_id: clienteSelecionado.id_cliente,
+        cliente_nome: clienteSelecionado.nome,
+        cliente_telefone: clienteSelecionado.telefone,
+        cliente_email: clienteSelecionado.email,
+        data_hora: dataHora,
+        resultado: resultado,
+        observacoes: obs,
+        prospectador: usuarioAtual.nome,
+        timestamp: Date.now()
+    };
+    
+    dados.contatos.push(novoContato);
+    localStorage.setItem(STORAGE_KEY + '_contatos', JSON.stringify(dados.contatos));
+    
+    // Tenta sincronizar com o backend (best effort)
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                acao: 'registrar_prospeccao',
+                contato: novoContato
+            })
+        });
+    } catch(e) {
+        console.warn('Sync com backend falhou, salvo apenas localmente');
+    }
+    
+    mesclarContatos();
+    fecharModal('modalContato');
+    renderizarKPIs();
+    renderizarClientes();
+    
+    toast(`✅ Contato registrado! ${clienteSelecionado.nome} foi para o final da fila.`, 'success');
+    clienteSelecionado = null;
+}
+
+// ============================================================
+// VER DETALHES
+// ============================================================
+function verDetalhes(idCliente) {
+    const cliente = dados.clientes.find(c => String(c.id_cliente) === String(idCliente));
+    if (!cliente) return;
+    
+    document.getElementById('detalhesTitulo').textContent = cliente.nome || 'Detalhes';
+    
+    const isRev = String(cliente.observacoes || '').toUpperCase().includes('REVENDA');
+    const pedidosCliente = dados.pedidos.filter(p => 
+        (cliente.email && String(p.cliente_email || '').toLowerCase() === String(cliente.email).toLowerCase()) ||
+        (cliente.telefone && String(p.cliente_telefone || '').replace(/\D/g,'') === String(cliente.telefone).replace(/\D/g,''))
+    ).sort((a, b) => new Date(b.data_pedido || 0) - new Date(a.data_pedido || 0));
+    
+    const contatosCliente = (cliente._contatos || []);
+    
+    let html = '';
+    
+    // Info básica
+    html += `
+        <div class="detalhe-section">
+            <h3><i class="fas fa-user"></i> Informações</h3>
+            <div style="font-size: 13px; line-height: 1.8;">
+                <div><strong>ID:</strong> #${cliente.id_cliente}</div>
+                <div><strong>Nome:</strong> ${cliente.nome || '-'} ${isRev ? '<span class="badge badge-rev" style="display:inline-block;">👑 Revendedor</span>' : ''}</div>
+                <div><strong>Telefone:</strong> ${cliente.telefone || '-'}</div>
+                <div><strong>Email:</strong> ${cliente.email || '-'}</div>
+                <div><strong>Cidade:</strong> ${cliente.cidade || '-'}/${cliente.estado || '-'}</div>
+                <div><strong>Cadastro:</strong> ${cliente.data_cadastro || '-'}</div>
+                <div><strong>Total de compras:</strong> R$ ${calcularTotalCompras(cliente).toFixed(2)} (${pedidosCliente.length} pedidos)</div>
+            </div>
+        </div>
+    `;
+    
+    // Histórico de compras
+    html += `
+        <div class="detalhe-section">
+            <h3><i class="fas fa-shopping-cart"></i> Histórico de Compras (${pedidosCliente.length})</h3>
+    `;
+    
+    if (pedidosCliente.length === 0) {
+        html += `<p style="color:#999;font-size:12px;text-align:center;padding:10px;">Nenhuma compra registrada</p>`;
+    } else {
+        html += `<div class="historico-compras">`;
+        pedidosCliente.forEach(p => {
+            const itens = String(p.itens || '').substring(0, 60);
+            let dataFmt = '-';
+            try {
+                dataFmt = new Date(p.data_pedido).toLocaleDateString('pt-BR');
+            } catch(e) {
+                dataFmt = String(p.data_pedido || '-').substring(0, 10);
+            }
+            html += `
+                <div class="pedido-item">
+                    <div class="linha1">
+                        <span>#${p.id_pedido} - R$ ${parseFloat(p.total || 0).toFixed(2)}</span>
+                        <span>${dataFmt}</span>
+                    </div>
+                    <div class="linha2">${itens}${itens.length >= 60 ? '...' : ''}</div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+    }
+    html += `</div>`;
+    
+    // Histórico de contatos
+    html += `
+        <div class="detalhe-section">
+            <h3><i class="fas fa-phone"></i> Histórico de Prospecção (${contatosCliente.length})</h3>
+    `;
+    
+    if (contatosCliente.length === 0) {
+        html += `<p style="color:#999;font-size:12px;text-align:center;padding:10px;">Nunca prospectado</p>`;
+    } else {
+        html += `<div class="historico-contatos">`;
+        contatosCliente.forEach(ct => {
+            let dataFmt = ct.data_hora;
+            try {
+                dataFmt = new Date(ct.data_hora).toLocaleString('pt-BR');
+            } catch(e) {}
+            const resultadoLabels = {
+                enviado: '📤 Enviado',
+                respondeu: '💬 Respondeu',
+                interessado: '🔥 Interessado',
+                sem_interesse: '❄️ Sem interesse',
+                nao_atende: '📵 Não atendeu',
+                numero_invalido: '❌ Nº inválido',
+                pedido: '🛒 Fez pedido'
+            };
+            html += `
+                <div class="contato-item">
+                    <div class="data">${dataFmt}</div>
+                    <div class="prospectador">👤 ${ct.prospectador || 'N/A'} • ${resultadoLabels[ct.resultado] || ct.resultado}</div>
+                    ${ct.observacoes ? `<div class="obs">"${ct.observacoes}"</div>` : ''}
+                </div>
+            `;
+        });
+        html += `</div>`;
+    }
+    html += `</div>`;
+    
+    // Botão WhatsApp
+    const telLimpo = String(cliente.telefone || '').replace(/\D/g, '');
+    if (telLimpo.length >= 10) {
+        html += `
+            <div style="text-align:center;margin-top:12px;">
+                <button onclick="abrirWhatsApp('${cliente.id_cliente}')" 
+                        style="background:var(--whatsapp);color:white;border:none;padding:12px 28px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;">
+                    <i class="fab fa-whatsapp"></i> Abrir WhatsApp
+                </button>
+            </div>
+        `;
+    }
+    
+    document.getElementById('detalhesContent').innerHTML = html;
+    document.getElementById('modalDetalhes').classList.add('open');
+}
+
+// ============================================================
+// MENSAGEM EM MASSA
+// ============================================================
+function abrirMensagemMassa() {
+    document.getElementById('massaTemplate').value = 
+        `Olá {primeiro_nome}! Tudo bem? 😊\n\nAqui é da Embalagens Express! Estamos com promoções especiais esta semana. Posso te enviar nosso catálogo atualizado? 📦`;
+    atualizarPreviewMassa();
+    document.getElementById('modalMassa').classList.add('open');
+}
+
+function atualizarPreviewMassa() {
+    const filtro = document.getElementById('massaFiltro').value;
+    const clientes = filtrarParaMassa(filtro);
+    document.getElementById('massaCount').textContent = clientes.length;
+}
+
+function filtrarParaMassa(filtro) {
+    let base = dados.clientes.filter(c => String(c.telefone || '').replace(/\D/g,'').length >= 10);
+    
+    if (filtro === 'fila') {
+        base = ordenarFila(base);
+    } else if (filtro === 'nunca') {
+        base = base.filter(c => !c._ultimoContato);
+    } else if (filtro === 'revendedores') {
+        base = base.filter(c => String(c.observacoes || '').toUpperCase().includes('REVENDA'));
+    } else if (filtro === '30dias') {
+        base = base.filter(c => {
+            if (!c._ultimoContato) return true;
+            const dias = (new Date() - new Date(c._ultimoContato.data_hora)) / (1000*60*60*24);
+            return dias >= 30;
+        });
+    } else if (filtro === '60dias') {
+        base = base.filter(c => {
+            if (!c._ultimoContato) return true;
+            const dias = (new Date() - new Date(c._ultimoContato.data_hora)) / (1000*60*60*24);
+            return dias >= 60;
+        });
+    }
+    
+    return base;
+}
+
+function iniciarMassa() {
+    const filtro = document.getElementById('massaFiltro').value;
+    const template = document.getElementById('massaTemplate').value;
+    
+    if (!template.trim()) {
+        toast('Digite uma mensagem', 'erro');
+        return;
+    }
+    
+    filaMassa = filtrarParaMassa(filtro);
+    indexMassa = 0;
+    
+    if (filaMassa.length === 0) {
+        toast('Nenhum cliente com telefone encontrado', 'erro');
+        return;
+    }
+    
+    fecharModal('modalMassa');
+    abrirProximoMassa(template);
+}
+
+function abrirProximoMassa(template) {
+    if (indexMassa >= filaMassa.length) {
+        toast(`✅ Fila de mensagens finalizada (${filaMassa.length} clientes)!`, 'success');
+        filaMassa = [];
+        indexMassa = 0;
+        return;
+    }
+    
+    const cliente = filaMassa[indexMassa];
+    const primeiroNome = String(cliente.nome || '').split(' ')[0] || 'cliente';
+    
+    const pedidos = dados.pedidos.filter(p => 
+        (cliente.email && String(p.cliente_email || '').toLowerCase() === String(cliente.email).toLowerCase()) ||
+        (cliente.telefone && String(p.cliente_telefone || '').replace(/\D/g,'') === String(cliente.telefone).replace(/\D/g,''))
+    );
+    
+    let ultimaCompra = 'nunca';
+    if (pedidos.length > 0) {
+        const datas = pedidos.map(p => p.data_pedido).filter(d => d).sort((a,b) => new Date(b) - new Date(a));
+        if (datas.length > 0) {
+            try {
+                ultimaCompra = new Date(datas[0]).toLocaleDateString('pt-BR');
+            } catch(e) {}
+        }
+    }
+    
+    const mensagem = template
+        .replace(/{nome}/g, cliente.nome || '')
+        .replace(/{primeiro_nome}/g, primeiroNome)
+        .replace(/{ultima_compra}/g, ultimaCompra)
+        .replace(/{total_compras}/g, pedidos.length);
+    
+    const tel = String(cliente.telefone || '').replace(/\D/g, '');
+    const url = `https://wa.me/55${tel}?text=${encodeURIComponent(mensagem)}`;
+    window.open(url, '_blank');
+    
+    // Diálogo para confirmar envio
+    setTimeout(() => {
+        if (confirm(`✅ Mensagem enviada para ${cliente.nome}?\n\n(${indexMassa + 1} de ${filaMassa.length})\n\nClique OK para registrar o contato e ir para o próximo.`)) {
+            registrarContatoMassa(cliente, template);
+            indexMassa++;
+            setTimeout(() => abrirProximoMassa(template), 500);
+        } else {
+            if (confirm('Pular este cliente?')) {
+                indexMassa++;
+                setTimeout(() => abrirProximoMassa(template), 500);
+            }
+        }
+    }, 500);
+}
+
+async function registrarContatoMassa(cliente, template) {
+    const novoContato = {
+        id: Date.now(),
+        cliente_id: cliente.id_cliente,
+        cliente_nome: cliente.nome,
+        cliente_telefone: cliente.telefone,
+        cliente_email: cliente.email,
+        data_hora: new Date().toISOString().slice(0, 16),
+        resultado: 'enviado',
+        observacoes: 'Mensagem em massa',
+        prospectador: usuarioAtual.nome,
+        timestamp: Date.now()
+    };
+    
+    dados.contatos.push(novoContato);
+    localStorage.setItem(STORAGE_KEY + '_contatos', JSON.stringify(dados.contatos));
+    
+    try {
+        await fetch(API_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                acao: 'registrar_prospeccao',
+                contato: novoContato
+            })
+        });
+    } catch(e) {}
+    
+    mesclarContatos();
+    renderizarKPIs();
+}
+
+// ============================================================
+// UTILITÁRIOS
+// ============================================================
+function mostrarSpinner(msg) {
+    document.getElementById('spinnerMsg').textContent = msg || 'Carregando...';
+    document.getElementById('spinner').classList.add('open');
+}
+function esconderSpinner() {
+    document.getElementById('spinner').classList.remove('open');
+}
+function fecharModal(id) {
+    document.getElementById(id).classList.remove('open');
+}
+function toast(msg, tipo = 'success') {
+    const el = document.createElement('div');
+    el.className = 'toast ' + tipo;
+    el.innerHTML = `<i class="fas fa-${tipo === 'erro' ? 'exclamation-circle' : tipo === 'info' ? 'info-circle' : 'check-circle'}"></i> ${msg}`;
+    document.body.appendChild(el);
+    setTimeout(() => {
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.3s';
+        setTimeout(() => el.remove(), 300);
+    }, 3500);
+}
+
+// Fecha modais ao clicar fora
+document.querySelectorAll('.modal-overlay').forEach(m => {
+    m.addEventListener('click', (e) => {
+        if (e.target === m) m.classList.remove('open');
+    });
+});
+</script>
+
+</body>
+</html>
