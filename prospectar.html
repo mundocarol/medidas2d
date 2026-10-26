@@ -646,6 +646,7 @@ body {
         <select id="filtroStatus" onchange="limparFiltroKpi(); renderizarClientes()">
             <optgroup label="📋 Prospecção">
                 <option value="todos">📋 Todos Clientes (Fila Ativa)</option>
+                <option value="todos_prospectados">✅ Apenas Prospectados</option>
                 <option value="fila">📋 Fila de Prospecção (Ativos)</option>
                 <option value="nunca">🆕 Nunca Contatados</option>
                 <option value="hoje">📞 Contatados Hoje</option>
@@ -1033,50 +1034,38 @@ function verificarConversoesAuto() {
 }
 
 // ============================================================
-// KPIs - AJUSTADO CONFORME REGRA DE NEGÓCIO
+// KPIs
 // ============================================================
 function renderizarKPIs() {
-    // 1. Total de Clientes (Soma de todos: site + manuais)
     const totalSite = dados.clientes.length;
     const totalManuais = dados.prospeccao_clientes.length;
     const totalGeral = totalSite + totalManuais;
 
-    // 2. Manuais Apenas os Puros (que NUNCA foram prospectados)
-    // Estes ficam "bloqueados" no botão de manuais e NÃO entram na fila ativa
     const manuaisPuros = dados.prospeccao_clientes.filter(pc => !pc._ultimoContato && pc.cadastrou_site !== 'SIM').length;
 
-    // 3. Prospectados (Todos que já receberam pelo menos 1 contato)
     const prospectadosSite = dados.clientes.filter(c => c._ultimoContato).length;
     const prospectadosManuais = dados.prospeccao_clientes.filter(pc => pc._ultimoContato && pc.cadastrou_site !== 'SIM').length;
     const totalProspectados = prospectadosSite + prospectadosManuais;
 
-    // 4. Na Fila = Todos os prospectados + Clientes novos do site que nunca foram prospectados - Manuais puros
-    // A fila é composta por: Clientes do site (todos) + Manuais que já foram prospectados
-    const clientesNaFila = (totalSite - prospectadosSite) + prospectadosSite + prospectadosManuais;
-    // Simplificando: totalSite + prospectadosManuais
+    // Fila = todos os clientes do site + manuais que já foram prospectados
+    const clientesNaFila = totalSite + prospectadosManuais;
 
-    // 5. Contatados hoje
     const hojeStr = new Date().toDateString();
     const hojeSite = dados.clientes.filter(c => c._ultimoContato && new Date(c._ultimoContato.data_hora).toDateString() === hojeStr).length;
     const hojeManuais = dados.prospeccao_clientes.filter(pc => pc._ultimoContato && pc.cadastrou_site !== 'SIM' && new Date(pc._ultimoContato.data_hora).toDateString() === hojeStr).length;
     const hoje = hojeSite + hojeManuais;
 
-    // 6. Revendedores (apenas do site)
     const revendedores = dados.clientes.filter(c => String(c.observacoes || '').toUpperCase().includes('REVENDA')).length;
-
-    // 7. Convertidos
     const convertidos = dados.prospeccao_clientes.filter(pc => pc.cadastrou_site === 'SIM').length;
     
-    // Atualiza UI
     document.getElementById('kpiTotal').textContent = totalGeral;
     document.getElementById('kpiFila').textContent = clientesNaFila; 
     document.getElementById('kpiContatados').textContent = totalProspectados;
     document.getElementById('kpiHoje').textContent = hoje;
     document.getElementById('kpiRevendedores').textContent = revendedores;
-    document.getElementById('kpiCadastrados').textContent = manuaisPuros; // Só os puros
+    document.getElementById('kpiCadastrados').textContent = manuaisPuros;
     document.getElementById('kpiConvertidos').textContent = convertidos;
     
-    // Progresso = Prospectados / Total Geral
     const percentual = totalGeral > 0 ? Math.round((totalProspectados / totalGeral) * 100) : 0;
     document.getElementById('progressoTexto').textContent = percentual + '%';
     const fill = document.getElementById('progressoFill');
@@ -1096,7 +1085,7 @@ function aplicarFiltroKpi(tipo) {
         select.value = 'fila';
         document.getElementById('kpiBtnFila').classList.add('active');
     } else if (tipo === 'contatados') {
-        select.value = 'todos_prospectados';
+        select.value = 'todos_prospectados'; // <-- CORRIGIDO AQUI
         document.getElementById('kpiBtnContatados').classList.add('active');
     } else if (tipo === 'hoje') {
         select.value = 'hoje';
@@ -1184,7 +1173,6 @@ function calcularPrioridade(item) {
 }
 
 function getTodosParaFila() {
-    // Retorna clientes do site + manuais que JÁ tiveram contato (para entrar na fila principal)
     const site = dados.clientes.map(c => ({ ...c, _tipo: 'site' }));
     const manuais = dados.prospeccao_clientes
         .filter(pc => pc._ultimoContato && pc.cadastrou_site !== 'SIM')
@@ -1259,9 +1247,9 @@ function filtrarClientes() {
     } else if (status === 'prioridade') {
         filtrados = filtrados.filter(c => calcularPrioridade(c) > 30);
     } else if (status === 'todos_prospectados') {
-        filtrados = filtrados.filter(c => c._ultimoContato);
+        filtrados = filtrados.filter(c => c._ultimoContato); // <-- AQUI FILTRA SÓ QUEM TEM CONTATO
     } else if (status === 'fila') {
-        filtrados = filtrados.filter(c => true); // Todos os que estão na fila
+        filtrados = filtrados.filter(c => true); 
     }
     else if (status === 'comprou') {
         filtrados = filtrados.filter(c => c._tipo === 'site' && getPedidosCliente(c).length > 0);
