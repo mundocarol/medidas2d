@@ -988,7 +988,6 @@ async function carregarDados() {
 }
 
 function mesclarContatos() {
-    // Mescla contatos nos clientes do site
     dados.clientes.forEach(c => {
         const contatosCliente = dados.contatos.filter(ct => 
             String(ct.cliente_id) === String(c.id_cliente) ||
@@ -999,7 +998,6 @@ function mesclarContatos() {
         c._ultimoContato = c._contatos.length > 0 ? c._contatos[0] : null;
     });
 
-    // Mescla contatos nos clientes manuais
     dados.prospeccao_clientes.forEach(pc => {
         const contatosCliente = dados.contatos.filter(ct => 
             String(ct.cliente_id) === String(pc.id) ||
@@ -1035,45 +1033,50 @@ function verificarConversoesAuto() {
 }
 
 // ============================================================
-// KPIs
+// KPIs - AJUSTADO CONFORME REGRA DE NEGÓCIO
 // ============================================================
 function renderizarKPIs() {
-    // Total = Clientes Site + Clientes Manuais (que NÃO se converteram)
+    // 1. Total de Clientes (Soma de todos: site + manuais)
     const totalSite = dados.clientes.length;
-    const totalManuaisNaoConvertidos = dados.prospeccao_clientes.filter(pc => pc.cadastrou_site !== 'SIM').length;
-    const totalGeral = totalSite + totalManuaisNaoConvertidos;
+    const totalManuais = dados.prospeccao_clientes.length;
+    const totalGeral = totalSite + totalManuais;
 
-    // Prospectados na fila (Site + Manuais que já tiveram contato)
+    // 2. Manuais Apenas os Puros (que NUNCA foram prospectados)
+    // Estes ficam "bloqueados" no botão de manuais e NÃO entram na fila ativa
+    const manuaisPuros = dados.prospeccao_clientes.filter(pc => !pc._ultimoContato && pc.cadastrou_site !== 'SIM').length;
+
+    // 3. Prospectados (Todos que já receberam pelo menos 1 contato)
     const prospectadosSite = dados.clientes.filter(c => c._ultimoContato).length;
     const prospectadosManuais = dados.prospeccao_clientes.filter(pc => pc._ultimoContato && pc.cadastrou_site !== 'SIM').length;
     const totalProspectados = prospectadosSite + prospectadosManuais;
 
-    // Na fila (Total Geral - Prospectados)
-    const naFila = totalGeral - totalProspectados;
+    // 4. Na Fila = Todos os prospectados + Clientes novos do site que nunca foram prospectados - Manuais puros
+    // A fila é composta por: Clientes do site (todos) + Manuais que já foram prospectados
+    const clientesNaFila = (totalSite - prospectadosSite) + prospectadosSite + prospectadosManuais;
+    // Simplificando: totalSite + prospectadosManuais
 
-    // Contatados hoje
+    // 5. Contatados hoje
     const hojeStr = new Date().toDateString();
     const hojeSite = dados.clientes.filter(c => c._ultimoContato && new Date(c._ultimoContato.data_hora).toDateString() === hojeStr).length;
     const hojeManuais = dados.prospeccao_clientes.filter(pc => pc._ultimoContato && pc.cadastrou_site !== 'SIM' && new Date(pc._ultimoContato.data_hora).toDateString() === hojeStr).length;
     const hoje = hojeSite + hojeManuais;
 
-    // Revendedores (apenas do site)
+    // 6. Revendedores (apenas do site)
     const revendedores = dados.clientes.filter(c => String(c.observacoes || '').toUpperCase().includes('REVENDA')).length;
-    
-    // Manuais (apenas os que nunca foram prospectados)
-    const manuaisPuros = dados.prospeccao_clientes.filter(pc => !pc._ultimoContato && pc.cadastrou_site !== 'SIM').length;
 
-    // Convertidos
+    // 7. Convertidos
     const convertidos = dados.prospeccao_clientes.filter(pc => pc.cadastrou_site === 'SIM').length;
     
+    // Atualiza UI
     document.getElementById('kpiTotal').textContent = totalGeral;
-    document.getElementById('kpiFila').textContent = naFila;
+    document.getElementById('kpiFila').textContent = clientesNaFila; 
     document.getElementById('kpiContatados').textContent = totalProspectados;
     document.getElementById('kpiHoje').textContent = hoje;
     document.getElementById('kpiRevendedores').textContent = revendedores;
     document.getElementById('kpiCadastrados').textContent = manuaisPuros; // Só os puros
     document.getElementById('kpiConvertidos').textContent = convertidos;
     
+    // Progresso = Prospectados / Total Geral
     const percentual = totalGeral > 0 ? Math.round((totalProspectados / totalGeral) * 100) : 0;
     document.getElementById('progressoTexto').textContent = percentual + '%';
     const fill = document.getElementById('progressoFill');
@@ -1085,19 +1088,14 @@ function renderizarKPIs() {
 // APLICAR FILTRO ATRAVÉS DOS CARDS KPI
 // ============================================================
 function aplicarFiltroKpi(tipo) {
-    // Remove active de todos
     document.querySelectorAll('.kpi-card.clickable').forEach(el => el.classList.remove('active'));
     
     const select = document.getElementById('filtroStatus');
     
-    // Mapeamento
     if (tipo === 'fila') {
         select.value = 'fila';
         document.getElementById('kpiBtnFila').classList.add('active');
     } else if (tipo === 'contatados') {
-        // No select, "todos" traria todos. Mas contatados é um filtro que não tem no select
-        // Vamos adicionar uma opção dinâmica ou usar 'semana'/'todos' combinado.
-        // Para simplificar, vou usar uma opção oculta no select "todos_prospectados"
         select.value = 'todos_prospectados';
         document.getElementById('kpiBtnContatados').classList.add('active');
     } else if (tipo === 'hoje') {
@@ -1179,7 +1177,6 @@ function calcularPrioridade(item) {
         diasSemContato = (agora - dataContato) / (1000*60*60*24);
     }
     
-    // Se for revendedor, prioridade um pouco maior
     const isRev = String(item.observacoes || '').toUpperCase().includes('REVENDA');
     if (isRev) diasSemContato -= 3;
     
@@ -1212,7 +1209,6 @@ function filtrarClientes() {
     const status = document.getElementById('filtroStatus').value;
     const ordem = document.getElementById('filtroOrdem').value;
     
-    // Se o filtro for "manuais", mostrar apenas os que NUNCA foram prospectados
     if (status === 'manuais') {
         let manuais = dados.prospeccao_clientes.filter(pc => !pc._ultimoContato && pc.cadastrou_site !== 'SIM');
         if (busca) {
@@ -1238,10 +1234,8 @@ function filtrarClientes() {
         return conv.map(pc => ({ ...pc, _isManual: true, _cadastrouSite: true }));
     }
     
-    // Base para os filtros gerais
     let filtrados = getTodosParaFila();
     
-    // Busca
     if (busca) {
         filtrados = filtrados.filter(c => {
             const nome = String(c.nome || '').toLowerCase();
@@ -1254,13 +1248,11 @@ function filtrarClientes() {
     const hoje = new Date().toDateString();
     const semanaAtras = new Date(Date.now() - 7*24*60*60*1000);
     
-    // Filtros de status
     if (status === 'nunca') {
         filtrados = filtrados.filter(c => !c._ultimoContato);
     } else if (status === 'hoje') {
         filtrados = filtrados.filter(c => c._ultimoContato && new Date(c._ultimoContato.data_hora).toDateString() === hoje);
     } else if (status === 'revendedores') {
-        // Apenas revendedores do site
         filtrados = filtrados.filter(c => c._tipo === 'site' && String(c.observacoes || '').toUpperCase().includes('REVENDA'));
     } else if (status === 'semana') {
         filtrados = filtrados.filter(c => c._ultimoContato && new Date(c._ultimoContato.data_hora) >= semanaAtras);
@@ -1269,11 +1261,8 @@ function filtrarClientes() {
     } else if (status === 'todos_prospectados') {
         filtrados = filtrados.filter(c => c._ultimoContato);
     } else if (status === 'fila') {
-        filtrados = filtrados.filter(c => c._ultimoContato || !c._ultimoContato); // Todos que estão na fila (todos)
-        // Mas a fila de prospecção são todos os ativos. Vou retornar todos.
-        filtrados = filtrados.filter(c => true);
+        filtrados = filtrados.filter(c => true); // Todos os que estão na fila
     }
-    // Filtros de compra (só fazem sentido para clientes do site)
     else if (status === 'comprou') {
         filtrados = filtrados.filter(c => c._tipo === 'site' && getPedidosCliente(c).length > 0);
     } else if (status === 'nunca_comprou') {
@@ -1292,7 +1281,6 @@ function filtrarClientes() {
         filtrados = filtrados.filter(c => c._tipo === 'site' && getDiasSemComprar(c) !== null && getDiasSemComprar(c) >= 90);
     }
     
-    // Ordenação
     if (ordem === 'fila' || status === 'fila') {
         filtrados = ordenarFila(filtrados);
     } else if (ordem === 'recentes') {
@@ -1352,7 +1340,6 @@ function renderizarClientes() {
         return;
     }
     
-    // Calcula posição na fila geral para os clientes do site
     const filaCompleta = ordenarFila(getTodosParaFila());
     const posicoes = {};
     filaCompleta.forEach((c, i) => {
@@ -1517,7 +1504,6 @@ function renderizarCard(c, posicao, total) {
 function renderizarCardManual(c) {
     let classes = 'cliente-card manual';
     
-    // O manual só aparece aqui se NUNCA foi prospectado
     let badges = '<span class="badge badge-manual">👤 Cadastro Manual</span>';
     
     const telefoneLimpo = String(c.telefone || '').replace(/\D/g, '');
